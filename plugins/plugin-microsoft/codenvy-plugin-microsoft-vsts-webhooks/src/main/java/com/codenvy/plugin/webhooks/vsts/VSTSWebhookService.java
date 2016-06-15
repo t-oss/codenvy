@@ -32,8 +32,8 @@ import com.codenvy.plugin.webhooks.vsts.shared.WorkItemCreationResource;
 
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
-import org.eclipse.che.api.factory.shared.dto.Factory;
-import org.eclipse.che.api.factory.shared.dto.Policies;
+import org.eclipse.che.api.factory.shared.dto.FactoryDto;
+import org.eclipse.che.api.factory.shared.dto.PoliciesDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.lang.Pair;
@@ -165,21 +165,21 @@ public class VSTSWebhookService extends BaseWebhookService {
         final String workItemUrl = resource.getLinks().getSelf().getHref();
 
         // Get parent factory for the project
-        final List<Factory> parentFactories = factoryConnection.findFactory(projectName, userId);
+        final List<FactoryDto> parentFactories = factoryConnection.findFactory(projectName, userId);
 
         if (parentFactories.isEmpty()) {
             LOG.error("No parent factory with name {} found", projectName);
             throw new ServerException("No parent factory with name " + projectName + " found");
         }
 
-        final Factory parentFactory = parentFactories.get(0);
+        final FactoryDto parentFactory = parentFactories.get(0);
 
         // Create Develop & Review factories from parent factory
-        final Factory developFactory = createFactoryForWorkItem(parentFactory, DEVELOP, workItemId);
-        final Factory storedDevelopFactory = factoryConnection.saveFactory(developFactory);
+        final FactoryDto developFactory = createFactoryForWorkItem(parentFactory, DEVELOP, workItemId);
+        final FactoryDto storedDevelopFactory = factoryConnection.saveFactory(developFactory);
         LOG.debug("storedDevelopFactory: {}", storedDevelopFactory);
-        final Factory reviewFactory = createFactoryForWorkItem(parentFactory, REVIEW, workItemId);
-        final Factory storedReviewFactory = factoryConnection.saveFactory(reviewFactory);
+        final FactoryDto reviewFactory = createFactoryForWorkItem(parentFactory, REVIEW, workItemId);
+        final FactoryDto storedReviewFactory = factoryConnection.saveFactory(reviewFactory);
         LOG.debug("storedReviewFactory: {}", storedReviewFactory);
 
         // Get VSTS data from work item URL
@@ -286,15 +286,15 @@ public class VSTSWebhookService extends BaseWebhookService {
             final String repositoryNameUrl = vstsConnection.getRepositoryNameUrl(repositoryIdUrl, apiVersion, credentials);
 
             // Get factories that contain a project for given repository and branch
-            final List<Factory> factories = getFactoriesForRepositoryAndBranch(factoryIDs, repositoryNameUrl, sourceBranch);
+            final List<FactoryDto> factories = getFactoriesForRepositoryAndBranch(factoryIDs, repositoryNameUrl, sourceBranch);
             if (factories.isEmpty()) {
                 LOG.error("No factory found for branch {}", sourceBranch);
                 throw new ServerException("No factory found for branch " + sourceBranch);
             }
 
-            for (Factory f : factories) {
+            for (FactoryDto f : factories) {
                 // Update project into the factory with given repository and branch
-                final Factory updatedfactory =
+                final FactoryDto updatedfactory =
                         updateProjectInFactory(f, repositoryNameUrl, sourceBranch, headCommitId);
 
                 // Persist updated factory
@@ -322,14 +322,14 @@ public class VSTSWebhookService extends BaseWebhookService {
      *  the new created factory
      * @throws ServerException
      */
-    private Factory createFactoryForWorkItem(final Factory parentFactory, final FactoryType factoryType, final String workItemId)
+    private FactoryDto createFactoryForWorkItem(final FactoryDto parentFactory, final FactoryType factoryType, final String workItemId)
             throws ServerException {
-        final Factory newFactory = DtoFactory.cloneDto(parentFactory);
+        final FactoryDto newFactory = DtoFactory.cloneDto(parentFactory);
 
         final String createPolicy = ((DEVELOP == factoryType) ? "perUser" : "perClick");
-        Policies policies;
+        PoliciesDto policies;
         if (parentFactory.getPolicies() == null) {
-            policies = DtoFactory.newDto(Policies.class).withCreate(createPolicy);
+            policies = DtoFactory.newDto(PoliciesDto.class).withCreate(createPolicy);
         } else {
             policies = parentFactory.getPolicies().withCreate(createPolicy);
         }
@@ -353,7 +353,7 @@ public class VSTSWebhookService extends BaseWebhookService {
      *         the factory to get link from
      * @return the factory 'open factory' URL
      */
-    private String getFactoryUrl(final Factory factory) throws ServerException {
+    private String getFactoryUrl(final FactoryDto factory) throws ServerException {
         final Link factoryLink = factory.getLink(FACTORY_URL_REL);
         if (factoryLink == null) {
             throw new ServerException("Factory " + factory.getName() + " do not contain mandatory \'" + FACTORY_URL_REL + "\' link");

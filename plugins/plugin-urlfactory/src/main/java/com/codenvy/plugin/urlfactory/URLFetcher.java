@@ -98,7 +98,4 @@ public class URLFetcher {
     protected long getLimit() {
         return MAXIMUM_READ_BYTES;
     }
-
-
-
 }

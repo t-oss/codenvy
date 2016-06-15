@@ -25,7 +25,7 @@ import com.google.gwt.regexp.shared.RegExp;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import org.eclipse.che.api.factory.shared.dto.Factory;
+import org.eclipse.che.api.factory.shared.dto.FactoryDto;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
@@ -57,9 +57,9 @@ public class UpdatePullRequestStep implements Step {
     public void execute(final WorkflowExecutor executor, final Context context) {
         final PullRequest pullRequest = context.getPullRequest();
         factoryService.getFactoryJson(appContext.getWorkspaceId(), null)
-                      .then(new Operation<Factory>() {
+                      .then(new Operation<FactoryDto>() {
                           @Override
-                          public void apply(Factory currentFactory) throws OperationException {
+                          public void apply(FactoryDto currentFactory) throws OperationException {
                               final String factoryId = extractFactoryId(pullRequest.getDescription());
                               if (!Strings.isNullOrEmpty(factoryId)) {
                                   updateFactory(executor, context, factoryId, currentFactory);
@@ -71,14 +71,14 @@ public class UpdatePullRequestStep implements Step {
                       .catchError(handleError(executor, context));
     }
 
-    private Promise<Factory> updateFactory(final WorkflowExecutor executor,
+    private Promise<FactoryDto> updateFactory(final WorkflowExecutor executor,
                                            final Context context,
                                            final String factoryId,
-                                           final Factory currentFactory) {
+                                           final FactoryDto currentFactory) {
         return factoryService.updateFactory(factoryId, currentFactory)
-                             .then(new Operation<Factory>() {
+                             .then(new Operation<FactoryDto>() {
                                  @Override
-                                 public void apply(Factory updatedFactory) throws OperationException {
+                                 public void apply(FactoryDto updatedFactory) throws OperationException {
                                      context.setReviewFactoryUrl(FactoryHelper.getAcceptFactoryUrl(updatedFactory));
                                      executor.done(UpdatePullRequestStep.this, context);
                                  }
@@ -89,9 +89,9 @@ public class UpdatePullRequestStep implements Step {
                                      createNewFactory(executor,
                                                       context,
                                                       currentFactory,
-                                                      new Operation<Factory>() {
+                                                      new Operation<FactoryDto>() {
                                                           @Override
-                                                          public void apply(Factory factory) throws OperationException {
+                                                          public void apply(FactoryDto factory) throws OperationException {
                                                               final PullRequest pull = context.getPullRequest();
                                                               doUpdate(executor,
                                                                        context,
@@ -105,13 +105,13 @@ public class UpdatePullRequestStep implements Step {
 
     private void addReviewUrl(final WorkflowExecutor executor,
                               final Context context,
-                              final Factory currentFactory) {
+                              final FactoryDto currentFactory) {
         createNewFactory(executor,
                          context,
                          currentFactory,
-                         new Operation<Factory>() {
+                         new Operation<FactoryDto>() {
                              @Override
-                             public void apply(Factory factory) throws OperationException {
+                             public void apply(FactoryDto factory) throws OperationException {
                                  final Configuration configuration = context.getConfiguration();
                                  final String reviewUrl = context.getVcsHostingService()
                                                                  .formatReviewFactoryUrl(FactoryHelper.getAcceptFactoryUrl(factory));
@@ -126,8 +126,8 @@ public class UpdatePullRequestStep implements Step {
 
     private void createNewFactory(final WorkflowExecutor executor,
                                   final Context context,
-                                  final Factory factory,
-                                  Operation<Factory> operation) {
+                                  final FactoryDto factory,
+                                  Operation<FactoryDto> operation) {
         factoryService.saveFactory(factory).then(operation).catchError(handleError(executor, context));
     }
 
