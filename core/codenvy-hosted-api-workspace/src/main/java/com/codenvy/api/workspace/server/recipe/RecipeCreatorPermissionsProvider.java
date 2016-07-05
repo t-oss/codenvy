@@ -16,13 +16,12 @@ package com.codenvy.api.workspace.server.recipe;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.eclipse.che.api.core.acl.AclEntryImpl;
+import org.eclipse.che.api.machine.server.model.impl.AclEntryImpl;
 import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Adds acl entry for creator before recipe creation
@@ -41,8 +40,7 @@ public class RecipeCreatorPermissionsProvider implements MethodInterceptor {
         } else {
             acl.removeIf(aclEntry -> aclEntry.getUser().equals(creator));
         }
-        acl.add(new AclEntryImpl(creator,
-                                 new ArrayList<>(new RecipeDomain().getAllowedActions())));
+        acl.add(new AclEntryImpl(creator, new ArrayList<>(new RecipeDomain().getAllowedActions())));
         recipe.setAcl(acl);
         return methodInvocation.proceed();
     }

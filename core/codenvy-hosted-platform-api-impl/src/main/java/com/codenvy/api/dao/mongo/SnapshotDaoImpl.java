@@ -24,7 +24,7 @@ import com.mongodb.client.model.IndexOptions;
 
 import org.bson.Document;
 import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.machine.server.dao.SnapshotDao;
+import org.eclipse.che.api.machine.server.spi.SnapshotDao;
 import org.eclipse.che.api.machine.server.exception.SnapshotException;
 import org.eclipse.che.api.machine.server.model.impl.SnapshotImpl;
 

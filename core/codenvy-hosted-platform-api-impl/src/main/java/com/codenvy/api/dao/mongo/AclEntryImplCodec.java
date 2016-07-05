@@ -16,7 +16,7 @@ package com.codenvy.api.dao.mongo;
 
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
-import org.eclipse.che.api.core.acl.AclEntryImpl;
+import org.eclipse.che.api.machine.server.model.impl.AclEntryImpl;
 
 import java.util.List;
 

@@ -15,7 +15,7 @@
 package com.codenvy.api.workspace.server.stack;
 
 import org.aopalliance.intercept.MethodInvocation;
-import org.eclipse.che.api.core.acl.AclEntryImpl;
+import org.eclipse.che.api.machine.server.model.impl.AclEntryImpl;
 import org.eclipse.che.api.workspace.server.model.impl.stack.StackImpl;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;

@@ -23,8 +23,8 @@ import com.google.common.collect.ImmutableSet;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.acl.AclEntry;
-import org.eclipse.che.api.core.acl.AclEntryImpl;
-import org.eclipse.che.api.machine.server.dao.RecipeDao;
+import org.eclipse.che.api.machine.server.model.impl.AclEntryImpl;
+import org.eclipse.che.api.machine.server.spi.RecipeDao;
 import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
 
 import javax.inject.Inject;
@@ -62,8 +62,7 @@ public class RecipePermissionStorage implements PermissionsStorage {
     public void store(PermissionsImpl permissions) throws ServerException, NotFoundException {
         final RecipeImpl recipe = recipeDao.getById(permissions.getInstance());
         recipe.getAcl().removeIf(aclEntry -> aclEntry.getUser().equals(permissions.getUser()));
-        recipe.getAcl().add(new AclEntryImpl(permissions.getUser(),
-                                             permissions.getActions()));
+        recipe.getAcl().add(new AclEntryImpl(permissions.getUser(), permissions.getActions()));
         recipeDao.update(recipe);
     }
 
