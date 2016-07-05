@@ -18,7 +18,7 @@ import com.codenvy.api.workspace.server.recipe.RecipeCreatorPermissionsProvider;
 import com.codenvy.api.workspace.server.recipe.RecipeDomain;
 
 import org.aopalliance.intercept.MethodInvocation;
-import org.eclipse.che.api.core.acl.AclEntryImpl;
+import org.eclipse.che.api.machine.server.model.impl.AclEntryImpl;
 import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;

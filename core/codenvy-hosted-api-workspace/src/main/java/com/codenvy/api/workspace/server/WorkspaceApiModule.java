@@ -27,7 +27,7 @@ import com.codenvy.api.workspace.server.filters.StackPermissionsFilter;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
 
-import org.eclipse.che.api.machine.server.dao.RecipeDao;
+import org.eclipse.che.api.machine.server.spi.RecipeDao;
 import org.eclipse.che.api.workspace.server.spi.StackDao;
 import org.eclipse.che.inject.Matchers;
 

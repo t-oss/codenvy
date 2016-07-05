@@ -18,7 +18,7 @@ import com.codenvy.api.workspace.server.recipe.RecipeDomain;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.eclipse.che.api.core.acl.AclEntryImpl;
+import org.eclipse.che.api.machine.server.model.impl.AclEntryImpl;
 import org.eclipse.che.api.workspace.server.model.impl.stack.StackImpl;
 
 import javax.inject.Singleton;
