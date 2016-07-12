@@ -91,7 +91,7 @@ public class LdapUserDao implements UserDao {
     }
 
     @Override
-    public String authenticate(String alias, String password) throws UnauthorizedException, ServerException {
+    public UserImpl getByAliasAndPassword(String alias, String password) throws NotFoundException, ServerException {
         requireNonNull(alias, "Required non-null alias");
         requireNonNull(password, "Required non-null password");
         UserImpl user;
@@ -104,14 +104,14 @@ public class LdapUserDao implements UserDao {
                 user = doGetByAttribute(mapper.userAliasesAttr, alias);
             }
             if (user == null) {
-                throw new UnauthorizedException(format("User '%s' doesn't exist", alias));
+                throw new NotFoundException(format("User '%s' doesn't exist", alias));
             }
             final String principal = formatDn(userDn, user.getId());
             try (CloseableSupplier<InitialLdapContext> ignored = wrapCloseable(contextFactory.createContext(principal, password))) {
-                return user.getId();
+                return user;
             }
         } catch (AuthenticationException x) {
-            throw new UnauthorizedException(format("User '%s' doesn't exist", alias));
+            throw new NotFoundException(format("User '%s' doesn't exist", alias));
         } catch (NamingException e) {
             throw new ServerException(format("Error during authentication of user '%s'", alias), e);
         }
