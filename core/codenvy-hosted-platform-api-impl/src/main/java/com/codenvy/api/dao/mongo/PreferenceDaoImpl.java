@@ -14,9 +14,7 @@
  */
 package com.codenvy.api.dao.mongo;
 
-import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.user.server.spi.PreferenceDao;
-
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mongodb.BasicDBObject;
@@ -25,6 +23,9 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.MongoException;
 
+import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.user.server.spi.PreferenceDao;
+
 import javax.inject.Named;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +33,7 @@ import java.util.regex.Pattern;
 
 import static com.codenvy.api.dao.mongo.MongoUtil.asDBList;
 import static com.codenvy.api.dao.mongo.MongoUtil.asMap;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Implementation of {@link PreferenceDao} based on MongoDB storage
@@ -81,7 +83,8 @@ public class PreferenceDaoImpl implements PreferenceDao {
 
     private static final String PREFERENCES_COLLECTION = "organization.storage.db.preferences.collection";
 
-    private final DBCollection collection;
+    @VisibleForTesting
+    final DBCollection collection;
 
     @Inject
     public PreferenceDaoImpl(@Named("mongo.db.organization") DB database,
@@ -91,9 +94,8 @@ public class PreferenceDaoImpl implements PreferenceDao {
 
     @Override
     public void setPreferences(String userId, Map<String, String> preferences) throws ServerException {
-        if (preferences == null) {
-            throw new IllegalArgumentException("Not null preferences required");
-        }
+        requireNonNull(userId);
+        requireNonNull(preferences);
         if (preferences.isEmpty()) {
             remove(userId);
         } else {
@@ -107,6 +109,7 @@ public class PreferenceDaoImpl implements PreferenceDao {
 
     @Override
     public Map<String, String> getPreferences(String userId) throws ServerException {
+        requireNonNull(userId);
         try {
             return load(userId, null);
         } catch (MongoException ex) {
@@ -116,6 +119,8 @@ public class PreferenceDaoImpl implements PreferenceDao {
 
     @Override
     public Map<String, String> getPreferences(String userId, String filter) throws ServerException {
+        requireNonNull(userId);
+        requireNonNull(filter);
         try {
             return load(userId, filter);
         } catch (MongoException ex) {
@@ -125,6 +130,7 @@ public class PreferenceDaoImpl implements PreferenceDao {
 
     @Override
     public void remove(String userId) throws ServerException {
+        requireNonNull(userId);
         try {
             remove0(userId);
         } catch (MongoException ex) {

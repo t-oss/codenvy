@@ -103,12 +103,14 @@ public class WorkspaceImplCodec implements Codec<WorkspaceImpl> {
                                                           .build())
                             .setAttributes(documentsListAsMap(attributes))
                             .setNamespace(document.getString("namespace"))
+                            .setName(document.getString("name"))
                             .build();
     }
 
     @Override
     public void encode(BsonWriter writer, WorkspaceImpl workspace, EncoderContext encoderContext) {
         final Document document = new Document().append("_id", workspace.getId())
+                                                .append("name", workspace.getName())
                                                 .append("namespace", workspace.getNamespace())
                                                 .append("attributes", mapAsDocumentsList(workspace.getAttributes()));
         final WorkspaceConfigImpl config = workspace.getConfig();

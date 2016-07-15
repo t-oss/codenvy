@@ -1,1 +1,2 @@
 com.codenvy.api.dao.ldap.LdapTckModule
+com.codenvy.api.dao.mongo.MongoTckModule

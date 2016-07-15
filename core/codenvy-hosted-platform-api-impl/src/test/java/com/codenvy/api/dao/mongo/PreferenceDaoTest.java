@@ -75,8 +75,8 @@ public class PreferenceDaoTest extends BaseDaoTest {
         assertNull(preferencesDocument);
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class)
-    public void shouldNotPersistNullPreferences() throws Exception {
+    @Test(expectedExceptions = NullPointerException.class)
+    public void shouldThrowNpeWhenSetNullPreferences() throws Exception {
         final String userId = "test-user-id";
 
         preferenceDao.setPreferences(userId, null);
@@ -132,15 +132,13 @@ public class PreferenceDaoTest extends BaseDaoTest {
         assertTrue(actual.isEmpty());
     }
 
-    @Test
-    public void shouldIgnoreNullFilter() throws Exception {
+    @Test(expectedExceptions = NullPointerException.class)
+    public void shouldThrowNpeWhenFilterIsNull() throws Exception {
         final String userId = "test-user-id";
         final Map<String, String> preferences = createPreferences();
         insertPreferences(userId, preferences);
 
-        final Map<String, String> actual = preferenceDao.getPreferences(userId, null);
-
-        assertEquals(actual, preferences);
+        preferenceDao.getPreferences(userId, null);
     }
 
     @Test
@@ -149,7 +147,7 @@ public class PreferenceDaoTest extends BaseDaoTest {
         final Map<String, String> preferences = createPreferences();
         insertPreferences(userId, preferences);
 
-        final Map<String, String> actual = preferenceDao.getPreferences(userId, null);
+        final Map<String, String> actual = preferenceDao.getPreferences(userId, "");
 
         assertEquals(actual, preferences);
     }
