@@ -21,6 +21,7 @@ import org.eclipse.che.api.core.model.machine.Machine;
 import org.eclipse.che.api.core.rest.HttpJsonRequest;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.machine.server.MachineManager;
+import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.server.wsagent.WsAgentLauncherImpl;
 
 import javax.inject.Inject;
@@ -64,7 +65,7 @@ public class WsAgentWithAuthLauncherImpl extends WsAgentLauncherImpl {
     }
 
     // modifies the ping request if it is possible to get the machine token.
-    protected HttpJsonRequest createPingRequest(Machine devMachine) {
+    protected HttpJsonRequest createPingRequest(Machine devMachine) throws MachineException {
         final HttpJsonRequest pingRequest = super.createPingRequest(devMachine);
         final String tokenServiceUrl = UriBuilder.fromUri(apiEndpoint)
                                                  .replacePath("api/machine/token/" + devMachine.getWorkspaceId())
