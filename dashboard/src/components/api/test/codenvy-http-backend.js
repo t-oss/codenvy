@@ -39,7 +39,7 @@ export class CodenvyHttpBackend {
       return [200, {success: true, errors: []}];
     });
     // create new user
-    this.httpBackend.when('POST', '/api/user/create').respond(() => {
+    this.httpBackend.when('POST', '/api/user').respond(() => {
       return [200, {success: true, errors: []}];
     });
     //license legality - true

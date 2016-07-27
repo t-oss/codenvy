@@ -15,6 +15,7 @@
 package com.codenvy.machine.backup;
 
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.machine.Machine;
 import org.eclipse.che.api.core.model.machine.MachineStatus;
 import org.eclipse.che.api.core.model.machine.Recipe;
 import org.eclipse.che.api.machine.server.MachineManager;
@@ -30,6 +31,8 @@ import org.eclipse.che.api.machine.server.spi.Instance;
 import org.eclipse.che.api.machine.server.spi.InstanceNode;
 import org.mockito.InOrder;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.mockito.testng.MockitoTestNGListener;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -41,9 +44,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static java.lang.Thread.sleep;
 import static java.util.Collections.singletonMap;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -60,6 +65,8 @@ import static org.mockito.Mockito.when;
  */
 @Listeners(value = {MockitoTestNGListener.class})
 public class WorkspaceFsBackupSchedulerTest {
+    private static final int FAKE_BACKUP_TIME_MS = 1500;
+
     @Mock
     private MachineManager machineManager;
     @Mock
@@ -87,6 +94,7 @@ public class WorkspaceFsBackupSchedulerTest {
         scheduler = spy(new WorkspaceFsBackupScheduler(machineManager, backupManager, 5 * 60));
 
         when(machineManager.getMachines()).thenReturn(machines);
+        when(machineInstance.getStatus()).thenReturn(MachineStatus.RUNNING);
 
         machine1 = new MachineImpl(new MachineConfigImpl(true,
                                                          "displayName1",
@@ -167,6 +175,7 @@ public class WorkspaceFsBackupSchedulerTest {
 
         // then
         verify(machineManager).getInstance("id1");
+        verify(scheduler).backupWorkspaceInMachine(any(MachineImpl.class));
         verify(backupManager).backupWorkspace("workspaceId1", "/workspace1", "192.168.0.1");
     }
 
@@ -282,6 +291,9 @@ public class WorkspaceFsBackupSchedulerTest {
 
         scheduler.scheduleBackup();
 
+        // wait until previous backup finish
+        sleep(100);
+
         // when
         // second synchronization
         scheduler.scheduleBackup();
@@ -291,5 +303,28 @@ public class WorkspaceFsBackupSchedulerTest {
         verify(scheduler, timeout(2000).times(2)).backupWorkspaceInMachine(eq(machine1));
     }
 
-}
+    @Test
+    public void shouldNotBackupMachineFsIfPreviousBackupIsStillRunning() throws Exception {
+        // given
+        machines.clear();
+        machines.add(machine1);
+        scheduler = spy(new WorkspaceFsBackupScheduler(machineManager, backupManager, 0));
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                sleep(FAKE_BACKUP_TIME_MS);
+                return null;
+            }
+        }).when(scheduler).backupWorkspaceInMachine(any(MachineImpl.class));
 
+        scheduler.scheduleBackup();
+        sleep(FAKE_BACKUP_TIME_MS / 2);
+        // run next backup while previous is still running
+        scheduler.scheduleBackup();
+
+        // then
+        verify(machineManager, times(2)).getMachines();
+        verify(scheduler, timeout(2000).times(1)).backupWorkspaceInMachine(eq(machine1));
+    }
+
+}

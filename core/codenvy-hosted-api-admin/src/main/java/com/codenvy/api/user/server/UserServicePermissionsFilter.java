@@ -23,7 +23,7 @@ import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.subject.Subject;
 import org.eclipse.che.everrest.CheMethodInvokerFilter;
 import org.everrest.core.Filter;
-import org.everrest.core.resource.GenericMethodResource;
+import org.everrest.core.resource.GenericResourceMethod;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -49,8 +49,8 @@ public class UserServicePermissionsFilter extends CheMethodInvokerFilter {
     }
 
     @Override
-    protected void filter(GenericMethodResource genericMethodResource, Object[] arguments) throws ApiException {
-        final String methodName = genericMethodResource.getMethod().getName();
+    protected void filter(GenericResourceMethod genericResourceMethod, Object[] arguments) throws ApiException {
+        final String methodName = genericResourceMethod.getMethod().getName();
         final Subject subject = EnvironmentContext.getCurrent().getSubject();
         switch (methodName) {
             case "getCurrent":
@@ -73,6 +73,11 @@ public class UserServicePermissionsFilter extends CheMethodInvokerFilter {
                 subject.checkPermission(SystemDomain.DOMAIN_ID, null, MANAGE_USERS_ACTION);
                 break;
             case "remove":
+                final String userToRemove = (String)arguments[0];
+                if (subject.getUserId().equals(userToRemove)) {
+                    //everybody should be able to remove himself
+                    return;
+                }
                 subject.checkPermission(SystemDomain.DOMAIN_ID, null, MANAGE_USERS_ACTION);
                 break;
             default:

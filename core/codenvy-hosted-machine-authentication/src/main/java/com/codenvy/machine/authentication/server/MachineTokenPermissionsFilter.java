@@ -20,7 +20,7 @@ import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.subject.Subject;
 import org.eclipse.che.everrest.CheMethodInvokerFilter;
 import org.everrest.core.Filter;
-import org.everrest.core.resource.GenericMethodResource;
+import org.everrest.core.resource.GenericResourceMethod;
 
 import javax.ws.rs.Path;
 
@@ -37,8 +37,8 @@ import static com.codenvy.api.workspace.server.WorkspaceDomain.USE;
 public class MachineTokenPermissionsFilter extends CheMethodInvokerFilter {
 
     @Override
-    protected void filter(GenericMethodResource genericMethodResource, Object[] arguments) throws ApiException {
-        final String methodName = genericMethodResource.getMethod().getName();
+    protected void filter(GenericResourceMethod genericResourceMethod, Object[] arguments) throws ApiException {
+        final String methodName = genericResourceMethod.getMethod().getName();
 
         final Subject currentSubject = EnvironmentContext.getCurrent().getSubject();
         String action;

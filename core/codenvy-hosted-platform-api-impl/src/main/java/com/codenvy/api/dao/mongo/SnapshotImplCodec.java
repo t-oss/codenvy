@@ -59,7 +59,7 @@ public class SnapshotImplCodec implements Codec<SnapshotImpl> {
                                                 .append("envName", snapshot.getEnvName())
                                                 .append("type", snapshot.getType())
                                                 .append("namespace", snapshot.getNamespace())
-                                                .append("isDev", snapshot.isDev())
+                                                .append("dev", snapshot.isDev())
                                                 .append("creationDate", snapshot.getCreationDate())
                                                 .append("description", snapshot.getDescription())
                                                 .append(MACHINE_SOURCE, machineSourceDocument);
@@ -89,7 +89,7 @@ public class SnapshotImplCodec implements Codec<SnapshotImpl> {
                                          .setEnvName(document.getString("envName"))
                                          .setType(document.getString("type"))
                                          .setNamespace(document.getString("namespace"))
-                                         .setDev(document.getBoolean("isDev"))
+                                         .setDev(document.getBoolean("dev"))
                                          .setCreationDate(document.getLong("creationDate"))
                                          .setDescription(document.getString("description"))
                                          .setMachineSource(machineSource)

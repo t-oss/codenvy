@@ -24,7 +24,7 @@ import org.everrest.assured.EverrestJetty;
 import org.everrest.core.Filter;
 import org.everrest.core.GenericContainerRequest;
 import org.everrest.core.RequestFilter;
-import org.everrest.core.resource.GenericMethodResource;
+import org.everrest.core.resource.GenericResourceMethod;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;
@@ -93,10 +93,10 @@ public class FactoryPermissionsFilterTest {
 
     @Test
     public void shouldNotCheckPermissionsWhenUnlistedMethodIsCalled() throws Exception {
-        GenericMethodResource genericMethodResource = mock(GenericMethodResource.class);
-        when(genericMethodResource.getMethod()).thenReturn(FactoryService.class.getMethod("getServiceDescriptor"));
+        GenericResourceMethod genericResourceMethod = mock(GenericResourceMethod.class);
+        when(genericResourceMethod.getMethod()).thenReturn(FactoryService.class.getMethod("getServiceDescriptor"));
 
-        permissionsFilter.filter(genericMethodResource, new Object[0]);
+        permissionsFilter.filter(genericResourceMethod, new Object[0]);
     }
 
     @Filter

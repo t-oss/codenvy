@@ -22,7 +22,7 @@ import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.everrest.CheMethodInvokerFilter;
 import org.everrest.core.Filter;
-import org.everrest.core.resource.GenericMethodResource;
+import org.everrest.core.resource.GenericResourceMethod;
 
 import javax.ws.rs.Path;
 
@@ -37,9 +37,9 @@ import static com.codenvy.api.permission.server.AbstractPermissionsDomain.SET_PE
 @Path("/permissions/")
 public class SetPermissionsFilter extends CheMethodInvokerFilter {
     @Override
-    public void filter(GenericMethodResource genericMethodResource, Object[] arguments)
+    public void filter(GenericResourceMethod genericResourceMethod, Object[] arguments)
             throws UnauthorizedException, ForbiddenException, ServerException {
-        final String methodName = genericMethodResource.getMethod().getName();
+        final String methodName = genericResourceMethod.getMethod().getName();
         if (methodName.equals("storePermissions")) {
             final PermissionsDto permissions = (PermissionsDto)arguments[0];
 

@@ -107,15 +107,16 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
         checkMaxEnvironmentRam(config);
         checkNamespaceValidity(namespace, "Unable to create workspace because its namespace owner is " +
                                           "unavailable and it is impossible to check resources limit.");
-        return checkCountAndPropagateCreation(namespace, () -> super.createWorkspace(config, namespace, accountId));
+        return checkCountAndPropagateCreation(namespace, () -> super.createWorkspace(config, namespace, attributes, accountId));
     }
 
     @Override
     public WorkspaceImpl startWorkspace(String workspaceId,
                                         @Nullable String envName,
-                                        @Nullable String accountId) throws NotFoundException,
-                                                                           ServerException,
-                                                                           ConflictException {
+                                        @Nullable String accountId,
+                                        @Nullable Boolean restore) throws NotFoundException,
+                                                                          ServerException,
+                                                                          ConflictException {
         final WorkspaceImpl workspace = getWorkspace(workspaceId);
         checkNamespaceValidity(workspace.getNamespace(), String.format(
                 "Unable to start workspace %s, because its namespace owner is " +
@@ -124,7 +125,7 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
         return checkRamAndPropagateStart(workspace.getConfig(),
                                          envName,
                                          workspace.getNamespace(),
-                                         () -> super.startWorkspace(workspaceId, envName, accountId));
+                                         () -> super.startWorkspace(workspaceId, envName, accountId, restore));
     }
 
     @Override

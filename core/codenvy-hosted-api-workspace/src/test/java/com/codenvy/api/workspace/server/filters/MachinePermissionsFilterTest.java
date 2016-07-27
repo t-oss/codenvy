@@ -30,7 +30,7 @@ import org.everrest.assured.EverrestJetty;
 import org.everrest.core.Filter;
 import org.everrest.core.GenericContainerRequest;
 import org.everrest.core.RequestFilter;
-import org.everrest.core.resource.GenericMethodResource;
+import org.everrest.core.resource.GenericResourceMethod;
 import org.everrest.core.uri.UriPattern;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -280,7 +280,7 @@ public class MachinePermissionsFilterTest {
     @Test(expectedExceptions = ForbiddenException.class,
           expectedExceptionsMessageRegExp = "The user does not have permission to perform this operation")
     public void shouldThrowForbiddenExceptionWhenRequestedUnknownMethod() throws Exception {
-        final GenericMethodResource mock = mock(GenericMethodResource.class);
+        final GenericResourceMethod mock = mock(GenericResourceMethod.class);
         Method injectLinks = MachineService.class.getMethod("getServiceDescriptor");
         when(mock.getMethod()).thenReturn(injectLinks);
 

@@ -26,7 +26,7 @@ import org.everrest.assured.EverrestJetty;
 import org.everrest.core.Filter;
 import org.everrest.core.GenericContainerRequest;
 import org.everrest.core.RequestFilter;
-import org.everrest.core.resource.GenericMethodResource;
+import org.everrest.core.resource.GenericResourceMethod;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -84,7 +84,7 @@ public class RecipeScriptDownloadPermissionFilterTest {
 
     @Test(expectedExceptions = ForbiddenException.class)
     public void shouldThrowExceptionWhenCallingUnlistedMethod() throws Exception {
-        GenericMethodResource genericMethodResource = Mockito.mock(GenericMethodResource.class);
+        GenericResourceMethod genericMethodResource = Mockito.mock(GenericResourceMethod.class);
         when(genericMethodResource.getMethod()).thenReturn(this.getClass().getDeclaredMethod("shouldThrowExceptionWhenCallingUnlistedMethod"));
         Object[] argument = new Object[0];
         filter.filter(genericMethodResource, argument);

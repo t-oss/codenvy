@@ -98,7 +98,7 @@ public class SwarmDockerConnector extends DockerConnector {
     }
 
     private DockerException decorateMessage(DockerException e) {
-        if (e.getOriginError().contains("no resources available to schedule container")) {
+        if (e.getOriginError() != null && e.getOriginError().contains("no resources available to schedule container")) {
             e = new DockerException("The system is out of resources. Please contact your system admin.",
                                     e.getOriginError(),
                                     e.getStatus());

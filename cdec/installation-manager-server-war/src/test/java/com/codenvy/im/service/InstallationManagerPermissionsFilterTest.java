@@ -23,7 +23,7 @@ import org.everrest.assured.EverrestJetty;
 import org.everrest.core.Filter;
 import org.everrest.core.GenericContainerRequest;
 import org.everrest.core.RequestFilter;
-import org.everrest.core.resource.GenericMethodResource;
+import org.everrest.core.resource.GenericResourceMethod;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;
@@ -84,15 +84,15 @@ public class InstallationManagerPermissionsFilterTest {
     public void shouldCheckManageCodenvyPermissionsOnRequestingAnyMethodsFromLicenseServiceExceptLicenseChecking() throws Exception {
         EnvironmentContext.getCurrent().setSubject(subject);
         when(subject.hasPermission(SystemDomain.DOMAIN_ID, null, MANAGE_CODENVY_ACTION)).thenReturn(true);
-        final GenericMethodResource genericMethodResource = mock(GenericMethodResource.class);
+        final GenericResourceMethod GenericResourceMethod = mock(GenericResourceMethod.class);
 
         final Method[] imMethods = LicenseService.class.getDeclaredMethods();
 
         int publicMethods = 0;
         for (Method imMethod : imMethods) {
             if (Modifier.isPublic(imMethod.getModifiers()) && !"isCodenvyUsageLegal".equals(imMethod.getName())) {
-                when(genericMethodResource.getMethod()).thenReturn(imMethod);
-                permissionsFilter.filter(genericMethodResource, new Object[] {});
+                when(GenericResourceMethod.getMethod()).thenReturn(imMethod);
+                permissionsFilter.filter(GenericResourceMethod, new Object[] {});
                 publicMethods++;
             }
         }
@@ -105,15 +105,15 @@ public class InstallationManagerPermissionsFilterTest {
     public void shouldCheckManageCodenvyPermissionsOnRequestingAnyMethodsFromInstallationManagerService() throws Exception {
         EnvironmentContext.getCurrent().setSubject(subject);
         when(subject.hasPermission(SystemDomain.DOMAIN_ID, null, MANAGE_CODENVY_ACTION)).thenReturn(true);
-        final GenericMethodResource genericMethodResource = mock(GenericMethodResource.class);
+        final GenericResourceMethod GenericResourceMethod = mock(GenericResourceMethod.class);
 
         final Method[] imMethods = InstallationManagerService.class.getDeclaredMethods();
 
         int publicMethods = 0;
         for (Method imMethod : imMethods) {
             if (Modifier.isPublic(imMethod.getModifiers())) {
-                when(genericMethodResource.getMethod()).thenReturn(imMethod);
-                permissionsFilter.filter(genericMethodResource, new Object[] {});
+                when(GenericResourceMethod.getMethod()).thenReturn(imMethod);
+                permissionsFilter.filter(GenericResourceMethod, new Object[] {});
                 publicMethods++;
             }
         }

@@ -24,9 +24,10 @@ export class CodenvyUser {
    * Default constructor that is using resource
    * @ngInject for Dependency injection
    */
-  constructor($q, $resource, imsLicenseApi, codenvyPermissions) {
+  constructor($q, $resource, $cookies, imsLicenseApi, codenvyPermissions) {
     this.$q = $q;
     this.$resource = $resource;
+    this.$cookies = $cookies;
     this.imsLicenseApi = imsLicenseApi;
     this.codenvyPermissions = codenvyPermissions;
 
@@ -41,7 +42,7 @@ export class CodenvyUser {
           'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
         }
       },
-      createUser: {method: 'POST', url: '/api/user/create'},
+      createUser: {method: 'POST', url: '/api/user'},
       getUsers: {
         method: 'GET',
         url: '/api/admin/user?maxItems=:maxItems&skipCount=:skipCount',
@@ -53,6 +54,8 @@ export class CodenvyUser {
       },
       removeUserById: {method: 'DELETE', url: '/api/user/:userId'}
     });
+
+    this.logoutAPI = this.$resource('/api/auth/logout', {});
 
     // users by ID
     this.useridMap = new Map();
@@ -68,6 +71,9 @@ export class CodenvyUser {
 
     //pages info
     this.pageInfo = {};
+
+    //Current user has to be for sure fetched:
+    this.fetchUser();
   }
 
   /**
@@ -301,6 +307,26 @@ export class CodenvyUser {
       this.imsLicenseApi.fetchLicenseLegality();//fetch license legality
     });
 
+    return promise;
+  }
+
+  /**
+   * Performs current user deletion.
+   * @returns {*} the promise
+   */
+  deleteCurrentUser() {
+    let userId = this.user.id;
+    let promise = this.remoteUserAPI.removeUserById({userId: userId}).$promise;
+    return promise;
+  }
+
+  /**
+   * Performs logout of current user.
+   * @returns {y.ResourceClass.prototype.$promise|*|$promise|T.$promise|S.$promise}
+   */
+  logout() {
+    let data = {token: this.$cookies['session-access-key']};
+    let promise = this.logoutAPI.save(data).$promise;
     return promise;
   }
 

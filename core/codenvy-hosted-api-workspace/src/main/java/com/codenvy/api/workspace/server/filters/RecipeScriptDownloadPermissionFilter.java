@@ -21,7 +21,7 @@ import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.subject.Subject;
 import org.eclipse.che.everrest.CheMethodInvokerFilter;
 import org.everrest.core.Filter;
-import org.everrest.core.resource.GenericMethodResource;
+import org.everrest.core.resource.GenericResourceMethod;
 
 import javax.inject.Inject;
 import javax.ws.rs.Path;
@@ -41,7 +41,7 @@ public class RecipeScriptDownloadPermissionFilter extends CheMethodInvokerFilter
     private MachineManager machineManager;
 
     @Override
-    protected void filter(GenericMethodResource genericMethodResource, Object[] arguments) throws ApiException {
+    protected void filter(GenericResourceMethod genericMethodResource, Object[] arguments) throws ApiException {
 
             final String methodName = genericMethodResource.getMethod().getName();
 

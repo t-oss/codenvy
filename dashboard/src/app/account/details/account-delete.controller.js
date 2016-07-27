@@ -25,12 +25,30 @@ export class AccountDeleteCtrl {
    * Default constructor that is using resource injection
    * @ngInject for Dependency injection
    */
-  constructor($window) {
+  constructor($window, $mdDialog, codenvyUser, cheNotification) {
     this.$window = $window;
+    this.$mdDialog = $mdDialog;
+    this.codenvyUser = codenvyUser;
+    this.cheNotification = cheNotification;
   }
 
-  prepareEmail() {
-    this.$window.location.href = 'mailto:cancellation@codenvy.com?subject=' + encodeURIComponent('Account Deletion Request');
+  deleteAccount() {
+    let confirm = this.$mdDialog.confirm()
+      .title('Delete Account')
+      .content('Account deletion cannot be undone. Please confirm you want to delete your account.')
+      .ariaLabel('Remove account')
+      .ok('Delete it!')
+      .cancel('Cancel')
+      .clickOutsideToClose(true)
+      .targetEvent(event);
+    this.$mdDialog.show(confirm).then(() => {
+      this.codenvyUser.deleteCurrentUser().then(() => {
+        this.codenvyUser.logout().then(() => {
+          this.$window.location = '/#';
+        });
+      }, (error) => {
+        this.cheNotification.showError(error.data.message ? error.data.message : 'Account deletion failed.');
+      });
+    });
   }
-
 }

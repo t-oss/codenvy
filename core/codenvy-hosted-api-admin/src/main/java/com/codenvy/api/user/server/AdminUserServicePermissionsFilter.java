@@ -21,7 +21,7 @@ import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.everrest.CheMethodInvokerFilter;
 import org.everrest.core.Filter;
-import org.everrest.core.resource.GenericMethodResource;
+import org.everrest.core.resource.GenericResourceMethod;
 
 import javax.ws.rs.Path;
 
@@ -36,8 +36,8 @@ import static com.codenvy.api.user.server.UserServicePermissionsFilter.MANAGE_US
 @Path("/admin/user{path:.*}")
 public class AdminUserServicePermissionsFilter extends CheMethodInvokerFilter {
     @Override
-    protected void filter(GenericMethodResource genericMethodResource, Object[] arguments) throws ApiException {
-        if (genericMethodResource.getMethod().getName().equals("getAll")) {
+    protected void filter(GenericResourceMethod GenericResourceMethod, Object[] arguments) throws ApiException {
+        if (GenericResourceMethod.getMethod().getName().equals("getAll")) {
             EnvironmentContext.getCurrent().getSubject().checkPermission(SystemDomain.DOMAIN_ID, null, MANAGE_USERS_ACTION);
         } else {
             //unknown method

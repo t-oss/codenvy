@@ -20,7 +20,7 @@ import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.everrest.CheMethodInvokerFilter;
 import org.everrest.core.Filter;
-import org.everrest.core.resource.GenericMethodResource;
+import org.everrest.core.resource.GenericResourceMethod;
 
 import javax.ws.rs.Path;
 
@@ -35,8 +35,8 @@ import static com.codenvy.api.permission.server.SystemDomain.MANAGE_CODENVY_ACTI
 @Path("/{serviceName:[(license)(im)]}{path:.*}")
 public class InstallationManagerPermissionsFilter extends CheMethodInvokerFilter {
     @Override
-    protected void filter(GenericMethodResource genericMethodResource, Object[] arguments) throws ApiException {
-        if (genericMethodResource.getMethod().getName().equals("isCodenvyUsageLegal")) {
+    protected void filter(GenericResourceMethod GenericResourceMethod, Object[] arguments) throws ApiException {
+        if (GenericResourceMethod.getMethod().getName().equals("isCodenvyUsageLegal")) {
             //public method
             return;
         }

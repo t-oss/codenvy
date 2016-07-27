@@ -23,17 +23,12 @@ printAndLog "TEST CASE: Install and update IM CLI client"
 
 vagrantUp ${SINGLE_NODE_VAGRANT_FILE}
 
-# install IM CLI 4.2.0 and restore default directory and $PATH settings in .bashrc
+# install IM CLI
 installImCliClient ${PREV_IM_CLI_CLIENT_VERSION} --install-directory=codenvy-im
-executeSshCommand "mv ~/codenvy-im/cli ~/codenvy-im/codenvy-cli"
-executeSshCommand "sed -i 's|export CODENVY_IM_BASE=/home/vagrant/.*||' ~/.bashrc &> /dev/null"
-executeSshCommand "sed -i 's|\$CODENVY_IM_BASE/cli/bin|/home/vagrant/codenvy-im/codenvy-cli/bin|' ~/.bashrc &> /dev/null"
 
 # test auto-update at the start of executing some command
 executeIMCommand "version"
-validateExpectedString ".*This.CLI.client.was.out-dated.so.automatic.update.has.being.started\..It.will.be.finished.at.the.next.launch.*"
-# TODO next message is for the version 4.5.0
-# validateExpectedString ".*The.Codenvy.CLI.is.out.of.date\..We.are.doing.an.automatic.update\..Relaunch.*"
+validateExpectedString ".*The.Codenvy.CLI.is.out.of.date\..We.are.doing.an.automatic.update\..Relaunch.*"
 
 executeIMCommand "version"
 validateExpectedString ".*Installation.Manager.CLI.is.being.updated.\.\.\..*"

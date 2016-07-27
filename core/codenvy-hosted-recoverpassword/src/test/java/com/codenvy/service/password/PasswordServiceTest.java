@@ -118,8 +118,9 @@ public class PasswordServiceTest {
 
         doReturn(USER_EMAIL).when(user).getEmail();
         DependencySupplierImpl dependencies = new DependencySupplierImpl();
-        dependencies.addComponent(UserManager.class, userManager);
-        dependencies.addComponent(ProfileManager.class, profileManager);
+        dependencies.addInstance(UserManager.class, userManager);
+        dependencies.addInstance(ProfileManager.class, profileManager);
+
     }
 
     @Test

@@ -64,7 +64,7 @@ public class WorkspaceIdHashLocationFinder {
             "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "fa", "fb", "fc", "fd", "fe", "ff",
             };
 
-    public static File calculateDirPath(File parent, String workspaceId) {
+    public File calculateDirPath(File parent, String workspaceId) {
         final int hash = workspaceId.hashCode();
         final String relPath = segments[hash & 0xff] +
                                File.separatorChar + segments[(hash >> 8) & 0xff] +

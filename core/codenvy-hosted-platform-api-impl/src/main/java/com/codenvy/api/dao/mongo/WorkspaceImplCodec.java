@@ -241,7 +241,7 @@ public class WorkspaceImplCodec implements Codec<WorkspaceImpl> {
 
     private static MachineConfigImpl asMachineConfig(Document document) {
         final MachineConfigImplBuilder builder = MachineConfigImpl.builder()
-                                                                  .setDev(document.getBoolean("isDev"))
+                                                                  .setDev(document.getBoolean("dev"))
                                                                   .setName(document.getString("name"))
                                                                   .setType(document.getString("type"));
         final Document sourceDocument = document.get("source", Document.class);
@@ -272,7 +272,7 @@ public class WorkspaceImplCodec implements Codec<WorkspaceImpl> {
     }
 
     private static Document asDocument(MachineConfigImpl config) {
-        final Document document = new Document().append("isDev", config.isDev())
+        final Document document = new Document().append("dev", config.isDev())
                                                 .append("name", config.getName())
                                                 .append("type", config.getType())
                                                 .append("envVariables", mapAsDocumentsList(config.getEnvVariables()));

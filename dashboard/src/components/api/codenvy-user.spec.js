@@ -207,7 +207,7 @@ describe('CodenvyUser', () => {
       factory.createUser(user.name, user.email, user.password);
 
       // expecting a POST
-      httpBackend.expectPOST('/api/user/create', user);
+      httpBackend.expectPOST('/api/user', user);
 
       // flush command
       httpBackend.flush();

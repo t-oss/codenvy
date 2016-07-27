@@ -88,8 +88,6 @@ public class MachineTokenInterceptorTest {
                 bindInterceptor(subclassesOf(WorkspaceManager.class), names("stopWorkspace"), invocation -> null);
                 bindInterceptor(subclassesOf(WorkspaceManager.class), names("startWorkspace"),
                                 invocation -> workspaceImpl);
-                bindInterceptor(subclassesOf(WorkspaceManager.class), names("recoverWorkspace"),
-                                invocation -> workspaceImpl);
             }
         };
 
@@ -118,17 +116,7 @@ public class MachineTokenInterceptorTest {
         final String workspaceId = "testWs123";
         when(workspaceImpl.getId()).thenReturn(workspaceId);
 
-        workspaceManager.startWorkspace(workspaceId, null, null);
-
-        verify(tokenRegistry).generateToken(eq(USER_ID), eq(workspaceId));
-    }
-
-    @Test
-    public void shouldGenerateTokenOnWorkspaceRecover() throws Throwable {
-        final String workspaceId = "testWs123";
-        when(workspaceImpl.getId()).thenReturn(workspaceId);
-
-        workspaceManager.recoverWorkspace(workspaceId, null, null);
+        workspaceManager.startWorkspace(workspaceId, null, null, null);
 
         verify(tokenRegistry).generateToken(eq(USER_ID), eq(workspaceId));
     }

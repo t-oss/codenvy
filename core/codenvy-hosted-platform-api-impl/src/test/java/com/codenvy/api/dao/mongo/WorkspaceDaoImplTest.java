@@ -371,7 +371,7 @@ public class WorkspaceDaoImplTest {
                 final Document machineDoc = machineConfigs.get(i);
                 final MachineConfigImpl machine = environment.getMachineConfigs().get(i);
 
-                assertEquals(machineDoc.getBoolean("isDev"), Boolean.valueOf(machine.isDev()));
+                assertEquals(machineDoc.getBoolean("dev"), Boolean.valueOf(machine.isDev()));
                 assertEquals(machineDoc.getString("name"), machine.getName(), "Machine name");
                 assertEquals(machineDoc.getString("type"), machine.getType(), "Machine type");
                 if (machine.getSource() != null) {

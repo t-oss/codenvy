@@ -30,7 +30,7 @@ import org.everrest.assured.EverrestJetty;
 import org.everrest.core.Filter;
 import org.everrest.core.GenericContainerRequest;
 import org.everrest.core.RequestFilter;
-import org.everrest.core.resource.GenericMethodResource;
+import org.everrest.core.resource.GenericResourceMethod;
 import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;
 import org.testng.annotations.BeforeMethod;
@@ -50,6 +50,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -85,6 +86,7 @@ public class UserServicePermissionsFilterTest {
     @BeforeMethod
     public void setUp() {
         permissionsFilter = new UserServicePermissionsFilter(true);
+        when(subject.getUserId()).thenReturn("userok");
     }
 
     @Test
@@ -132,10 +134,23 @@ public class UserServicePermissionsFilterTest {
         verify(subject).checkPermission(SystemDomain.DOMAIN_ID, null, MANAGE_USERS_ACTION);
     }
 
+    @Test
+    public void shouldNotCheckPermissionsOnUserSelfRemoving() throws Exception {
+        final Response response = given().auth()
+                                         .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
+                                         .contentType("application/json")
+                                         .when()
+                                         .delete(SECURE_PATH + "/user/userok");
+
+        assertEquals(response.getStatusCode(), 204);
+        verify(service).remove(eq("userok"));
+        verify(subject, never()).checkPermission(SystemDomain.DOMAIN_ID, null, MANAGE_USERS_ACTION);
+    }
+
     @Test(expectedExceptions = ForbiddenException.class,
           expectedExceptionsMessageRegExp = "User is not authorized to perform this operation")
     public void shouldThrowForbiddenExceptionWhenRequestedUnknownMethod() throws Exception {
-        final GenericMethodResource mock = mock(GenericMethodResource.class);
+        final GenericResourceMethod mock = mock(GenericResourceMethod.class);
         Method injectLinks = AdminUserService.class.getMethod("getServiceDescriptor");
         when(mock.getMethod()).thenReturn(injectLinks);
 
@@ -150,7 +165,7 @@ public class UserServicePermissionsFilterTest {
                                     .orElseGet(null);
         assertNotNull(method);
 
-        final GenericMethodResource mock = mock(GenericMethodResource.class);
+        final GenericResourceMethod mock = mock(GenericResourceMethod.class);
         when(mock.getMethod()).thenReturn(method);
 
         permissionsFilter.filter(mock, new Object[] {});

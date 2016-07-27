@@ -20,7 +20,7 @@ import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.everrest.CheMethodInvokerFilter;
 import org.everrest.core.Filter;
-import org.everrest.core.resource.GenericMethodResource;
+import org.everrest.core.resource.GenericResourceMethod;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -43,9 +43,9 @@ public class RemovePermissionsFilter extends CheMethodInvokerFilter {
     private String instance;
 
     @Override
-    public void filter(GenericMethodResource genericMethodResource, Object[] arguments)
+    public void filter(GenericResourceMethod genericResourceMethod, Object[] arguments)
             throws UnauthorizedException, ForbiddenException, ServerException {
-        final String methodName = genericMethodResource.getMethod().getName();
+        final String methodName = genericResourceMethod.getMethod().getName();
         if (methodName.equals("removePermissions")) {
             if (!EnvironmentContext.getCurrent().getSubject().hasPermission(domain, instance, SET_PERMISSIONS)) {
                 throw new ForbiddenException("User can't edit permissions for this instance");

@@ -23,7 +23,7 @@ import org.everrest.assured.EverrestJetty;
 import org.everrest.core.Filter;
 import org.everrest.core.GenericContainerRequest;
 import org.everrest.core.RequestFilter;
-import org.everrest.core.resource.GenericMethodResource;
+import org.everrest.core.resource.GenericResourceMethod;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -99,10 +99,10 @@ public class ActivityPermissionsFilterTest {
     @Test(expectedExceptions = ForbiddenException.class)
     public void shouldThrowExceptionWhenCallingUnlistedMethod() throws Exception {
 
-        GenericMethodResource genericMethodResource = Mockito.mock(GenericMethodResource.class);
-        when(genericMethodResource.getMethod()).thenReturn(this.getClass().getDeclaredMethod("shouldThrowExceptionWhenCallingUnlistedMethod"));
+        GenericResourceMethod genericResourceMethod = Mockito.mock(GenericResourceMethod.class);
+        when(genericResourceMethod.getMethod()).thenReturn(this.getClass().getDeclaredMethod("shouldThrowExceptionWhenCallingUnlistedMethod"));
         Object[] argument = new Object[0];
-        permissionsFilter.filter(genericMethodResource, argument);
+        permissionsFilter.filter(genericResourceMethod, argument);
     }
 
     @Filter

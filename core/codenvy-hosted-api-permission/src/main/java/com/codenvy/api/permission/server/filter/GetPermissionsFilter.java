@@ -24,7 +24,7 @@ import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.everrest.CheMethodInvokerFilter;
 import org.everrest.core.Filter;
-import org.everrest.core.resource.GenericMethodResource;
+import org.everrest.core.resource.GenericResourceMethod;
 
 import javax.inject.Inject;
 import javax.ws.rs.Path;
@@ -49,9 +49,9 @@ public class GetPermissionsFilter extends CheMethodInvokerFilter {
     PermissionManager permissionManager;
 
     @Override
-    public void filter(GenericMethodResource genericMethodResource, Object[] arguments)
+    public void filter(GenericResourceMethod genericResourceMethod, Object[] arguments)
             throws UnauthorizedException, ForbiddenException, ServerException, ConflictException {
-        final String methodName = genericMethodResource.getMethod().getName();
+        final String methodName = genericResourceMethod.getMethod().getName();
         if (methodName.equals("getUsersPermissions")) {
             final String userId = EnvironmentContext.getCurrent().getSubject().getUserId();
             try {

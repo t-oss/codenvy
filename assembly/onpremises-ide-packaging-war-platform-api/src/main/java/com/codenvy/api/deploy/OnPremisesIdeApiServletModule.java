@@ -34,23 +34,6 @@ import static org.apache.catalina.filters.CorsFilter.DEFAULT_ALLOWED_ORIGINS;
 public class OnPremisesIdeApiServletModule extends ServletModule {
     @Override
     protected void configureServlets() {
-        filter("/project/*",
-               "/maven/*",
-               "/ws/*",
-               "/code-assistant-java/*",
-               "/java-name-environment/*",
-               "/debug-java/*",
-               "/async/*",
-               "/git/*",
-               "/svn/*",
-               "/invite/*",
-               "/ssh-keys/*",
-               "/appengine/*",
-               "/gae-validator/*",
-               "/gae-parameters/*")
-                .through(com.codenvy.service.http.WorkspaceIdEnvironmentInitializationFilter.class);
-        filterRegex("^/workspace/(?!config$|runtime$|.*:.*$).+")
-                .through(com.codenvy.service.http.WorkspaceIdEnvironmentInitializationFilter.class);
         filter("/factory/*",
                "/activity/*",
                "/workspace/*",

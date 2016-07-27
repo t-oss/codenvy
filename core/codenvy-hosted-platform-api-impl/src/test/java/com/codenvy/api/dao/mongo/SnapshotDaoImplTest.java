@@ -253,7 +253,7 @@ public class SnapshotDaoImplTest {
         assertEquals(result.getString("envName"), snapshot.getEnvName(), "Environment name");
         assertEquals(result.getString("type"), snapshot.getType(), "Snapshot type");
         assertEquals(result.getString("namespace"), snapshot.getNamespace(), "Snapshot owner");
-        assertEquals(result.getBoolean("isDev").booleanValue(), snapshot.isDev(), "Snapshot isdev");
+        assertEquals(result.getBoolean("dev").booleanValue(), snapshot.isDev(), "Snapshot isdev");
         assertEquals(result.getLong("creationDate").longValue(), snapshot.getCreationDate(), "Snapshot creation date");
         assertEquals(result.getString("type"), snapshot.getType(), "Snapshot defaultEnvName");
 

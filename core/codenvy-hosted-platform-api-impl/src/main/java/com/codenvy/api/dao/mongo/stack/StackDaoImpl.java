@@ -133,7 +133,7 @@ import static java.util.Objects.requireNonNull;
  *              },
  *              "machineConfigs" : [
  *                  {
- *                      "isDev" : true,
+ *                      "dev" : true,
  *                      "name" : "dev",
  *                      "type" : "machine-type",
  *                      "limits" : {

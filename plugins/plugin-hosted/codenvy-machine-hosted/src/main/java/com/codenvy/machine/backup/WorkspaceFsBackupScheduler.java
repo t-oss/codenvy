@@ -22,6 +22,7 @@ import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.machine.MachineStatus;
 import org.eclipse.che.api.machine.server.MachineManager;
 import org.eclipse.che.api.machine.server.model.impl.MachineImpl;
+import org.eclipse.che.api.machine.server.spi.Instance;
 import org.eclipse.che.api.machine.server.spi.InstanceNode;
 import org.eclipse.che.commons.schedule.ScheduleRate;
 import org.slf4j.Logger;
@@ -33,6 +34,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -50,8 +52,9 @@ public class WorkspaceFsBackupScheduler {
     private final MachineManager       machineManager;
     private final MachineBackupManager backupManager;
 
-    private final Map<String, Long> lastMachineSynchronizationTime;
-    private final ExecutorService   executor;
+    private final Map<String, Long>             lastMachineSynchronizationTime;
+    private final ExecutorService               executor;
+    private final ConcurrentMap<String, String> devMachinesBackupsInProgress;
 
     @Inject
     public WorkspaceFsBackupScheduler(MachineManager machineManager,
@@ -63,6 +66,7 @@ public class WorkspaceFsBackupScheduler {
 
         this.executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("MachineFsBackupScheduler-%s").build());
         this.lastMachineSynchronizationTime = new ConcurrentHashMap<>();
+        this.devMachinesBackupsInProgress = new ConcurrentHashMap<>();
     }
 
     @ScheduleRate(initialDelay = 1, period = 1, unit = TimeUnit.MINUTES)
@@ -76,12 +80,17 @@ public class WorkspaceFsBackupScheduler {
                     isTimeToBackup(machineId)) {
 
                     executor.execute(() -> {
-                        try {
-                            backupWorkspaceInMachine(machine);
+                        // don't start new backup if previous one is in progress
+                        if (devMachinesBackupsInProgress.putIfAbsent(machineId, machineId) == null) {
+                            try {
+                                backupWorkspaceInMachine(machine);
 
-                            lastMachineSynchronizationTime.put(machine.getId(), System.currentTimeMillis());
-                        } catch (ServerException | NotFoundException e) {
-                            LOG.error(e.getLocalizedMessage(), e);
+                                lastMachineSynchronizationTime.put(machine.getId(), System.currentTimeMillis());
+                            } catch (NotFoundException | ServerException e) {
+                                LOG.error(e.getLocalizedMessage(), e);
+                            } finally {
+                                devMachinesBackupsInProgress.remove(machineId);
+                            }
                         }
                     });
                 }
@@ -93,7 +102,12 @@ public class WorkspaceFsBackupScheduler {
 
     @VisibleForTesting
     void backupWorkspaceInMachine(MachineImpl machine) throws NotFoundException, ServerException {
-        final InstanceNode node = machineManager.getInstance(machine.getId()).getNode();
+        final Instance machineInstance = machineManager.getInstance(machine.getId());
+        // for case if this task is in the executor queue and user stopped this machine before execution
+        if (machineInstance.getStatus() != MachineStatus.RUNNING) {
+            return;
+        }
+        final InstanceNode node = machineInstance.getNode();
 
         backupManager.backupWorkspace(machine.getWorkspaceId(), node.getProjectsFolder(), node.getHost());
     }
