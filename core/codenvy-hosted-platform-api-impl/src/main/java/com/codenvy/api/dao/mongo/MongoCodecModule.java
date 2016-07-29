@@ -15,8 +15,6 @@
 package com.codenvy.api.dao.mongo;
 
 import com.codenvy.api.dao.mongo.recipe.RecipeImplCodec;
-import com.codenvy.api.dao.mongo.ssh.UsersSshPair;
-import com.codenvy.api.dao.mongo.ssh.UsersSshPairCodec;
 import com.codenvy.api.dao.mongo.stack.StackImplCodec;
 import com.codenvy.api.workspace.server.model.WorkerImpl;
 import com.google.inject.AbstractModule;
@@ -26,7 +24,6 @@ import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.eclipse.che.api.machine.server.model.impl.AclEntryImpl;
-import org.eclipse.che.api.machine.server.model.impl.SnapshotImpl;
 import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
 import org.eclipse.che.api.workspace.server.model.impl.WorkspaceImpl;
 import org.eclipse.che.api.workspace.server.model.impl.stack.StackImpl;
@@ -55,10 +52,6 @@ public class MongoCodecModule extends AbstractModule {
             public <T> Codec<T> get(Class<T> clazz, CodecRegistry registry) {
                 if (clazz == WorkspaceImpl.class) {
                     return (Codec<T>)new WorkspaceImplCodec(registry);
-                } else if (clazz == SnapshotImpl.class) {
-                    return (Codec<T>)new SnapshotImplCodec(registry);
-                } else if (clazz == UsersSshPair.class) {
-                    return (Codec<T>)new UsersSshPairCodec(registry);
                 } else if (clazz == StackImpl.class) {
                     return (Codec<T>)new StackImplCodec(registry);
                 } else if (clazz == WorkerImpl.class) {

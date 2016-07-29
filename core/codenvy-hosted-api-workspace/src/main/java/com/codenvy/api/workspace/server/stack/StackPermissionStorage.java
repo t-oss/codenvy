@@ -20,6 +20,7 @@ import com.codenvy.api.permission.server.dao.PermissionsStorage;
 import com.codenvy.api.permission.shared.Permissions;
 import com.google.common.collect.ImmutableSet;
 
+import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.acl.AclEntry;
@@ -64,7 +65,11 @@ public class StackPermissionStorage implements PermissionsStorage {
         stack.getAcl().removeIf(aclEntry -> aclEntry.getUser().equals(permissions.getUser()));
         stack.getAcl().add(new AclEntryImpl(permissions.getUser(),
                                             permissions.getActions()));
-        stackDao.update(stack);
+        try {
+            stackDao.update(stack);
+        } catch (ConflictException ex) {
+            throw new ServerException(ex.getMessage(), ex);
+        }
     }
 
     @Override
@@ -111,7 +116,11 @@ public class StackPermissionStorage implements PermissionsStorage {
     public void remove(String user, String domain, String instance) throws NotFoundException, ServerException {
         final StackImpl recipe = stackDao.getById(instance);
         recipe.getAcl().removeIf(aclEntry -> aclEntry.getUser().equals(user));
-        stackDao.update(recipe);
+        try {
+            stackDao.update(recipe);
+        } catch (ConflictException ex) {
+            throw new ServerException(ex.getMessage(), ex);
+        }
     }
 
     private List<PermissionsImpl> toPermissions(String stack, List<AclEntryImpl> acls) {

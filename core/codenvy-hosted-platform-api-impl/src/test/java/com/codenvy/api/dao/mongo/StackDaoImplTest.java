@@ -220,7 +220,7 @@ public class StackDaoImplTest extends BaseDaoTest {
         stackDao.update(null);
     }
 
-    @Test(expectedExceptions = NullPointerException.class, expectedExceptionsMessageRegExp = "Required non-null stack id")
+    @Test(expectedExceptions = NullPointerException.class, expectedExceptionsMessageRegExp = "Stack id required")
     public void shouldThrowNullPointerExceptionWhenIdStackForUpdateIsNull() throws NotFoundException, ServerException {
         stackDao.update(StackImpl.builder().build());
     }

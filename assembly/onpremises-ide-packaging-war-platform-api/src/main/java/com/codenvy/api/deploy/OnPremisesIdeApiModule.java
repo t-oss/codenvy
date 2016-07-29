@@ -18,7 +18,6 @@ import com.codenvy.api.AdminApiModule;
 import com.codenvy.api.dao.authentication.PasswordEncryptor;
 import com.codenvy.api.dao.authentication.SSHAPasswordEncryptor;
 import com.codenvy.api.dao.ldap.AdminUserDaoImpl;
-import com.codenvy.api.dao.mongo.FactoryDaoImpl;
 import com.codenvy.api.dao.ldap.LdapProfileDao;
 import com.codenvy.api.dao.ldap.LdapUserDao;
 import com.codenvy.api.dao.mongo.MachineMongoDatabaseProvider;
@@ -62,17 +61,15 @@ import org.eclipse.che.api.factory.server.FactoryEditValidator;
 import org.eclipse.che.api.factory.server.FactoryParametersResolver;
 import org.eclipse.che.api.factory.server.FactoryService;
 import org.eclipse.che.api.machine.server.MachineServiceLinksInjector;
-import org.eclipse.che.api.machine.server.spi.RecipeDao;
 import org.eclipse.che.api.machine.server.recipe.RecipeLoader;
 import org.eclipse.che.api.machine.server.recipe.RecipeService;
 import org.eclipse.che.api.machine.server.recipe.providers.RecipeProvider;
-import org.eclipse.che.api.machine.server.spi.SnapshotDao;
+import org.eclipse.che.api.machine.server.spi.RecipeDao;
 import org.eclipse.che.api.machine.server.wsagent.WsAgentLauncher;
 import org.eclipse.che.api.project.server.handlers.ProjectHandler;
 import org.eclipse.che.api.project.server.template.ProjectTemplateDescriptionLoader;
 import org.eclipse.che.api.project.server.template.ProjectTemplateRegistry;
 import org.eclipse.che.api.project.server.template.ProjectTemplateService;
-import org.eclipse.che.api.ssh.server.spi.SshDao;
 import org.eclipse.che.api.user.server.PreferencesService;
 import org.eclipse.che.api.user.server.ProfileService;
 import org.eclipse.che.api.user.server.TokenValidator;
@@ -158,7 +155,6 @@ public class OnPremisesIdeApiModule extends AbstractModule {
                                  .toProvider(FactoryMongoDatabaseProvider.class);
 
 
-        bind(org.eclipse.che.api.factory.server.spi.FactoryDao.class).to(FactoryDaoImpl.class);
         bind(FactoryAcceptValidator.class).to(org.eclipse.che.api.factory.server.impl.FactoryAcceptValidatorImpl.class);
         bind(FactoryCreateValidator.class).to(org.eclipse.che.api.factory.server.impl.FactoryCreateValidatorImpl.class);
         bind(FactoryEditValidator.class).to(org.eclipse.che.api.factory.server.impl.FactoryEditValidatorImpl.class);
@@ -183,7 +179,6 @@ public class OnPremisesIdeApiModule extends AbstractModule {
         bind(ProfileDao.class).to(LdapProfileDao.class);
         bind(AdminUserDao.class).to(AdminUserDaoImpl.class);
         bind(PreferenceDao.class).to(com.codenvy.api.dao.mongo.PreferenceDaoImpl.class);
-        bind(SshDao.class).to(com.codenvy.api.dao.mongo.ssh.SshDaoImpl.class);
         bind(WorkerDao.class).to(com.codenvy.api.dao.mongo.WorkerDaoImpl.class);
         bind(org.eclipse.che.api.auth.AuthenticationDao.class).to(com.codenvy.api.dao.authentication.AuthenticationDaoImpl.class);
         bind(RecipeDao.class).to(com.codenvy.api.dao.mongo.recipe.RecipeDaoImpl.class);
@@ -287,7 +282,6 @@ public class OnPremisesIdeApiModule extends AbstractModule {
         install(new InstrumentationModule());
         bind(org.eclipse.che.api.ssh.server.SshService.class);
         bind(org.eclipse.che.api.machine.server.MachineService.class);
-        bind(SnapshotDao.class).to(com.codenvy.api.dao.mongo.SnapshotDaoImpl.class);
         bind(com.mongodb.DB.class).annotatedWith(Names.named("mongo.db.machine"))
                                   .toProvider(com.codenvy.api.dao.mongo.MachineMongoDBProvider.class);
 
