@@ -39,6 +39,12 @@ public class LimitExceededException extends ServerException {
         super(DtoFactory.newDto(ExtendedError.class)
                         .withMessage(message)
                         .withAttributes(attributes)
-                        .withErrorCode(ErrorCodes.LIMIT_EXCEEDED));
+                        .withErrorCode(ErrorCodes.USER_RAM_LIMIT_EXCEEDED));
+    }
+
+    public LimitExceededException(String message, int ErrorCode) {
+        super(DtoFactory.newDto(ExtendedError.class)
+                        .withMessage(message)
+                        .withErrorCode(ErrorCode));
     }
 }

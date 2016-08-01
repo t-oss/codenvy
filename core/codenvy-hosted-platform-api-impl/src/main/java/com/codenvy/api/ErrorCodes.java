@@ -23,7 +23,8 @@ package com.codenvy.api;
  */
 public final class ErrorCodes {
 
-    public static final int LIMIT_EXCEEDED = 10000;
+    public static final int USER_RAM_LIMIT_EXCEEDED   = 10000;
+    public static final int SYSTEM_RAM_LIMIT_EXCEEDED = 10001;
 
     private ErrorCodes() {}
 }

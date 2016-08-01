@@ -19,12 +19,13 @@ import com.google.common.collect.ImmutableList;
 
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.model.user.User;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.user.server.UserManager;
 import org.eclipse.che.api.user.server.model.impl.UserImpl;
 import org.eclipse.che.api.workspace.server.WorkspaceManager;
 import org.eclipse.che.api.workspace.server.model.impl.WorkspaceImpl;
+import org.eclipse.che.plugin.docker.client.DockerConnector;
+import org.eclipse.che.plugin.docker.client.json.SystemInfo;
 import org.mockito.ArgumentCaptor;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -43,6 +44,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for {@link LimitsCheckingWorkspaceManager}.
@@ -55,9 +57,14 @@ public class LimitsCheckingWorkspaceManagerTest {
           expectedExceptionsMessageRegExp = "The maximum workspaces allowed per user is set to '2' and you are currently at that limit. " +
                                             "This value is set by your admin with the 'limits.user.workspaces.count' property")
     public void shouldNotBeAbleToCreateNewWorkspaceIfLimitIsExceeded() throws Exception {
+        final DockerConnector dockerConnector= mock(DockerConnector.class);
+        final SystemInfo systemInfo = mock(SystemInfo.class);
+        when(dockerConnector.getSystemInfo()).thenReturn(systemInfo);
+        when(systemInfo.ramUsage()).thenReturn("0 B/ 3 GiB");
         final LimitsCheckingWorkspaceManager manager = spy(new LimitsCheckingWorkspaceManager(2, // <- workspaces max count
                                                                                               "2gb",
                                                                                               "1gb",
+                                                                                              dockerConnector,
                                                                                               null,
                                                                                               null,
                                                                                               null,
@@ -77,6 +84,7 @@ public class LimitsCheckingWorkspaceManagerTest {
         final LimitsCheckingWorkspaceManager manager = spy(new LimitsCheckingWorkspaceManager(-1, // <- workspaces max count
                                                                                               "2gb",
                                                                                               "1gb",
+                                                                                              null,
                                                                                               null,
                                                                                               null,
                                                                                               null,
@@ -106,6 +114,7 @@ public class LimitsCheckingWorkspaceManagerTest {
                                                                                               null,
                                                                                               null,
                                                                                               null,
+                                                                                              null,
                                                                                               false,
                                                                                               false));
         doReturn(emptyList()).when(manager).getByNamespace(anyString()); // <- currently used 0
@@ -120,9 +129,14 @@ public class LimitsCheckingWorkspaceManagerTest {
             expectedExceptionsMessageRegExp = "There are 1 running workspaces consuming 2GB RAM. Your current RAM " +
                                               "limit is 2GB. This workspaces requires an additional 1GB. You can stop other workspaces to free resources.")
     public void shouldNotBeAbleToStartNewWorkspaceIfRamLimitIsExceeded() throws Exception {
+        final DockerConnector dockerConnector = mock(DockerConnector.class);
+        final SystemInfo systemInfo = mock(SystemInfo.class);
+        when(dockerConnector.getSystemInfo()).thenReturn(systemInfo);
+        when(systemInfo.ramUsage()).thenReturn("0 B/ 3 GiB");
         final LimitsCheckingWorkspaceManager manager = spy(new LimitsCheckingWorkspaceManager(2,
                                                                                               "2gb", // <- workspaces ram limit
                                                                                               "1gb",
+                                                                                              dockerConnector,
                                                                                               null,
                                                                                               null,
                                                                                               null,
@@ -132,14 +146,19 @@ public class LimitsCheckingWorkspaceManagerTest {
                                                                                               false));
         doReturn(singletonList(createRuntime("1gb", "1gb"))).when(manager).getByNamespace(anyString()); // <- currently running 2gb
 
-        manager.checkRamAndPropagateStart(createConfig("1gb"), null, "user123", null);
+        manager.checkRamAndPropagateStart(null, createConfig("1gb"), null, "user123", null);
     }
 
     @Test
     public void shouldSkipWorkspacesRamCheckIfItIsSetToMinusOne() throws Exception {
+        final DockerConnector dockerConnector = mock(DockerConnector.class);
+        final SystemInfo systemInfo = mock(SystemInfo.class);
+        when(dockerConnector.getSystemInfo()).thenReturn(systemInfo);
+        when(systemInfo.ramUsage()).thenReturn("0 B/ 3 GiB");
         final LimitsCheckingWorkspaceManager manager = spy(new LimitsCheckingWorkspaceManager(2,
                                                                                               "-1", // <- workspaces ram limit
                                                                                               "1gb",
+                                                                                              dockerConnector,
                                                                                               null,
                                                                                               null,
                                                                                               null,
@@ -150,7 +169,7 @@ public class LimitsCheckingWorkspaceManagerTest {
         doReturn(singletonList(createRuntime("1gb", "1gb"))).when(manager).getByNamespace(anyString()); // <- currently running 2gb
         final WorkspaceCallback callback = mock(WorkspaceCallback.class);
 
-        manager.checkRamAndPropagateStart(createConfig("1gb"), null, "user123", callback);
+        manager.checkRamAndPropagateStart(null, createConfig("1gb"), null, "user123", callback);
 
         verify(callback).call();
         verify(manager, never()).getWorkspaces(any());
@@ -159,9 +178,14 @@ public class LimitsCheckingWorkspaceManagerTest {
 
     @Test
     public void shouldCallStartCallbackIfEverythingIsOkayWithLimits() throws Exception {
+        final DockerConnector dockerConnector = mock(DockerConnector.class);
+        final SystemInfo systemInfo = mock(SystemInfo.class);
+        when(dockerConnector.getSystemInfo()).thenReturn(systemInfo);
+        when(systemInfo.ramUsage()).thenReturn("0 B/ 3 GiB");
         final LimitsCheckingWorkspaceManager manager = spy(new LimitsCheckingWorkspaceManager(2,
                                                                                               "3gb", // <- workspaces ram limit
                                                                                               "1gb",
+                                                                                              dockerConnector,
                                                                                               null,
                                                                                               null,
                                                                                               null,
@@ -172,19 +196,43 @@ public class LimitsCheckingWorkspaceManagerTest {
         doReturn(singletonList(createRuntime("1gb", "1gb"))).when(manager).getByNamespace(anyString()); // <- currently running 2gb
 
         final WorkspaceCallback callback = mock(WorkspaceCallback.class);
-        manager.checkRamAndPropagateStart(createConfig("1gb"), null, "user123", callback);
+        manager.checkRamAndPropagateStart(null, createConfig("1gb"), null, "user123", callback);
 
         verify(callback).call();
     }
 
     @Test(expectedExceptions = LimitExceededException.class,
+          expectedExceptionsMessageRegExp = "Low Resources. System's resources are not allowing any workspaces to be started.")
+    public void shouldNotBeAbleToCreateWorkspaceWhichExceedsSystemRamLimit() throws Exception {
+        final DockerConnector dockerConnector = mock(DockerConnector.class);
+        final SystemInfo systemInfo = mock(SystemInfo.class);
+        when(dockerConnector.getSystemInfo()).thenReturn(systemInfo);
+        when(systemInfo.ramUsage()).thenReturn("2.9 GiB/ 3 GiB");
+        final LimitsCheckingWorkspaceManager manager = spy(new LimitsCheckingWorkspaceManager(2,
+                                                                                              "3gb",
+                                                                                              "2gb", // <- workspaces env ram limit
+                                                                                              dockerConnector,
+                                                                                              null,
+                                                                                              null,
+                                                                                              null,
+                                                                                              null,
+                                                                                              null,
+                                                                                              false,
+                                                                                              false));
+
+        final WorkspaceCallback callback = mock(WorkspaceCallback.class);
+        manager.checkRamAndPropagateStart(null, createConfig("1gb"), null, "user123", callback);
+    }
+
+    @Test(expectedExceptions = LimitExceededException.class,
           expectedExceptionsMessageRegExp = "The maximum RAM per workspace is set to '2048mb' and you requested '3072mb'. " +
                                             "This value is set by your admin with the 'limits.workspace.env.ram' property")
-    public void shouldNotBeAbleToCreateWorkspaceWhichExceedsRamLimit() throws Exception {
+    public void shouldNotBeAbleToCreateWorkspaceWhichExceedsUserRamLimit() throws Exception {
         final WorkspaceConfig config = createConfig("3gb");
         final LimitsCheckingWorkspaceManager manager = spy(new LimitsCheckingWorkspaceManager(2,
                                                                                               "3gb",
                                                                                               "2gb", // <- workspaces env ram limit
+                                                                                              null,
                                                                                               null,
                                                                                               null,
                                                                                               null,
@@ -202,6 +250,7 @@ public class LimitsCheckingWorkspaceManagerTest {
         final LimitsCheckingWorkspaceManager manager = spy(new LimitsCheckingWorkspaceManager(2,
                                                                                               "3gb",
                                                                                               "-1", // <- workspaces env ram limit
+                                                                                              null,
                                                                                               null,
                                                                                               null,
                                                                                               null,
@@ -227,6 +276,7 @@ public class LimitsCheckingWorkspaceManagerTest {
                                                                                               null,
                                                                                               null,
                                                                                               null,
+                                                                                              null,
                                                                                               false,
                                                                                               false));
         manager.checkMaxEnvironmentRam(config);
@@ -244,6 +294,7 @@ public class LimitsCheckingWorkspaceManagerTest {
                                                                                               null,
                                                                                               null,
                                                                                               null,
+                                                                                              null,
                                                                                               false,
                                                                                               false));
         manager.checkMaxEnvironmentRam(config);
@@ -251,6 +302,10 @@ public class LimitsCheckingWorkspaceManagerTest {
 
     @Test
     public void shouldCheckRamLimitOfCreatorUserInsteadOfCurrent() throws Exception {
+        final DockerConnector dockerConnector = mock(DockerConnector.class);
+        final SystemInfo systemInfo = mock(SystemInfo.class);
+        when(dockerConnector.getSystemInfo()).thenReturn(systemInfo);
+        when(systemInfo.ramUsage()).thenReturn("0 B/ 3 GiB");
         final UserManager userManager = mock(UserManager.class);
         final WorkspaceImpl ws = createRuntime("1gb", "1gb");
         final UserImpl user = new UserImpl("id", "email", ws.getNamespace());
@@ -260,6 +315,7 @@ public class LimitsCheckingWorkspaceManagerTest {
         final LimitsCheckingWorkspaceManager manager = spy(new LimitsCheckingWorkspaceManager(2,
                                                                                               "2gb", // <- workspaces ram limit
                                                                                               "1gb",
+                                                                                              dockerConnector,
                                                                                               null,
                                                                                               null,
                                                                                               null,
@@ -269,12 +325,12 @@ public class LimitsCheckingWorkspaceManagerTest {
                                                                                               false));
 
         doReturn(ws).when(manager).getWorkspace(anyString()); // <- currently running 2gb
-        doReturn(ws).when(manager).checkRamAndPropagateStart(anyObject(), anyString(), anyString(), anyObject());
+        doReturn(ws).when(manager).checkRamAndPropagateStart(anyObject(), anyObject(), anyString(), anyString(), anyObject());
 
         manager.startWorkspace(ws.getId(), "envName", "accountId", true);
 
         ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
-        verify(manager).checkRamAndPropagateStart(anyObject(), anyString(), argument.capture(), anyObject());
+        verify(manager).checkRamAndPropagateStart(anyObject(), anyObject(), anyString(), argument.capture(), anyObject());
         verify((WorkspaceManager)manager).startWorkspace(ws.getId(), "envName", "accountId", true);
         Assert.assertEquals(argument.getValue(), ws.getNamespace());
     }
@@ -291,6 +347,7 @@ public class LimitsCheckingWorkspaceManagerTest {
         final LimitsCheckingWorkspaceManager manager = spy(new LimitsCheckingWorkspaceManager(2,
                                                                                               "2gb", // <- workspaces ram limit
                                                                                               "1gb",
+                                                                                              null,
                                                                                               null,
                                                                                               null,
                                                                                               null,

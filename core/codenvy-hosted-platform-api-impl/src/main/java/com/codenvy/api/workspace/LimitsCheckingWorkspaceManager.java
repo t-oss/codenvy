@@ -14,9 +14,11 @@
  */
 package com.codenvy.api.workspace;
 
+import com.codenvy.api.ErrorCodes;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Striped;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
@@ -33,20 +35,33 @@ import org.eclipse.che.api.workspace.server.WorkspaceManager;
 import org.eclipse.che.api.workspace.server.WorkspaceRuntimes;
 import org.eclipse.che.api.workspace.server.model.impl.WorkspaceImpl;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
+import org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.commons.lang.Size;
+import org.eclipse.che.plugin.docker.client.DockerConnector;
+import org.everrest.core.impl.provider.json.JsonUtils;
+import org.everrest.websockets.WSConnectionContext;
+import org.everrest.websockets.message.ChannelBroadcastMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.locks.Lock;
 
 import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPED;
+import static org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent.EventType.ERROR;
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
  * Manager that checks limits and delegates all its operations to the {@link WorkspaceManager}.
@@ -57,20 +72,32 @@ import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPED;
 @Singleton
 public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
 
-    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#0.#");
-    private static final Striped<Lock> CREATE_LOCKS   = Striped.lazyWeakLock(100);
-    private static final Striped<Lock> START_LOCKS    = Striped.lazyWeakLock(100);
+    private static final Logger LOG = LoggerFactory.getLogger(LimitsCheckingWorkspaceManager.class);
 
-    private final UserManager userManager;
+    private static final DecimalFormat DECIMAL_FORMAT                          = new DecimalFormat("#0.#");
+    private static final Striped<Lock> CREATE_LOCKS                            = Striped.lazyWeakLock(100);
+    private static final Striped<Lock> START_LOCKS                             = Striped.lazyWeakLock(100);
+    private static final String        SYSTEM_RAM_LIMIT_EXCEEDED_ERROR_MESSAGE = "Low Resources. System's resources are not allowing" +
+                                                                                 " any workspaces to be started.";
+    private static final String        USER_RAM_LIMIT_EXCEEDED_ERROR_MESSAGE   = "There are %d running workspaces consuming " +
+                                                                                 "%sGB RAM. Your current RAM limit is %sGB. " +
+                                                                                 "This workspaces requires an additional %sGB. " +
+                                                                                 "You can stop other workspaces to free resources.";
 
-    private final int  workspacesPerUser;
-    private final long maxRamPerEnv;
-    private final long ramPerUser;
+    private final DockerConnector dockerConnector;
+    private final EventService    eventService;
+    private final UserManager     userManager;
+    private final int             workspacesPerUser;
+    private final long            maxRamPerEnv;
+    private final long            ramPerUser;
+
+    private ScheduledExecutorService executor;
 
     @Inject
     public LimitsCheckingWorkspaceManager(@Named("limits.user.workspaces.count") int workspacesPerUser,
                                           @Named("limits.user.workspaces.ram") String ramPerUser,
                                           @Named("limits.workspace.env.ram") String maxRamPerEnv,
+                                          DockerConnector dockerConnector,
                                           WorkspaceDao workspaceDao,
                                           WorkspaceRuntimes runtimes,
                                           EventService eventService,
@@ -79,6 +106,8 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
                                           @Named("workspace.runtime.auto_snapshot") boolean defaultAutoSnapshot,
                                           @Named("workspace.runtime.auto_restore") boolean defaultAutoRestore) {
         super(workspaceDao, runtimes, eventService, machineManager, defaultAutoSnapshot, defaultAutoRestore);
+        this.dockerConnector = dockerConnector;
+        this.eventService = eventService;
         this.userManager = userManager;
         this.workspacesPerUser = workspacesPerUser;
         this.maxRamPerEnv = "-1".equals(maxRamPerEnv) ? -1 : Size.parseSizeToMegabytes(maxRamPerEnv);
@@ -122,7 +151,8 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
                 "Unable to start workspace %s, because its namespace owner is " +
                 "unavailable and it is impossible to check resources consumption.",
                 workspaceId));
-        return checkRamAndPropagateStart(workspace.getConfig(),
+        return checkRamAndPropagateStart(workspaceId,
+                                         workspace.getConfig(),
                                          envName,
                                          workspace.getNamespace(),
                                          () -> super.startWorkspace(workspaceId, envName, accountId, restore));
@@ -136,7 +166,8 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
                                                                            NotFoundException,
                                                                            ConflictException {
         checkMaxEnvironmentRam(config);
-        return checkRamAndPropagateStart(config,
+        return checkRamAndPropagateStart(null,
+                                         config,
                                          config.getDefaultEnv(),
                                          namespace,
                                          () -> super.startWorkspace(config, namespace, isTemporary, accountId));
@@ -161,17 +192,42 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
     }
 
     /**
-     * Checks that starting workspace won't exceed user's RAM limit.
-     * Throws {@link BadRequestException} in the case of RAM constraint violation, otherwise
+     * Checks that whole system ram limit is not exceeded, and starting workspace won't exceed user's RAM limit.
+     * Throws {@link LimitExceededException} in the case of RAM constraint violation, otherwise
      * performs {@code callback.call()} and returns its result.
      */
     @VisibleForTesting
-    <T extends WorkspaceImpl> T checkRamAndPropagateStart(WorkspaceConfig config,
+    <T extends WorkspaceImpl> T checkRamAndPropagateStart(@Nullable String workspaceId,
+                                                          WorkspaceConfig config,
                                                           String envName,
                                                           String namespace,
                                                           WorkspaceCallback<T> callback) throws ServerException,
-                                                                                                NotFoundException,
-                                                                                                ConflictException {
+                                                                                                NotFoundException, ConflictException {
+        // check system's RAM
+        if (systemRamLimitExceeded()) {
+            if (executor == null || executor.isShutdown()) {
+                sendMessage("system_ram_limit_exceeded");
+
+                executor = Executors.newSingleThreadScheduledExecutor(
+                        new ThreadFactoryBuilder().setNameFormat("RAM_Limit_check_scheduler").setDaemon(true).build());
+                executor.scheduleAtFixedRate(() -> {
+                    if (!systemRamLimitExceeded()) {
+                        sendMessage("system_ram_limit_not_exceeded");
+                        executor.shutdown();
+                    }
+                }, 0, 10, SECONDS);
+            }
+
+            if (workspaceId != null) {
+                eventService.publish(newDto(WorkspaceStatusEvent.class)
+                                             .withEventType(ERROR)
+                                             .withWorkspaceId(workspaceId)
+                                             .withError(SYSTEM_RAM_LIMIT_EXCEEDED_ERROR_MESSAGE));
+            }
+            throw new LimitExceededException(SYSTEM_RAM_LIMIT_EXCEEDED_ERROR_MESSAGE, ErrorCodes.SYSTEM_RAM_LIMIT_EXCEEDED);
+        }
+
+        // check user's RAM
         if (ramPerUser < 0) {
             return callback.call();
         }
@@ -200,10 +256,17 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
                 final String usedRamGb = DECIMAL_FORMAT.format(currentlyUsedRamMB / 1024D);
                 final String limitRamGb = DECIMAL_FORMAT.format(ramPerUser / 1024D);
                 final String requiredRamGb = DECIMAL_FORMAT.format(allocating / 1024D);
-                throw new LimitExceededException(format("There are %d running workspaces consuming" +
-                                                        " %sGB RAM. Your current RAM limit is %sGB." +
-                                                        " This workspaces requires an additional %sGB." +
-                                                        " You can stop other workspaces to free resources.",
+                if (workspaceId != null) {
+                    eventService.publish(newDto(WorkspaceStatusEvent.class)
+                                                 .withEventType(ERROR)
+                                                 .withWorkspaceId(workspaceId)
+                                                 .withError(format(USER_RAM_LIMIT_EXCEEDED_ERROR_MESSAGE,
+                                                                   runningWorkspaces,
+                                                                   usedRamGb,
+                                                                   limitRamGb,
+                                                                   requiredRamGb)));
+                }
+                throw new LimitExceededException(format(USER_RAM_LIMIT_EXCEEDED_ERROR_MESSAGE,
                                                         runningWorkspaces,
                                                         usedRamGb,
                                                         limitRamGb,
@@ -296,5 +359,54 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
         } catch (NotFoundException e) {
             throw new ServerException(errorMsg);
         }
+    }
+
+    private boolean systemRamLimitExceeded() {
+        String ramUsage = null;
+        try {
+            ramUsage = dockerConnector.getSystemInfo().ramUsage();
+        } catch (IOException e) {
+            LOG.error("A problem occurred while getting system information from docker", e);
+        }
+        if (ramUsage == null) {
+            return false;
+        }
+        String[] ramValues = ramUsage.split("/ ");
+        if (ramValues.length < 2) {
+            LOG.error("A problem occurred while parsing system information from docker");
+            return false;
+        }
+        long ramUsed = getBytesAmountFromString(ramValues[0]);
+        long ramTotal = getBytesAmountFromString(ramValues[1]);
+        return ((ramUsed * 100) / ramTotal > 90);
+    }
+
+    private void sendMessage(String line) {
+        final ChannelBroadcastMessage bm = new ChannelBroadcastMessage();
+        bm.setChannel("resources_chanel");
+        bm.setBody(JsonUtils.getJsonString(line));
+        try {
+            WSConnectionContext.sendMessage(bm);
+        } catch (Exception e) {
+            LOG.error("A problem occurred while sending websocket message", e);
+        }
+    }
+
+    private long getBytesAmountFromString(String string) {
+        if (string.contains("KiB")) {
+            return getValue(string) * 1024;
+        }else if (string.contains("MiB")){
+            return getValue(string) * 1024 * 1024 ;
+        } else if (string.contains("GiB")) {
+            return getValue(string) * 1024 * 1024 * 1024;
+        } else if (string.contains("TiB")) {
+            return getValue(string) * 1024 * 1024 * 1024 * 1024;
+        } else {
+            return getValue(string);
+        }
+    }
+
+    private long getValue(String string) {
+        return Math.round(Float.parseFloat(string.substring(0, string.indexOf(" "))));
     }
 }
