@@ -205,24 +205,9 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
                                                                                                 NotFoundException, ConflictException {
         // check system's RAM
         if (systemRamLimitExceeded()) {
-            if (executor == null || executor.isShutdown()) {
-                sendMessage("system_ram_limit_exceeded");
-
-                executor = Executors.newSingleThreadScheduledExecutor(
-                        new ThreadFactoryBuilder().setNameFormat("RAM_Limit_check_scheduler").setDaemon(true).build());
-                executor.scheduleAtFixedRate(() -> {
-                    if (!systemRamLimitExceeded()) {
-                        sendMessage("system_ram_limit_not_exceeded");
-                        executor.shutdown();
-                    }
-                }, 0, 10, SECONDS);
-            }
-
+            trackRamLimitIfNotTracked();
             if (workspaceId != null) {
-                eventService.publish(newDto(WorkspaceStatusEvent.class)
-                                             .withEventType(ERROR)
-                                             .withWorkspaceId(workspaceId)
-                                             .withError(SYSTEM_RAM_LIMIT_EXCEEDED_ERROR_MESSAGE));
+                publishError(workspaceId, SYSTEM_RAM_LIMIT_EXCEEDED_ERROR_MESSAGE);
             }
             throw new LimitExceededException(SYSTEM_RAM_LIMIT_EXCEEDED_ERROR_MESSAGE, ErrorCodes.SYSTEM_RAM_LIMIT_EXCEEDED);
         }
@@ -257,14 +242,8 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
                 final String limitRamGb = DECIMAL_FORMAT.format(ramPerUser / 1024D);
                 final String requiredRamGb = DECIMAL_FORMAT.format(allocating / 1024D);
                 if (workspaceId != null) {
-                    eventService.publish(newDto(WorkspaceStatusEvent.class)
-                                                 .withEventType(ERROR)
-                                                 .withWorkspaceId(workspaceId)
-                                                 .withError(format(USER_RAM_LIMIT_EXCEEDED_ERROR_MESSAGE,
-                                                                   runningWorkspaces,
-                                                                   usedRamGb,
-                                                                   limitRamGb,
-                                                                   requiredRamGb)));
+                    publishError(workspaceId,
+                                 format(USER_RAM_LIMIT_EXCEEDED_ERROR_MESSAGE, runningWorkspaces, usedRamGb, limitRamGb, requiredRamGb));
                 }
                 throw new LimitExceededException(format(USER_RAM_LIMIT_EXCEEDED_ERROR_MESSAGE,
                                                         runningWorkspaces,
@@ -281,6 +260,36 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
         } finally {
             lock.unlock();
         }
+    }
+
+    /**
+     * Sends message about system ram limit exceeded and starts scheduled task
+     * that checks existence of more than 10% of free ram in the system.
+     * If the check discovered that it is more than 10% of free ram in the system
+     * it sends message about that and stops scheduler.
+     * If this method called when scheduler is already in progress it will do nothing.
+     */
+    private void trackRamLimitIfNotTracked() {
+        if (executor == null || executor.isShutdown()) {
+            sendMessage("system_ram_limit_exceeded");
+
+            executor = Executors.newSingleThreadScheduledExecutor(
+                    new ThreadFactoryBuilder().setNameFormat("RAMLimitCheckScheduler-%d").setDaemon(true).build());
+
+            executor.scheduleAtFixedRate(() -> {
+                if (!systemRamLimitExceeded()) {
+                    sendMessage("system_ram_limit_not_exceeded");
+                    executor.shutdown();
+                }
+            }, 0, 10, SECONDS);
+        }
+    }
+
+    private void publishError(String workspaceId, String errorMessage) {
+        eventService.publish(newDto(WorkspaceStatusEvent.class)
+                                     .withEventType(ERROR)
+                                     .withWorkspaceId(workspaceId)
+                                     .withError(errorMessage));
     }
 
     /**
