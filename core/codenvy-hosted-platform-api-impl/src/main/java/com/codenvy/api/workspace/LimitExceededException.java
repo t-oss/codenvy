@@ -14,8 +14,6 @@
  */
 package com.codenvy.api.workspace;
 
-import com.codenvy.api.ErrorCodes;
-
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.shared.dto.ExtendedError;
 import org.eclipse.che.dto.server.DtoFactory;
@@ -35,16 +33,10 @@ public class LimitExceededException extends ServerException {
         super(message);
     }
 
-    public LimitExceededException(String message, Map<String, String> attributes) {
+    public LimitExceededException(String message, Map<String, String> attributes, int errorCode) {
         super(DtoFactory.newDto(ExtendedError.class)
                         .withMessage(message)
                         .withAttributes(attributes)
-                        .withErrorCode(ErrorCodes.USER_RAM_LIMIT_EXCEEDED));
-    }
-
-    public LimitExceededException(String message, int ErrorCode) {
-        super(DtoFactory.newDto(ExtendedError.class)
-                        .withMessage(message)
-                        .withErrorCode(ErrorCode));
+                        .withErrorCode(errorCode));
     }
 }

@@ -77,12 +77,13 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
     private static final DecimalFormat DECIMAL_FORMAT                          = new DecimalFormat("#0.#");
     private static final Striped<Lock> CREATE_LOCKS                            = Striped.lazyWeakLock(100);
     private static final Striped<Lock> START_LOCKS                             = Striped.lazyWeakLock(100);
-    private static final String        SYSTEM_RAM_LIMIT_EXCEEDED_ERROR_MESSAGE = "Low Resources. System's resources are not allowing" +
-                                                                                 " any workspaces to be started.";
-    private static final String        USER_RAM_LIMIT_EXCEEDED_ERROR_MESSAGE   = "There are %d running workspaces consuming " +
-                                                                                 "%sGB RAM. Your current RAM limit is %sGB. " +
-                                                                                 "This workspaces requires an additional %sGB. " +
-                                                                                 "You can stop other workspaces to free resources.";
+    
+    private static final String SYSTEM_RAM_LIMIT_EXCEEDED_ERROR = "Low Resources. System's resources are not allowing " +
+                                                                  "any workspaces to be started.";
+    private static final String USER_RAM_LIMIT_EXCEEDED_ERROR   = "There are %d running workspaces consuming " +
+                                                                  "%sGB RAM. Your current RAM limit is %sGB. " +
+                                                                  "This workspaces requires an additional %sGB. " +
+                                                                  "You can stop other workspaces to free resources.";
 
     private final DockerConnector dockerConnector;
     private final EventService    eventService;
@@ -203,13 +204,12 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
                                                           String namespace,
                                                           WorkspaceCallback<T> callback) throws ServerException,
                                                                                                 NotFoundException, ConflictException {
-        // check system's RAM
         if (systemRamLimitExceeded()) {
             trackRamLimitIfNotTracked();
             if (workspaceId != null) {
-                publishError(workspaceId, SYSTEM_RAM_LIMIT_EXCEEDED_ERROR_MESSAGE);
+                publishError(workspaceId, SYSTEM_RAM_LIMIT_EXCEEDED_ERROR);
             }
-            throw new LimitExceededException(SYSTEM_RAM_LIMIT_EXCEEDED_ERROR_MESSAGE, ErrorCodes.SYSTEM_RAM_LIMIT_EXCEEDED);
+            throw new LimitExceededException(SYSTEM_RAM_LIMIT_EXCEEDED_ERROR, null, ErrorCodes.SYSTEM_RAM_LIMIT_EXCEEDED);
         }
 
         // check user's RAM
@@ -243,9 +243,9 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
                 final String requiredRamGb = DECIMAL_FORMAT.format(allocating / 1024D);
                 if (workspaceId != null) {
                     publishError(workspaceId,
-                                 format(USER_RAM_LIMIT_EXCEEDED_ERROR_MESSAGE, runningWorkspaces, usedRamGb, limitRamGb, requiredRamGb));
+                                 format(USER_RAM_LIMIT_EXCEEDED_ERROR, runningWorkspaces, usedRamGb, limitRamGb, requiredRamGb));
                 }
-                throw new LimitExceededException(format(USER_RAM_LIMIT_EXCEEDED_ERROR_MESSAGE,
+                throw new LimitExceededException(format(USER_RAM_LIMIT_EXCEEDED_ERROR,
                                                         runningWorkspaces,
                                                         usedRamGb,
                                                         limitRamGb,
@@ -254,7 +254,8 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
                                                                  "used_ram", usedRamGb,
                                                                  "limit_ram", limitRamGb,
                                                                  "required_ram", requiredRamGb,
-                                                                 "ram_unit", "GB"));
+                                                                 "ram_unit", "GB"),
+                                                 ErrorCodes.USER_RAM_LIMIT_EXCEEDED);
             }
             return callback.call();
         } finally {
@@ -317,7 +318,8 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
                                                         "you are currently at that limit. This value is set by your admin with the " +
                                                         "'limits.user.workspaces.count' property",
                                                         workspacesPerUser),
-                                                 ImmutableMap.of("workspace_max_count", Integer.toString(workspacesPerUser)));
+                                                 ImmutableMap.of("workspace_max_count", Integer.toString(workspacesPerUser)),
+                                                 ErrorCodes.USER_RAM_LIMIT_EXCEEDED);
             }
             return callback.call();
         } finally {
@@ -344,7 +346,8 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
                                                  ImmutableMap.of("environment_max_ram", Long.toString(maxRamPerEnv),
                                                                  "environment_max_ram_unit", "mb",
                                                                  "environment_ram", Long.toString(workspaceRam),
-                                                                 "environment_ram_unit", "mb"));
+                                                                 "environment_ram_unit", "mb"),
+                                                 ErrorCodes.USER_RAM_LIMIT_EXCEEDED);
             }
         }
     }
