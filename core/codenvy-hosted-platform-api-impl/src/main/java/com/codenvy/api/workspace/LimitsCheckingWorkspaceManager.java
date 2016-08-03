@@ -39,6 +39,7 @@ import org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.commons.lang.Size;
 import org.eclipse.che.plugin.docker.client.DockerConnector;
+import org.eclipse.che.plugin.docker.client.json.SystemInfo;
 import org.everrest.core.impl.provider.json.JsonUtils;
 import org.everrest.websockets.WSConnectionContext;
 import org.everrest.websockets.message.ChannelBroadcastMessage;
@@ -50,6 +51,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -74,12 +76,12 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(LimitsCheckingWorkspaceManager.class);
 
-    private static final DecimalFormat DECIMAL_FORMAT                          = new DecimalFormat("#0.#");
-    private static final Striped<Lock> CREATE_LOCKS                            = Striped.lazyWeakLock(100);
-    private static final Striped<Lock> START_LOCKS                             = Striped.lazyWeakLock(100);
-    
-    private static final String SYSTEM_RAM_LIMIT_EXCEEDED_ERROR = "Low Resources. System's resources are not allowing " +
-                                                                  "any workspaces to be started.";
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#0.#");
+    private static final Striped<Lock> CREATE_LOCKS   = Striped.lazyWeakLock(100);
+    private static final Striped<Lock> START_LOCKS    = Striped.lazyWeakLock(100);
+
+    private static final String SYSTEM_RAM_LIMIT_EXCEEDED_ERROR = "Low RAM. Your workspace cannot be started " +
+                                                                  "until the system has more RAM available.";
     private static final String USER_RAM_LIMIT_EXCEEDED_ERROR   = "There are %d running workspaces consuming " +
                                                                   "%sGB RAM. Your current RAM limit is %sGB. " +
                                                                   "This workspaces requires an additional %sGB. " +
@@ -203,8 +205,9 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
                                                           String envName,
                                                           String namespace,
                                                           WorkspaceCallback<T> callback) throws ServerException,
-                                                                                                NotFoundException, ConflictException {
-        if (systemRamLimitExceeded()) {
+                                                                                                NotFoundException,
+                                                                                                ConflictException {
+        if (isSystemRamLimitExceeded()) {
             trackRamLimitIfNotTracked();
             if (workspaceId != null) {
                 publishError(workspaceId, SYSTEM_RAM_LIMIT_EXCEEDED_ERROR);
@@ -277,8 +280,8 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
             executor = Executors.newSingleThreadScheduledExecutor(
                     new ThreadFactoryBuilder().setNameFormat("RAMLimitCheckScheduler-%d").setDaemon(true).build());
 
-            executor.scheduleAtFixedRate(() -> {
-                if (!systemRamLimitExceeded()) {
+            executor.scheduleWithFixedDelay(() -> {
+                if (!isSystemRamLimitExceeded()) {
                     sendMessage("system_ram_limit_not_exceeded");
                     executor.shutdown();
                 }
@@ -373,24 +376,39 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
         }
     }
 
-    private boolean systemRamLimitExceeded() {
-        String ramUsage = null;
+    private boolean isSystemRamLimitExceeded() {
+        long systemRamUsed = 0;
+        long systemRamTotal = 0;
+        List<String> allNodesRamUsage = new ArrayList<>();
         try {
-            ramUsage = dockerConnector.getSystemInfo().ramUsage();
+            int i = 0;
+            SystemInfo systemInfo = dockerConnector.getSystemInfo();
+            String[][] systemValues = systemInfo.getDriverStatus() == null ? systemInfo.getSystemStatus() : systemInfo.getDriverStatus();
+            if (systemValues == null) {
+                LOG.error("Empty system information was received from docker");
+                return false;
+            }
+            for(int l = systemValues.length; i < l; i++) {
+                String[] driverStatusEntry = systemValues[i];
+                if(driverStatusEntry.length == 2 && " └ Reserved Memory".equals(driverStatusEntry[0])) {
+                    allNodesRamUsage.add(driverStatusEntry[1]);
+                }
+            }
         } catch (IOException e) {
             LOG.error("A problem occurred while getting system information from docker", e);
-        }
-        if (ramUsage == null) {
             return false;
         }
-        String[] ramValues = ramUsage.split("/ ");
-        if (ramValues.length < 2) {
-            LOG.error("A problem occurred while parsing system information from docker");
-            return false;
+        for (String nodeRamUsage : allNodesRamUsage) {
+            String[] ramValues = nodeRamUsage.split(" / ");
+            if (ramValues.length != 2) {
+                LOG.error("A problem occurred while parsing system information from docker. " +
+                          "Expected: <used ram size> / <total ram size> but got: " + nodeRamUsage);
+                return false;
+            }
+            systemRamUsed += Size.parseSize(ramValues[0]);
+            systemRamTotal += Size.parseSize(ramValues[1]);
         }
-        long ramUsed = getBytesAmountFromString(ramValues[0]);
-        long ramTotal = getBytesAmountFromString(ramValues[1]);
-        return ((ramUsed * 100) / ramTotal > 90);
+        return (systemRamTotal * 0.9 < systemRamUsed);
     }
 
     private void sendMessage(String line) {
@@ -402,23 +420,5 @@ public class LimitsCheckingWorkspaceManager extends WorkspaceManager {
         } catch (Exception e) {
             LOG.error("A problem occurred while sending websocket message", e);
         }
-    }
-
-    private long getBytesAmountFromString(String string) {
-        if (string.contains("KiB")) {
-            return getValue(string) * 1024;
-        }else if (string.contains("MiB")){
-            return getValue(string) * 1024 * 1024 ;
-        } else if (string.contains("GiB")) {
-            return getValue(string) * 1024 * 1024 * 1024;
-        } else if (string.contains("TiB")) {
-            return getValue(string) * 1024 * 1024 * 1024 * 1024;
-        } else {
-            return getValue(string);
-        }
-    }
-
-    private long getValue(String string) {
-        return Math.round(Float.parseFloat(string.substring(0, string.indexOf(" "))));
     }
 }
