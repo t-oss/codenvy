@@ -12,9 +12,9 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.workspace.server.dao;
+package com.codenvy.api.workspace.server.spi;
 
-import com.codenvy.api.workspace.server.model.WorkerImpl;
+import com.codenvy.api.workspace.server.model.impl.WorkerImpl;
 
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
@@ -43,9 +43,9 @@ public interface WorkerDao {
     /**
      * Gets worker by user and workspace
      *
-     * @param workspace
+     * @param workspaceId
      *         workspace identifier
-     * @param user
+     * @param userId
      *         user identifier
      * @return worker instance, never null
      * @throws NullPointerException
@@ -55,28 +55,28 @@ public interface WorkerDao {
      * @throws ServerException
      *         when any other error occurs during worker fetching
      */
-    WorkerImpl getWorker(String workspace, String user) throws NotFoundException, ServerException;
+    WorkerImpl getWorker(String workspaceId, String userId) throws NotFoundException, ServerException;
 
     /**
      * Removes worker
      *
      * <p>Doesn't throw an exception when worker with given {@code workspace} and {@code user} does not exist
      *
-     * @param workspace
+     * @param workspaceId
      *         workspace identifier
-     * @param user
+     * @param userId
      *         user identifier
      * @throws NullPointerException
      *         when {@code workspace} or {@code user} is null
      * @throws ServerException
      *         when any other error occurs during worker removing
      */
-    void removeWorker(String workspace, String user) throws ServerException, NotFoundException;
+    void removeWorker(String workspaceId, String userId) throws ServerException, NotFoundException;
 
     /**
      * Gets workers by workspace
      *
-     * @param workspace
+     * @param workspaceId
      *         workspace identifier
      * @return list of workers instance
      * @throws NullPointerException
@@ -84,12 +84,12 @@ public interface WorkerDao {
      * @throws ServerException
      *         when any other error occurs during worker fetching
      */
-    List<WorkerImpl> getWorkers(String workspace) throws ServerException;
+    List<WorkerImpl> getWorkers(String workspaceId) throws ServerException;
 
     /**
      * Gets workers by user
      *
-     * @param user
+     * @param userId
      *         workspace identifier
      * @return list of workers instance
      * @throws NullPointerException
@@ -97,5 +97,5 @@ public interface WorkerDao {
      * @throws ServerException
      *         when any other error occurs during worker fetching
      */
-    List<WorkerImpl> getWorkersByUser(String user) throws ServerException;
+    List<WorkerImpl> getWorkersByUser(String userId) throws ServerException;
 }

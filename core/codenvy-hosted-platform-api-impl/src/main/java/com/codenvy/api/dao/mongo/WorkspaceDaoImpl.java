@@ -14,9 +14,9 @@
  */
 package com.codenvy.api.dao.mongo;
 
-import com.codenvy.api.workspace.server.dao.WorkerDao;
+import com.codenvy.api.workspace.server.spi.WorkerDao;
 import com.codenvy.api.workspace.server.model.Worker;
-import com.codenvy.api.workspace.server.model.WorkerImpl;
+import com.codenvy.api.workspace.server.model.impl.WorkerImpl;
 import com.mongodb.MongoException;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
@@ -263,10 +263,10 @@ public class WorkspaceDaoImpl implements WorkspaceDao {
         for (Worker worker : workers) {
             if (worker.getActions().contains("read")) {
                 try {
-                    workspaces.add(get(worker.getWorkspace()));
+                    workspaces.add(get(worker.getWorkspaceId()));
                 } catch (NotFoundException e) {
                     LOG.warn(String.format("There is worker with workspace '%s' but this workspace doesn't exist",
-                                           worker.getWorkspace()));
+                                           worker.getWorkspaceId()));
                 }
             }
         }

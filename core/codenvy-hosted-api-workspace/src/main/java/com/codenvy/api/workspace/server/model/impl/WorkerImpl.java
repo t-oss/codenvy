@@ -12,8 +12,15 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.workspace.server.model;
+package com.codenvy.api.workspace.server.model.impl;
 
+import com.codenvy.api.workspace.server.jpa.WorkerPrimaryKey;
+import com.codenvy.api.workspace.server.model.Worker;
+
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -21,14 +28,22 @@ import java.util.Objects;
 /**
  * @author Sergii Leschenko
  */
+@Entity(name = "Worker")
+@IdClass(WorkerPrimaryKey.class)
 public class WorkerImpl implements Worker {
-    private String       user;
-    private String       workspace;
+    @Id
+    private String       userId;
+    @Id
+    private String       workspaceId;
+    @ElementCollection
     private List<String> actions;
 
-    public WorkerImpl(String user, String workspace, List<String> actions) {
-        this.user = user;
-        this.workspace = workspace;
+    public WorkerImpl() {
+    }
+
+    public WorkerImpl(String workspaceId, String userId, List<String> actions) {
+        this.userId = userId;
+        this.workspaceId = workspaceId;
         this.actions = new ArrayList<>();
         if (actions != null) {
             this.actions.addAll(actions);
@@ -36,13 +51,13 @@ public class WorkerImpl implements Worker {
     }
 
     @Override
-    public String getUser() {
-        return user;
+    public String getUserId() {
+        return userId;
     }
 
     @Override
-    public String getWorkspace() {
-        return workspace;
+    public String getWorkspaceId() {
+        return workspaceId;
     }
 
     @Override
@@ -55,16 +70,16 @@ public class WorkerImpl implements Worker {
         if (this == obj) return true;
         if (!(obj instanceof WorkerImpl)) return false;
         final WorkerImpl other = (WorkerImpl)obj;
-        return Objects.equals(user, other.user)
-               && Objects.equals(workspace, other.workspace)
-               && actions.equals(other.actions);
+        return Objects.equals(userId, other.userId) &&
+               Objects.equals(workspaceId, other.workspaceId) &&
+               actions.equals(other.actions);
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 31 * hash + Objects.hashCode(user);
-        hash = 31 * hash + Objects.hashCode(workspace);
+        hash = 31 * hash + Objects.hashCode(userId);
+        hash = 31 * hash + Objects.hashCode(workspaceId);
         hash = 31 * hash + actions.hashCode();
         return hash;
     }
@@ -72,8 +87,8 @@ public class WorkerImpl implements Worker {
     @Override
     public String toString() {
         return "WorkerImpl{" +
-               "user='" + user + '\'' +
-               ", workspace='" + workspace + '\'' +
+               "userId='" + userId + '\'' +
+               ", workspaceId='" + workspaceId + '\'' +
                ", actions=" + actions +
                '}';
     }

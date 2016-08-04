@@ -18,7 +18,7 @@ import com.codenvy.api.dao.mongo.recipe.RecipeImplCodec;
 import com.codenvy.api.dao.mongo.ssh.UsersSshPair;
 import com.codenvy.api.dao.mongo.ssh.UsersSshPairCodec;
 import com.codenvy.api.dao.mongo.stack.StackImplCodec;
-import com.codenvy.api.workspace.server.model.WorkerImpl;
+import com.codenvy.api.workspace.server.model.impl.WorkerImpl;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
 

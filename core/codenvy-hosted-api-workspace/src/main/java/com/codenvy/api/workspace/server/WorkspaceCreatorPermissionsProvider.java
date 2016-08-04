@@ -14,8 +14,8 @@
  */
 package com.codenvy.api.workspace.server;
 
-import com.codenvy.api.workspace.server.dao.WorkerDao;
-import com.codenvy.api.workspace.server.model.WorkerImpl;
+import com.codenvy.api.workspace.server.spi.WorkerDao;
+import com.codenvy.api.workspace.server.model.impl.WorkerImpl;
 
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.notification.EventService;
@@ -62,8 +62,7 @@ public class WorkspaceCreatorPermissionsProvider implements EventSubscriber<Work
     @Override
     public void onEvent(WorkspaceCreatedEvent event) {
         try {
-            workerDao.store(new WorkerImpl(EnvironmentContext.getCurrent().getSubject().getUserId(),
-                                           event.getWorkspace().getId(),
+            workerDao.store(new WorkerImpl(event.getWorkspace().getId(), EnvironmentContext.getCurrent().getSubject().getUserId(),
                                            new ArrayList<>(new WorkspaceDomain().getAllowedActions())));
         } catch (ServerException e) {
             LOG.error("Can't add creator's permissions for workspace with id '" + event.getWorkspace().getId() + "'", e);

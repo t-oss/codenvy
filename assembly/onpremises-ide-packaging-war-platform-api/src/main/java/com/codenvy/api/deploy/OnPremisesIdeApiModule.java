@@ -27,7 +27,7 @@ import com.codenvy.api.factory.FactoryMongoDatabaseProvider;
 import com.codenvy.api.permission.server.PermissionChecker;
 import com.codenvy.api.user.server.AdminUserService;
 import com.codenvy.api.user.server.dao.AdminUserDao;
-import com.codenvy.api.workspace.server.dao.WorkerDao;
+import com.codenvy.api.workspace.server.spi.WorkerDao;
 import com.codenvy.auth.sso.client.ServerClient;
 import com.codenvy.auth.sso.client.TokenHandler;
 import com.codenvy.auth.sso.client.filter.ConjunctionRequestFilter;
