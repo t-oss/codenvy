@@ -32,22 +32,21 @@ executeIMCommand "password" "password" "new-password"
 auth "admin" "new-password"
 
 # change Codenvy hostname
-executeSshCommand "sudo sed -i 's/ codenvy/ test.codenvy/' /etc/hosts" "data.codenvy"
-executeSshCommand "sudo sed -i 's/ codenvy/ test.codenvy/' /etc/hosts" "api.codenvy"
-executeSshCommand "sudo sed -i 's/ codenvy/ test.codenvy/' /etc/hosts" "site.codenvy"
-executeSshCommand "sudo sed -i 's/ codenvy/ test.codenvy/' /etc/hosts" "runner1.codenvy"
-executeSshCommand "sudo sed -i 's/ codenvy/ test.codenvy/' /etc/hosts" "builder1.codenvy"
-executeSshCommand "sudo sed -i 's/ codenvy/ test.codenvy/' /etc/hosts" "datasource.codenvy"
-executeSshCommand "sudo sed -i 's/ codenvy/ test.codenvy/' /etc/hosts" "analytics.codenvy"
-executeSshCommand "sudo sed -i 's/ codenvy/ test.codenvy/' /etc/hosts" "master.codenvy"
+executeSshCommand "sudo sed -i 's/ ${HOST_URL}/ test.${HOST_URL}/' /etc/hosts" "data.${HOST_URL}"
+executeSshCommand "sudo sed -i 's/ ${HOST_URL}/ test.${HOST_URL}/' /etc/hosts" "api.${HOST_URL}"
+executeSshCommand "sudo sed -i 's/ ${HOST_URL}/ test.${HOST_URL}/' /etc/hosts" "site.${HOST_URL}"
+executeSshCommand "sudo sed -i 's/ ${HOST_URL}/ test.${HOST_URL}/' /etc/hosts" "runner1.${HOST_URL}"
+executeSshCommand "sudo sed -i 's/ ${HOST_URL}/ test.${HOST_URL}/' /etc/hosts" "builder1.${HOST_URL}"
+executeSshCommand "sudo sed -i 's/ ${HOST_URL}/ test.${HOST_URL}/' /etc/hosts" "datasource.${HOST_URL}"
+executeSshCommand "sudo sed -i 's/ ${HOST_URL}/ test.${HOST_URL}/' /etc/hosts" "analytics.${HOST_URL}"
 
 executeIMCommand "config" "--hostname" "${NEW_HOST_URL}"
 
 # verify changes on api node
-executeSshCommand "sudo cat /home/codenvy/codenvy-data/conf/general.properties" "api.codenvy"
+executeSshCommand "sudo cat /home/codenvy/codenvy-data/conf/general.properties" "api.${HOST_URL}"
 sleep 10m
-executeSshCommand "sudo cat /home/codenvy/codenvy-data/conf/general.properties" "api.codenvy"
-executeSshCommand "sudo grep \"api.endpoint=http://${NEW_HOST_URL}/api\" /home/codenvy/codenvy-data/conf/general.properties" "api.codenvy"
+executeSshCommand "sudo cat /home/codenvy/codenvy-data/conf/general.properties" "api.${HOST_URL}"
+executeSshCommand "sudo grep \"api.endpoint=http://${NEW_HOST_URL}/api\" /home/codenvy/codenvy-data/conf/general.properties" "api.${HOST_URL}"
 
 # verify changes on installation-manager service
 executeSshCommand "sudo cat /home/codenvy-im/codenvy-im-data/conf/installation-manager.properties"
@@ -61,8 +60,8 @@ auth "admin" "new-password" "http://${NEW_HOST_URL}"
 # test re-install
 # remove codenvy binaries
 
-executeSshCommand "sudo rm -rf /home/codenvy/codenvy-tomcat/webapps" "api.codenvy"
-executeSshCommand "sudo rm -rf /home/codenvy/codenvy-tomcat/webapps" "runner1.codenvy"
+executeSshCommand "sudo rm -rf /home/codenvy/codenvy-tomcat/webapps" "api.${HOST_URL}"
+executeSshCommand "sudo rm -rf /home/codenvy/codenvy-tomcat/webapps" "runner1.${HOST_URL}"
 executeSshCommand "sudo rm -rf /home/codenvy-im/codenvy-im-tomcat/webapps"
 
 # perform re-install

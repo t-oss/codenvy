@@ -149,9 +149,11 @@ public class TestCommandLibrary extends BaseTest {
         testCommand.execute();
 
         String content = readFileToString(TEST_FILE.toFile());
-        assertEquals(content, "#pr2=\n"
-                              + "pr2='value\"|&3\n'\n"
-                              + "pr3=\n", testCommand.toString());
+        assertEquals(content,
+                     "#pr2=\n"
+                      + "pr2='value\"|&3\n'\n"
+                      + "pr3=\n",
+                     "Command to execute: " + testCommand.toString());
     }
 
     @Test
@@ -165,7 +167,40 @@ public class TestCommandLibrary extends BaseTest {
         String content = readFileToString(TEST_FILE.toFile());
         assertEquals(content, "#pr2=\n"
                               + "pr3=value3\n"
-                              + "pr2='value\"|&3\n'\n", testCommand.toString());
+                              + "pr2='value\"|&3\n'\n",
+                     "Command to execute: " + testCommand.toString());
+    }
+
+    @Test
+    public void testAppendTextToFileCommand() throws IOException {
+        write(TEST_FILE.toFile(), "127.0.0.1 codenvy.onprem localhost\n"
+                                  + "192.168.1.1 host\n");
+
+        Command testCommand = SimpleCommand.createCommand(CommandLibrary.getAppendTextToFileCommand(TEST_FILE, "\n127.0.0.1 codenvy", "^127.0.0.1.*\\scodenvy\\s.*$|^127.0.0.1.*\\scodenvy$", false));
+        testCommand.execute();
+
+        String content = readFileToString(TEST_FILE.toFile());
+        assertEquals(content,
+                     "127.0.0.1 codenvy.onprem localhost\n"
+                     + "192.168.1.1 host\n"
+                     + "\n"
+                     + "127.0.0.1 codenvy\n",
+                     "Command to execute: " + testCommand.toString());
+    }
+
+    @Test
+    public void testDonNotAppendTextToFileCommand() throws IOException {
+        write(TEST_FILE.toFile(), "127.0.0.1 codenvy codenvy.onprem localhost\n"
+                                  + "192.168.1.1 host\n");
+
+        Command testCommand = SimpleCommand.createCommand(CommandLibrary.getAppendTextToFileCommand(TEST_FILE, "\n127.0.0.1 codenvy", "^127.0.0.1.*\\scodenvy\\s.*$|^127.0.0.1.*\\scodenvy$", false));
+        testCommand.execute();
+
+        String content = readFileToString(TEST_FILE.toFile());
+        assertEquals(content,
+                     "127.0.0.1 codenvy codenvy.onprem localhost\n"
+                        + "192.168.1.1 host\n",
+                     "Command to execute: " + testCommand.toString());
     }
 
     @Test

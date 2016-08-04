@@ -35,21 +35,21 @@ BACKUP_AT_START=${OUTPUT}
 executeIMCommand "password" "password" "new-password"
 auth "admin" "new-password"
 
-doPost "application/json" "{\"name\":\"account-1\"}" "http://codenvy/api/account?token=${TOKEN}"
+doPost "application/json" "{\"name\":\"account-1\"}" "http://${HOST_URL}/api/account?token=${TOKEN}"
 fetchJsonParameter "id"
 ACCOUNT_ID=${OUTPUT}
 
-doPost "application/json" "{\"name\":\"workspace-1\",\"accountId\":\"${ACCOUNT_ID}\"}" "http://codenvy/api/workspace?token=${TOKEN}"
+doPost "application/json" "{\"name\":\"workspace-1\",\"accountId\":\"${ACCOUNT_ID}\"}" "http://${HOST_URL}/api/workspace?token=${TOKEN}"
 fetchJsonParameter "id"
 WORKSPACE_ID=${OUTPUT}
 
-doPost "application/json" "{\"type\":\"blank\",\"visibility\":\"public\"}" "http://codenvy/api/project/${WORKSPACE_ID}?name=project-1&token=${TOKEN}"
+doPost "application/json" "{\"type\":\"blank\",\"visibility\":\"public\"}" "http://${HOST_URL}/api/project/${WORKSPACE_ID}?name=project-1&token=${TOKEN}"
 
-doPost "application/json" "{\"name\":\"user-1\",\"password\":\"pwd123ABC\"}" "http://codenvy/api/user/create?token=${TOKEN}"
+doPost "application/json" "{\"name\":\"user-1\",\"password\":\"pwd123ABC\"}" "http://${HOST_URL}/api/user/create?token=${TOKEN}"
 fetchJsonParameter "id"
 USER_ID=${OUTPUT}
 
-doPost "application/json" "{\"userId\":\"${USER_ID}\",\"roles\":[\"account/owner\"]}" "http://codenvy/api/account/${ACCOUNT_ID}/members?token=${TOKEN}"
+doPost "application/json" "{\"userId\":\"${USER_ID}\",\"roles\":[\"account/owner\"]}" "http://${HOST_URL}/api/account/${ACCOUNT_ID}/members?token=${TOKEN}"
 fetchJsonParameter "id"
 ACCOUNT_ID=${OUTPUT}
 
@@ -70,19 +70,19 @@ executeIMCommand "restore" ${BACKUP_AT_START}
 # check if data at start was restored correctly
 auth "admin" "password"
 
-doGet "http://codenvy/api/account/${ACCOUNT_ID}?token=${TOKEN}"
+doGet "http://${HOST_URL}/api/account/${ACCOUNT_ID}?token=${TOKEN}"
 validateExpectedString ".*Account.with.id.${ACCOUNT_ID}.was.not.found.*"
 
-doGet "http://codenvy/api/project/${WORKSPACE_ID}?token=${TOKEN}"
+doGet "http://${HOST_URL}/api/project/${WORKSPACE_ID}?token=${TOKEN}"
 validateExpectedString ".*Workspace.*not.found.*"
 
-doGet "http://codenvy/api/workspace/${WORKSPACE_ID}?token=${TOKEN}"
+doGet "http://${HOST_URL}/api/workspace/${WORKSPACE_ID}?token=${TOKEN}"
 validateExpectedString ".*Workspace.*not.found.*"
 
-doGet "http://codenvy/api/user/${USER_ID}?token=${TOKEN}"
+doGet "http://${HOST_URL}/api/user/${USER_ID}?token=${TOKEN}"
 validateExpectedString ".*User.*not.found.*"
 
-doGet "http://codenvy/api/factory/${FACTORY_ID}?token=${TOKEN}"
+doGet "http://${HOST_URL}/api/factory/${FACTORY_ID}?token=${TOKEN}"
 validateExpectedString ".*Factory.*not.found.*"
 
 # restore state after modifications
@@ -91,19 +91,19 @@ executeIMCommand "restore" ${BACKUP_WITH_MODIFICATIONS}
 # check if modified data was restored correctly
 auth "admin" "new-password"
 
-doGet "http://codenvy/api/account/${ACCOUNT_ID}?token=${TOKEN}"
+doGet "http://${HOST_URL}/api/account/${ACCOUNT_ID}?token=${TOKEN}"
 validateExpectedString ".*account-1.*"
 
-doGet "http://codenvy/api/project/${WORKSPACE_ID}?token=${TOKEN}"
+doGet "http://${HOST_URL}/api/project/${WORKSPACE_ID}?token=${TOKEN}"
 validateExpectedString ".*project-1.*"
 
-doGet "http://codenvy/api/workspace/${WORKSPACE_ID}?token=${TOKEN}"
+doGet "http://${HOST_URL}/api/workspace/${WORKSPACE_ID}?token=${TOKEN}"
 validateExpectedString ".*workspace-1.*"
 
-doGet "http://codenvy/api/user/${USER_ID}?token=${TOKEN}"
+doGet "http://${HOST_URL}/api/user/${USER_ID}?token=${TOKEN}"
 validateExpectedString ".*user-1.*"
 
-doGet "http://codenvy/api/factory/${FACTORY_ID}?token=${TOKEN}"
+doGet "http://${HOST_URL}/api/factory/${FACTORY_ID}?token=${TOKEN}"
 validateExpectedString ".*\"name\"\:\"my-minimalistic-factory\".*"
 
 authOnSite "user-1" "pwd123ABC"

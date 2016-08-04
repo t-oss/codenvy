@@ -20,8 +20,8 @@ UPDATE_SERVER="http://updater-nightly.codenvy-dev.com"
 UPDATE_SERVICE="${UPDATE_SERVER}/update"
 SAAS_SERVER="http://a1.codenvy-dev.com"
 TEST_LOG="installation-manager-test.log"
-HOST_URL="codenvy"
-NEW_HOST_URL="test.codenvy"
+HOST_URL="codenvy.onprem"
+NEW_HOST_URL="test.${HOST_URL}"
 
 AVAILABLE_CODENVY_VERSIONS=$(curl -s -X GET ${UPDATE_SERVICE}/repository/updates/codenvy)
 

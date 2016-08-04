@@ -86,7 +86,9 @@ public class WorkspaceFsBackupScheduler {
                                 backupWorkspaceInMachine(machine);
 
                                 lastMachineSynchronizationTime.put(machine.getId(), System.currentTimeMillis());
-                            } catch (NotFoundException | ServerException e) {
+                            } catch (NotFoundException ignore) {
+                                // it is ok, machine was stopped while this backup task was in the executor queue
+                            } catch (ServerException e) {
                                 LOG.error(e.getLocalizedMessage(), e);
                             } finally {
                                 devMachinesBackupsInProgress.remove(machineId);

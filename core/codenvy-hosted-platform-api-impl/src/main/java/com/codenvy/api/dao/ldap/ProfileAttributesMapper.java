@@ -14,8 +14,6 @@
  */
 package com.codenvy.api.dao.ldap;
 
-import com.google.common.base.Strings;
-
 import org.eclipse.che.api.user.server.model.impl.ProfileImpl;
 import org.eclipse.che.commons.lang.Pair;
 
@@ -37,6 +35,7 @@ import java.util.Map;
 import static javax.naming.directory.DirContext.ADD_ATTRIBUTE;
 import static javax.naming.directory.DirContext.REMOVE_ATTRIBUTE;
 import static javax.naming.directory.DirContext.REPLACE_ATTRIBUTE;
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
  * Mapper is used for mapping LDAP Attributes to {@link ProfileImpl}.
@@ -128,7 +127,8 @@ public class ProfileAttributesMapper {
         }
 
         // LDAP's inetOrgPerson requires sn attribute to be not null or empty
-        if (Strings.isNullOrEmpty(update.get(allowedAttributes.get("sn")))) {
+        String snAttr = allowedAttributes.get("sn");
+        if (update.containsKey(snAttr) && isNullOrEmpty(update.get(snAttr))) {
             update.put(allowedAttributes.get("sn"), "<none>");
         }
 

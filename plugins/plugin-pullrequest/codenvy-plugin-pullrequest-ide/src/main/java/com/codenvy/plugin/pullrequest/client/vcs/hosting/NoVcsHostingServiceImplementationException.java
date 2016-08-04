@@ -25,7 +25,7 @@ public class NoVcsHostingServiceImplementationException extends Exception {
     private static final long serialVersionUID = 1L;
 
     /**
-     * Constructs an instance of {@link VcsHostingService}.
+     * Constructs an instance of {@link NoVcsHostingServiceImplementationException}.
      */
     public NoVcsHostingServiceImplementationException() {
         super("No implementation of the VcsHostingService for the current project");

@@ -29,6 +29,8 @@ import javax.inject.Inject;
 @Singleton
 public class PushBranchOnOriginStep implements Step {
 
+    private final static String ORIGIN_REMOTE_NAME = "origin";
+
     private final PushBranchStepFactory pushBranchStepFactory;
 
     @Inject
@@ -38,6 +40,7 @@ public class PushBranchOnOriginStep implements Step {
 
     @Override
     public void execute(final WorkflowExecutor executor, final Context context) {
+        context.setForkedRemoteName(ORIGIN_REMOTE_NAME);
         pushBranchStepFactory.create(this,
                                      context.getOriginRepositoryOwner(),
                                      context.getOriginRepositoryName())

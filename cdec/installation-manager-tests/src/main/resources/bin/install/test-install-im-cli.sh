@@ -22,8 +22,10 @@
 printAndLog "TEST CASE: Install IM CLI"
 vagrantUp ${SINGLE_NODE_VAGRANT_FILE}
 
-installImCliClient ${LATEST_IM_CLI_CLIENT_VERSION}
+installImCliClient ${LATEST_IM_CLI_CLIENT_VERSION} --unknown-parameter=value --unknown-flag typo
+validateExpectedString ".*You.passed.next.unrecognized.parameters\:.*'--unknown-parameter=value'.*'--unknown-flag'.*'typo'.*"
 validateInstalledImCliClientVersion
+
 executeSshCommand "test -d /home/vagrant/codenvy/cli"
 executeSshCommand --valid-exit-code=1 "test -d /home/vagrant/codenvy-im"
 
