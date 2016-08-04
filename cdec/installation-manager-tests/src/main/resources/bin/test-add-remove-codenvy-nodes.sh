@@ -25,52 +25,52 @@ installCodenvy ${LATEST_CODENVY3_VERSION}
 validateInstalledCodenvyVersion
 
 # add runner
-executeIMCommand "add-node" "runner2.codenvy"
+executeIMCommand "add-node" "runner2.${HOST_URL}"
 doSleep 2m
 
 auth "admin" "password"
-doGet "http://codenvy/api/admin/runner/server?token=${TOKEN}"
-validateExpectedString ".*http://runner2.codenvy:8080/runner/internal/runner.*"
+doGet "http://${HOST_URL}/api/admin/runner/server?token=${TOKEN}"
+validateExpectedString ".*http://runner2.${HOST_URL}:8080/runner/internal/runner.*"
 
 # add builder
-executeIMCommand "add-node" "builder2.codenvy"
+executeIMCommand "add-node" "builder2.${HOST_URL}"
 doSleep 2m
 
 auth "admin" "password"
-doGet "http://codenvy/api/admin/builder/server?token=${TOKEN}"
-validateExpectedString ".*http://builder2.codenvy:8080/builder/internal/builder.*"
+doGet "http://${HOST_URL}/api/admin/builder/server?token=${TOKEN}"
+validateExpectedString ".*http://builder2.${HOST_URL}:8080/builder/internal/builder.*"
 
 # Incorrect name
 executeIMCommand "--valid-exit-code=1" "add-node" "bla-bla-bla"
-validateExpectedString ".*Illegal.DNS.name.'bla-bla-bla'.of.node..Correct.DNS.name.templates\:.\['builder<number>.codenvy',.'runner<number>.codenvy'\].*"
+validateExpectedString ".*Illegal.DNS.name.'bla-bla-bla'.of.node..Correct.DNS.name.templates\:.\['builder<number>.${HOST_URL}',.'runner<number>.${HOST_URL}'\].*"
 
 # Host is not reachable
-executeIMCommand "--valid-exit-code=1" "add-node" "builder3.codenvy"
-validateExpectedString ".*Can.t.connect.to.host..vagrant@builder3.codenvy:22.*"
+executeIMCommand "--valid-exit-code=1" "add-node" "builder3.${HOST_URL}"
+validateExpectedString ".*Can.t.connect.to.host..vagrant@builder3.${HOST_URL}:22.*"
 
 # Runner has been already set up
-executeIMCommand "--valid-exit-code=1" "add-node" "runner2.codenvy"
-validateExpectedString ".*Node..runner2.codenvy..has.been.already.used.*"
+executeIMCommand "--valid-exit-code=1" "add-node" "runner2.${HOST_URL}"
+validateExpectedString ".*Node..runner2.${HOST_URL}..has.been.already.used.*"
 
 # remove runner
-executeIMCommand "remove-node" "runner2.codenvy"
+executeIMCommand "remove-node" "runner2.${HOST_URL}"
 doSleep 2m
 
 auth "admin" "password"
-doGet "http://codenvy/api/admin/runner/server?token=${TOKEN}"
-validateErrorString ".*http://runner2.codenvy:8080/runner/internal/runner.*"
+doGet "http://${HOST_URL}/api/admin/runner/server?token=${TOKEN}"
+validateErrorString ".*http://runner2.${HOST_URL}:8080/runner/internal/runner.*"
 
 # remove builder
-executeIMCommand "remove-node" "builder2.codenvy"
+executeIMCommand "remove-node" "builder2.${HOST_URL}"
 doSleep 2m
 
 auth "admin" "password"
-doGet "http://codenvy/api/admin/builder/server?token=${TOKEN}"
-validateErrorString ".*http://builder2.codenvy:8080/builder/internal/builder.*"
+doGet "http://${HOST_URL}/api/admin/builder/server?token=${TOKEN}"
+validateErrorString ".*http://builder2.${HOST_URL}:8080/builder/internal/builder.*"
 
 # remove already removed runner
-executeIMCommand "--valid-exit-code=1" "remove-node" "runner2.codenvy"
-validateExpectedString ".*Node..runner2.codenvy..is.not.found.*"
+executeIMCommand "--valid-exit-code=1" "remove-node" "runner2.${HOST_URL}"
+validateExpectedString ".*Node..runner2.${HOST_URL}..is.not.found.*"
 
 printAndLog "RESULT: PASSED"
 vagrantDestroy

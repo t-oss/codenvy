@@ -44,7 +44,7 @@ export class AccountDeleteCtrl {
     this.$mdDialog.show(confirm).then(() => {
       this.codenvyUser.deleteCurrentUser().then(() => {
         this.codenvyUser.logout().then(() => {
-          this.$window.location = '/#';
+          this.$window.location = '/site/account-deleted';
         });
       }, (error) => {
         this.cheNotification.showError(error.data.message ? error.data.message : 'Account deletion failed.');

@@ -114,7 +114,7 @@ public class VersionCommand extends AbstractIMCommand {
             if (latestStableVersionInfo.getStatus() == UpdateArtifactInfo.Status.DOWNLOADED) {
                 suffix = SUFFIX_WHEN_DOWNLOADED;
             } else {
-                suffix = String.format(SUFFIX_WHEN_NOT_DOWNLOADED, info.getAvailableVersion().getStable());
+                suffix = SUFFIX_WHEN_NOT_DOWNLOADED;
             }
 
             return String.format(NEW_STABLE_VERSION_MESSAGE, suffix);

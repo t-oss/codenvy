@@ -31,7 +31,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -95,9 +94,10 @@ public class MachineBackupManager {
             if (lock.tryLock()) {
                 try {
                     if (workspacesBackupLocks.get(workspaceId) == null) {
-                        // it is possible to reach here, because remove lock from locks map and following unlock in
-                        // backup with cleanup method is not atomic operation
-                        // in very rare case it may happens, but it is ok, just ignore scheduled backup after cleanup
+                        // It is possible to reach here, because remove lock from locks map and following unlock in
+                        // backup with cleanup method is not atomic operation.
+                        // In very rare case it may happens, but it is ok. Just ignore this backup
+                        // because it is called after cleanup
                         return;
                     }
                     backupWorkspace(workspaceId, srcPath, srcAddress, false);
@@ -129,7 +129,6 @@ public class MachineBackupManager {
             try {
                 if (workspacesBackupLocks.get(workspaceId) == null) {
                     // it is possible to reach here if invoke this method again while previous one is in progress
-                    // should never happen
                     LOG.error("Backup with cleanup of the workspace {} was invoked several times simultaneously", workspaceId);
                     return;
                 }
@@ -143,8 +142,11 @@ public class MachineBackupManager {
         }
     }
 
-    private void backupWorkspace(final String workspaceId, final String srcPath, final String srcAddress, boolean removeSourceOnSuccess)
-            throws ServerException {
+    @VisibleForTesting
+    void backupWorkspace(final String workspaceId,
+                         final String srcPath,
+                         final String srcAddress,
+                         boolean removeSourceOnSuccess) throws ServerException {
         final File destPath = workspaceIdHashLocationFinder.calculateDirPath(backupsRootDir, workspaceId);
 
         CommandLine commandLine = new CommandLine(backupScript,
@@ -178,20 +180,24 @@ public class MachineBackupManager {
      * @param destAddress
      *         address of the server where workspace should be copied to
      * @throws ServerException
+     *         if any exception occurs
      */
     public void restoreWorkspaceBackup(final String workspaceId,
                                        final String destPath,
                                        final String userId,
                                        final String groupId,
                                        final String destAddress) throws ServerException {
+        boolean restored = false;
         ReentrantLock lock = new ReentrantLock();
         lock.lock();
         try {
             if (workspacesBackupLocks.putIfAbsent(workspaceId, lock) != null) {
-                LOG.error("Attempt to start new restore process on {} workspace while it is already under restoring.", workspaceId);
-                return; // it shouldn't happen, but for case when restore of one workspace is invoked simultaneously
+                // it shouldn't happen, but for case when restore of one workspace is invoked simultaneously
+                String err = "Restore of workspace " + workspaceId +
+                             " failed. Another restore process of the same workspace is in progress";
+                LOG.error(err);
+                throw new ServerException(err);
             }
-
             final String srcPath = workspaceIdHashLocationFinder.calculateDirPath(backupsRootDir, workspaceId).toString();
 
             Files.createDirectories(Paths.get(srcPath));
@@ -204,6 +210,7 @@ public class MachineBackupManager {
                                                       groupId);
 
             execute(commandLine.asArray(), restoreDuration);
+            restored = true;
         } catch (TimeoutException e) {
             throw new ServerException("Restoring of workspace " + workspaceId + " filesystem terminated due to timeout on "
                                       + destAddress + " node.");
@@ -216,6 +223,9 @@ public class MachineBackupManager {
                                       + e.getLocalizedMessage());
         } finally {
             lock.unlock();
+            if (!restored) {
+                workspacesBackupLocks.remove(workspaceId, lock);
+            }
         }
     }
 

@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import static com.codenvy.im.artifacts.ArtifactFactory.createArtifact;
+import static java.lang.String.format;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -157,6 +158,32 @@ public class TestConfigCommand extends AbstractTestCommand {
 
         String output = result.disableAnsi().getOutputStream();
         assertEquals(output, "prop2=new-value\n");
+
+        verify(mockFacade).updateArtifactConfig(createArtifact(CDECArtifact.NAME),
+                                                ImmutableMap.of(propertyToUpdate, newValue));
+
+        verify(spyCommand.console).askUser(messageToConfirmUpdate);
+    }
+
+    @Test
+    public void testUpdateCdecConfigPropertyOnEmptyValue() throws Exception {
+        final String newValue = "";
+        final String propertyToUpdate = "prop2";
+
+        final ImmutableMap<String, String> properties = ImmutableMap.of("prop1", "value1",
+                                                                        propertyToUpdate, "value2");
+        doReturn(properties).when(mockFacade).getArtifactConfig(createArtifact(CDECArtifact.NAME));
+
+        String messageToConfirmUpdate = "Do you want to update Codenvy property '" + propertyToUpdate + "' with new value '" + newValue + "'?";
+        doReturn(true).when(spyCommand.console).askUser(messageToConfirmUpdate);
+
+        CommandInvoker commandInvoker = new CommandInvoker(spyCommand, mockCommandSession);
+        commandInvoker.argument("property", propertyToUpdate);
+        commandInvoker.argument("value", newValue);
+        CommandInvoker.Result result = commandInvoker.invoke();
+
+        String output = result.disableAnsi().getOutputStream();
+        assertEquals(output, format("%s=%s\n", propertyToUpdate, newValue));
 
         verify(mockFacade).updateArtifactConfig(createArtifact(CDECArtifact.NAME),
                                                 ImmutableMap.of(propertyToUpdate, newValue));

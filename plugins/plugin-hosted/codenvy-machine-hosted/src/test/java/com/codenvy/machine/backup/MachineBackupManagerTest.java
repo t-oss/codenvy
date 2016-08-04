@@ -16,7 +16,6 @@ package com.codenvy.machine.backup;
 
 import org.eclipse.che.api.core.ServerException;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -30,7 +29,6 @@ import org.testng.annotations.Test;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,15 +40,16 @@ import static java.lang.Thread.sleep;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.anyVararg;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.slf4j.LoggerFactory.getLogger;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
@@ -60,6 +59,7 @@ import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
  */
 @Listeners(value = {MockitoTestNGListener.class})
 public class MachineBackupManagerTest {
+    private static final Logger LOG = getLogger(MachineBackupManagerTest.class);
 
     private static final String WORKSPACE_ID                   = "workspaceId";
     private static final String BACKUP_SCRIPT                  = "/tmp/backup.sh";
@@ -219,40 +219,99 @@ public class MachineBackupManagerTest {
         verify(backupManager, times(1)).execute(anyObject(), anyInt());
     }
 
-    @Test
-    public void shouldIgnoreNewRestoreRequestIfPreviousOneHasBeenJustStarted() throws InterruptedException, IOException, TimeoutException {
-        executeNewRestore();
-        executeNewRestore();
+    @Test(expectedExceptions = ServerException.class,
+          expectedExceptionsMessageRegExp = "Restore of workspace " + WORKSPACE_ID +
+                                            " failed. Another restore process of the same workspace is in progress")
+    public void throwsExceptionOnNewRestoreIfAnotherOneIsInProgress() throws Exception {
+        // given
+        // on exec call wait until answer is not completed
+        WaitingAnswer<Void> voidWaitingAnswer = new WaitingAnswer<>();
+        doAnswer(voidWaitingAnswer).when(backupManager).execute(anyVararg(), anyInt());
 
-        awaitFinalization();
+        // start restore process
+        execute(() -> backupManager.restoreWorkspaceBackup(WORKSPACE_ID, DEST_PATH, USER_ID, USER_GID, DEST_ADDRESS));
 
-        verify(backupManager, times(1)).execute(anyObject(), anyInt());
+        voidWaitingAnswer.waitCall(1_000);
+        // when
+        try {
+            // start another restore process
+            backupManager.restoreWorkspaceBackup(WORKSPACE_ID, DEST_PATH, USER_ID, USER_GID, DEST_ADDRESS);
+            fail("Second call of restore should throw an exception");
+        } finally {
+            // then
+            // complete waiting answer
+            voidWaitingAnswer.complete();
+            verify(backupManager, timeout(100).times(1)).execute(anyObject(), anyInt());
+        }
     }
 
-    @Test
-    public void shouldIgnoreNewRestoreRequestIfOldHasNotFinishedYet() throws InterruptedException, IOException, TimeoutException {
-        executeNewRestore();
-        sleep(FAKE_BACKUP_TIME_MS / 2);
-        executeNewRestore();
+    /**
+     * Needed to ensure that failed extra restore doesn't unlock restoring
+     */
+    @Test(expectedExceptions = ServerException.class,
+          expectedExceptionsMessageRegExp = "Restore of workspace " + WORKSPACE_ID +
+                                            " failed. Another restore process of the same workspace is in progress")
+    public void throwsExceptionOnNewRestoreIfAnotherOneIsInProgressAndAnotherRestoreFailed() throws Exception {
+        // given
+        // on exec call wait until answer is not completed
+        WaitingAnswer<Void> voidWaitingAnswer = new WaitingAnswer<>();
+        doAnswer(voidWaitingAnswer).when(backupManager).execute(anyVararg(), anyInt());
 
-        awaitFinalization();
+        // start restore process
+        execute(() -> backupManager.restoreWorkspaceBackup(WORKSPACE_ID, DEST_PATH, USER_ID, USER_GID, DEST_ADDRESS));
 
-        verify(backupManager, times(1)).execute(anyObject(), anyInt());
+        voidWaitingAnswer.waitCall(1_000);
+        try {
+            // start another restore process
+            backupManager.restoreWorkspaceBackup(WORKSPACE_ID, DEST_PATH, USER_ID, USER_GID, DEST_ADDRESS);
+            fail("Second call of restore should throw an exception");
+        } catch (ServerException e) {
+            assertEquals(e.getLocalizedMessage(), "Restore of workspace " + WORKSPACE_ID +
+                                                  " failed. Another restore process of the same workspace is in progress");
+
+            // when
+            // start yet another restore process
+            backupManager.restoreWorkspaceBackup(WORKSPACE_ID, DEST_PATH, USER_ID, USER_GID, DEST_ADDRESS);
+        } finally {
+            // complete waiting answer
+            voidWaitingAnswer.complete();
+            verify(backupManager, timeout(100).times(1)).execute(anyObject(), anyInt());
+        }
     }
 
-    @Test
-    public void shouldIgnoreAllNewRestoreRequestIfOldHasNotFinishedYet() throws InterruptedException, TimeoutException, IOException {
-        executeNewRestore();
-        sleep(FAKE_BACKUP_TIME_MS / 4);
-        executeNewRestore();
-        sleep(FAKE_BACKUP_TIME_MS / 4);
-        executeNewRestore();
-        sleep(FAKE_BACKUP_TIME_MS / 4);
-        executeNewRestore();
+    @Test(expectedExceptions = ServerException.class,
+          expectedExceptionsMessageRegExp = "Restore of workspace " + WORKSPACE_ID +
+                                            " failed. Another restore process of the same workspace is in progress")
+    public void throwsExceptionOnNewRestoreAfterSuccessfulFirstOne() throws Exception {
+        // given
+        doNothing().when(backupManager).execute(anyVararg(), anyInt());
 
-        awaitFinalization();
+        // start restore process
+        backupManager.restoreWorkspaceBackup(WORKSPACE_ID, DEST_PATH, USER_ID, USER_GID, DEST_ADDRESS);
 
-        verify(backupManager, times(1)).execute(anyObject(), anyInt());
+        // when
+        backupManager.restoreWorkspaceBackup(WORKSPACE_ID, DEST_PATH, USER_ID, USER_GID, DEST_ADDRESS);
+    }
+
+    /**
+     * Needed to ensure that failed extra restore doesn't unlock restoring
+     */
+    @Test(expectedExceptions = ServerException.class,
+          expectedExceptionsMessageRegExp = "Restore of workspace " + WORKSPACE_ID +
+                                            " failed. Another restore process of the same workspace is in progress")
+    public void throwsExceptionAfterFailingRestoreThatFollowsSuccessfulOne() throws Exception {
+        // given
+        doNothing().when(backupManager).execute(anyVararg(), anyInt());
+
+        // start restore process
+        backupManager.restoreWorkspaceBackup(WORKSPACE_ID, DEST_PATH, USER_ID, USER_GID, DEST_ADDRESS);
+
+        try {
+            backupManager.restoreWorkspaceBackup(WORKSPACE_ID, DEST_PATH, USER_ID, USER_GID, DEST_ADDRESS);
+        } catch (ServerException ignore) {}
+
+        // when
+        backupManager.restoreWorkspaceBackup(WORKSPACE_ID, DEST_PATH, USER_ID, USER_GID, DEST_ADDRESS);
     }
 
     @Test
@@ -334,21 +393,6 @@ public class MachineBackupManagerTest {
     }
 
     @Test
-    public void shouldProcessOnlyOneRestoreAtTheSameTime() throws InterruptedException, IOException, TimeoutException {
-        executeNewRestore();
-        executeNewBackup();
-        executeNewRestore();
-        executeNewBackup();
-        executeNewRestore();
-
-        awaitFinalization();
-
-        verify(backupManager, times(1)).execute(cmdCaptor.capture(), anyInt());
-
-        assertEquals(cmdCaptor.getValue()[0], RESTORE_SCRIPT);
-    }
-
-    @Test
     public void shouldBackupWithCleanupAfterFinishOfCurrentBackup() throws InterruptedException, TimeoutException, IOException {
         injectWorkspaceLock(WORKSPACE_ID);
 
@@ -364,41 +408,10 @@ public class MachineBackupManagerTest {
     }
 
     @Test
-    public void shouldBackupWithCleanupAfterFinishOfCurrentRestore() throws InterruptedException, TimeoutException, IOException {
-        executeNewRestore();
-        sleep(FAKE_BACKUP_TIME_MS / 2);
-        executeNewBackupWithCleanup();
-
-        awaitFinalization();
-
+    public void shouldBackupWithCleanupAfterFinishOfCurrentRestore() throws Exception {
+        backupManager.restoreWorkspaceBackup(WORKSPACE_ID, DEST_PATH, USER_ID, USER_GID, DEST_ADDRESS);
+        backupManager.backupWorkspaceAndCleanup(WORKSPACE_ID, SRC_PATH, SRC_ADDRESS);
         verify(backupManager, times(2)).execute(anyObject(), anyInt());
-    }
-
-    @Test
-    public void shouldLogErrorIfTwoBackupsWithCleanupRunningSimultaneously() throws Exception {
-        Logger logger = mock(Logger.class);
-
-        Field loggerField = backupManager.getClass()
-                                         .getSuperclass()
-                                         .getDeclaredField("LOG");
-
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-
-        loggerField.setAccessible(true);
-        loggerField.set(null, logger);
-
-        injectWorkspaceLock(WORKSPACE_ID);
-
-        executeNewBackupWithCleanup();
-        sleep(FAKE_BACKUP_TIME_MS / 2);
-        executeNewBackupWithCleanup();
-
-        awaitFinalization();
-
-        verify(backupManager, times(1)).execute(anyObject(), anyInt());
-        verify(logger).error(anyString(), Matchers.<String>anyVararg());
     }
 
     @Test
@@ -440,40 +453,6 @@ public class MachineBackupManagerTest {
     }
 
     @Test
-    public void shouldBackupWithCleanupAfterFinishOfCurrentRestoreButNotStartBackup() throws InterruptedException,
-                                                                                             TimeoutException,
-                                                                                             IOException {
-        executeNewRestore();
-        sleep(FAKE_BACKUP_TIME_MS / 4);
-        executeNewBackupWithCleanup();
-        sleep(FAKE_BACKUP_TIME_MS / 4);
-        executeNewBackup();
-
-        awaitFinalization();
-
-        verify(backupManager, times(2)).execute(cmdCaptor.capture(), anyInt());
-
-        assertEquals(cmdCaptor.getValue()[0], BACKUP_SCRIPT);
-    }
-
-    @Test
-    public void shouldBackupWithCleanupAfterFinishOfCurrentRestoreButNotStartAnotherRestore() throws InterruptedException,
-                                                                                                     TimeoutException,
-                                                                                                     IOException {
-        executeNewRestore();
-        sleep(FAKE_BACKUP_TIME_MS / 4);
-        executeNewBackupWithCleanup();
-        sleep(FAKE_BACKUP_TIME_MS / 4);
-        executeNewRestore();
-
-        awaitFinalization();
-
-        verify(backupManager, times(2)).execute(cmdCaptor.capture(), anyInt());
-
-        assertEquals(cmdCaptor.getValue()[0], BACKUP_SCRIPT);
-    }
-
-    @Test
     public void shouldIgnoreAllBackupsAndRestoresWhileBackupWithCleanupInQueueAfterBackup() throws InterruptedException,
                                                                                                    TimeoutException,
                                                                                                    IOException {
@@ -496,33 +475,12 @@ public class MachineBackupManagerTest {
         assertEquals(cmdCaptor.getValue()[0], BACKUP_SCRIPT);
     }
 
-    @Test
-    public void shouldIgnoreAllBackupsAndRestoresWhileBackupWithCleanupInQueueAfterRestore() throws InterruptedException,
-                                                                                                    TimeoutException,
-                                                                                                    IOException {
-        executeNewRestore();
-        sleep(FAKE_BACKUP_TIME_MS / 4);
-        executeNewBackupWithCleanup();
-        sleep(FAKE_BACKUP_TIME_MS / 4);
-        executeNewBackup();
-        executeNewRestore();
-        sleep(FAKE_BACKUP_TIME_MS / 4);
-        executeNewBackup();
-        executeNewRestore();
-
-        awaitFinalization();
-
-        verify(backupManager, times(2)).execute(cmdCaptor.capture(), anyInt());
-
-        assertEquals(cmdCaptor.getValue()[0], BACKUP_SCRIPT);
-    }
-
     private void executeNewBackup() {
         executor.execute(() -> {
             try {
                 backupManager.backupWorkspace(WORKSPACE_ID, SRC_PATH, SRC_ADDRESS);
             } catch (ServerException e) {
-                e.printStackTrace();
+                LOG.error(e.getLocalizedMessage(), e);
             }
         });
     }
@@ -532,7 +490,7 @@ public class MachineBackupManagerTest {
             try {
                 backupManager.backupWorkspaceAndCleanup(WORKSPACE_ID, SRC_PATH, SRC_ADDRESS);
             } catch (ServerException e) {
-                e.printStackTrace();
+                LOG.error(e.getLocalizedMessage(), e);
             }
         });
     }
@@ -542,13 +500,13 @@ public class MachineBackupManagerTest {
             try {
                 backupManager.restoreWorkspaceBackup(WORKSPACE_ID, DEST_PATH, USER_ID, USER_GID, DEST_ADDRESS);
             } catch (ServerException e) {
-                e.printStackTrace();
+                LOG.error(e.getLocalizedMessage(), e);
             }
         });
     }
 
     private void awaitFinalization() throws InterruptedException {
-        executor.shutdown();
+        executor.shutdownNow();
         if (!executor.awaitTermination(2 * FAKE_BACKUP_TIME_MS + 1000, TimeUnit.MILLISECONDS)) {
             fail("Operation is hanged up. Terminated.");
         }
@@ -567,8 +525,78 @@ public class MachineBackupManagerTest {
             locks.setAccessible(true);
             ((ConcurrentHashMap<String, ReentrantLock>)locks.get(backupManager)).put(workspaceId, new ReentrantLock());
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
+            LOG.error(e.getLocalizedMessage(), e);
         }
     }
 
+    @FunctionalInterface
+    private interface Task {
+        void run() throws Exception;
+    }
+
+    private void execute(Task task) {
+        executor.execute(() -> {
+            try {
+                task.run();
+            } catch (Exception e) {
+                LOG.error(e.getLocalizedMessage(), e);
+            }
+        });
+    }
+
+    private static class WaitingAnswer<T> implements Answer<T> {
+        private T    result         = null;
+        // wait 1 second by default
+        private long maxWaitingTime = 1_000;
+
+        private volatile boolean isDone   = false;
+        private volatile boolean isCalled = false;
+
+        public WaitingAnswer() {}
+
+        public WaitingAnswer(long maxWaitingTime) {
+            this.maxWaitingTime = maxWaitingTime;
+        }
+
+        public WaitingAnswer(T result) {
+            this.result = result;
+        }
+
+        public WaitingAnswer(T result, long maxWaitingTime) {
+            this.result = result;
+            this.maxWaitingTime = maxWaitingTime;
+        }
+
+        public void complete() {
+            synchronized (this) {
+                isDone = true;
+                notifyAll();
+            }
+        }
+
+        public void waitCall(long milliseconds) throws InterruptedException {
+            long startWaitingTime = System.currentTimeMillis();
+            synchronized (this) {
+                while (!isCalled && System.currentTimeMillis() - startWaitingTime < milliseconds) {
+                    wait(1_000);
+                }
+            }
+        }
+
+        @Override
+        public T answer(InvocationOnMock invocationOnMock) throws Throwable {
+            isCalled = true;
+            // notify if someone is waiting for invocation of answer
+            synchronized (this) {
+                notifyAll();
+            }
+            long startWaitingTime = System.currentTimeMillis();
+            synchronized (this) {
+                while (!isDone && System.currentTimeMillis() - startWaitingTime < maxWaitingTime) {
+                    wait(maxWaitingTime);
+                }
+            }
+            return result;
+        }
+    }
 }
