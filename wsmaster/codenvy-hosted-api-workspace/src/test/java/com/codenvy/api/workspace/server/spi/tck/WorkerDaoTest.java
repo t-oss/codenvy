@@ -161,6 +161,7 @@ public class WorkerDaoTest {
         workerDao.removeWorker("unexisted_ws", "user1");
     }
 
+    @Test
     public void shouldThrowNotFoundExceptionOnRemoveIfWorkerWithSuchUserIdDoesNotExist() throws Exception {
         workerDao.removeWorker("ws1", "unexisted_user");
     }

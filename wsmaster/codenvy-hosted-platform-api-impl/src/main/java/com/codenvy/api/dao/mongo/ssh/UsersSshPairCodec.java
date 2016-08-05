@@ -21,11 +21,12 @@ import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 import org.bson.codecs.configuration.CodecRegistry;
+import org.eclipse.che.api.ssh.server.model.impl.SshPairImpl;
 
 /**
  * @author Sergii Leschenko
  */
-public class UsersSshPairCodec implements Codec<UsersSshPair> {
+public class UsersSshPairCodec implements Codec<SshPairImpl> {
     private final Codec<Document> codec;
 
     public UsersSshPairCodec(CodecRegistry registry) {
@@ -33,7 +34,7 @@ public class UsersSshPairCodec implements Codec<UsersSshPair> {
     }
 
     @Override
-    public void encode(BsonWriter writer, UsersSshPair sshPair, EncoderContext encoderContext) {
+    public void encode(BsonWriter writer, SshPairImpl sshPair, EncoderContext encoderContext) {
 
         final Document document = new Document().append("owner", sshPair.getOwner())
                                                 .append("service", sshPair.getService())
@@ -44,14 +45,14 @@ public class UsersSshPairCodec implements Codec<UsersSshPair> {
     }
 
     @Override
-    public Class<UsersSshPair> getEncoderClass() {
-        return UsersSshPair.class;
+    public Class<SshPairImpl> getEncoderClass() {
+        return SshPairImpl.class;
     }
 
     @Override
-    public UsersSshPair decode(BsonReader reader, DecoderContext decoderContext) {
+    public SshPairImpl decode(BsonReader reader, DecoderContext decoderContext) {
         final Document document = codec.decode(reader, decoderContext);
-        return new UsersSshPair(document.getString("owner"),
+        return new SshPairImpl(document.getString("owner"),
                                 document.getString("service"),
                                 document.getString("name"),
                                 document.getString("publicKey"),

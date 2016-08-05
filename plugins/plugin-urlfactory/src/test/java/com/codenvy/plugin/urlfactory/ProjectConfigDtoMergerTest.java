@@ -14,7 +14,7 @@
  */
 package com.codenvy.plugin.urlfactory;
 
-import org.eclipse.che.api.factory.shared.dto.Factory;
+import org.eclipse.che.api.factory.shared.dto.FactoryDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
@@ -50,13 +50,13 @@ public class ProjectConfigDtoMergerTest {
     private ProjectConfigDto computedProjectConfig;
 
 
-    private Factory factory;
+    private FactoryDto factory;
 
 
     @BeforeClass
     public void setup() {
         WorkspaceConfigDto workspaceConfigDto = newDto(WorkspaceConfigDto.class);
-        this.factory = newDto(Factory.class).withWorkspace(workspaceConfigDto);
+        this.factory = newDto(FactoryDto.class).withWorkspace(workspaceConfigDto);
 
         SourceStorageDto sourceStorageDto = newDto(SourceStorageDto.class).withLocation(DUMMY_LOCATION);
         computedProjectConfig = newDto(ProjectConfigDto.class).withSource(sourceStorageDto);

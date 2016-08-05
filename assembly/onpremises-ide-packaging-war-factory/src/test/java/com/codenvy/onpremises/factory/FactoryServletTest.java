@@ -14,8 +14,8 @@
  */
 package com.codenvy.onpremises.factory;
 
-import org.eclipse.che.api.factory.shared.dto.Factory;
-import org.eclipse.che.api.factory.shared.dto.Policies;
+import org.eclipse.che.api.factory.shared.dto.FactoryDto;
+import org.eclipse.che.api.factory.shared.dto.PoliciesDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
@@ -87,7 +87,7 @@ public class FactoryServletTest {
     }
 
     @Test(dataProvider = "validFactoryProvider")
-    public void shouldBeAbleToAcceptFactory(String host, String referrer, Factory factory) throws Exception {
+    public void shouldBeAbleToAcceptFactory(String host, String referrer, FactoryDto factory) throws Exception {
         when(req.getAttribute("factory")).thenReturn(factory);
         when(req.getParameterNames()).thenReturn(enumeration(singletonList("id")));
         when(req.getParameter("id")).thenReturn(factory.getId());
@@ -104,7 +104,7 @@ public class FactoryServletTest {
     @Test
     public void shouldBeAbleToAcceptFactoryWithoutId() throws Exception {
         String githubUrl = "https://github.com/eclipse/che/tree/master/dashboard";
-        Factory factory = prepareFactory();
+        FactoryDto factory = prepareFactory();
         factory.setId(null);
         when(req.getQueryString()).thenReturn("github=" + githubUrl + "&anotherParameter=foo");
         when(req.getAttribute("factory")).thenReturn(factory);
@@ -123,11 +123,11 @@ public class FactoryServletTest {
                 // referrer hostname is equal
                 {"codenvy.com",
                  "http://stackoverflow.com/some/page",
-                 prepareFactory().withPolicies(newDto(Policies.class).withReferer("stackoverflow.com"))},
+                 prepareFactory().withPolicies(newDto(PoliciesDto.class).withReferer("stackoverflow.com"))},
                 // referrer is relative
                 {"codenvy.com",
                  "/some/page/at/codenvy",
-                 prepareFactory().withPolicies(newDto(Policies.class).withReferer("codenvy.com"))}
+                 prepareFactory().withPolicies(newDto(PoliciesDto.class).withReferer("codenvy.com"))}
         };
     }
 
@@ -140,19 +140,14 @@ public class FactoryServletTest {
         };
     }
 
-    private Factory prepareFactory() {
-        return newDto(Factory.class)
+    private FactoryDto prepareFactory() {
+        return newDto(FactoryDto.class)
                 .withV("4.0")
                 .withId("ygfskjsjdaqws")
-                .withWorkspace(newDto(WorkspaceConfigDto.class)
-                                       .withProjects(singletonList(newDto(
-                                               ProjectConfigDto.class)
-                                                                                       .withSource(
-                                                                                               newDto(
-                                                                                                       SourceStorageDto.class)
-                                                                                                       .withType(
-                                                                                                               "git")
-                                                                                                       .withLocation(
-                                                                                                               "https://github.com/codenvy/test.git")))));
+                .withWorkspace(newDto(
+                        WorkspaceConfigDto.class).withProjects(singletonList(newDto(
+                        ProjectConfigDto.class).withSource(newDto(
+                        SourceStorageDto.class).withType("git")
+                                               .withLocation("https://github.com/codenvy/test.git")))));
     }
 }

@@ -14,7 +14,7 @@
  */
 package com.codenvy.plugin.urlfactory;
 
-import org.eclipse.che.api.factory.shared.dto.Factory;
+import org.eclipse.che.api.factory.shared.dto.FactoryDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 
 import javax.inject.Singleton;
@@ -47,17 +47,17 @@ public class ProjectConfigDtoMerger {
      * @param computedProjectConfig
      * @return
      */
-    public Factory merge(Factory factory, ProjectConfigDto computedProjectConfig) {
+    public FactoryDto merge(FactoryDto factory, ProjectConfigDto computedProjectConfig) {
 
-        List<ProjectConfigDto> projectConfigDtoList = factory.getWorkspace().getProjects();
-        if (projectConfigDtoList == null || projectConfigDtoList.isEmpty()) {
+        final List<ProjectConfigDto> projects = factory.getWorkspace().getProjects();
+        if (projects == null || projects.isEmpty()) {
             factory.getWorkspace().setProjects(singletonList(computedProjectConfig));
             return factory;
         }
 
         // if we're here, they are projects
-        if (projectConfigDtoList.size() == 1) {
-            ProjectConfigDto projectConfig = projectConfigDtoList.get(0);
+        if (projects.size() == 1) {
+            ProjectConfigDto projectConfig = projects.get(0);
             if (projectConfig.getSource() == null)
                 projectConfig.setSource(computedProjectConfig.getSource());
         }

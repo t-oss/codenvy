@@ -17,7 +17,7 @@ package com.codenvy.onpremises.factory.filter;
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.factory.server.FactoryService;
-import org.eclipse.che.api.factory.shared.dto.Factory;
+import org.eclipse.che.api.factory.shared.dto.FactoryDto;
 import org.eclipse.che.api.user.server.UserService;
 import org.eclipse.che.api.user.shared.dto.UserDto;
 
@@ -76,10 +76,10 @@ public class FactoryRetrieverFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest req, ServletResponse resp, FilterChain filterChain)
-            throws IOException, ServletException {
-        HttpServletRequest httpReq = (HttpServletRequest)req;
-        Factory requestedFactory;
+    public void doFilter(ServletRequest req, ServletResponse resp, FilterChain filterChain) throws IOException,
+                                                                                                   ServletException {
+        final HttpServletRequest httpReq = (HttpServletRequest)req;
+        final FactoryDto requestedFactory;
         try {
             if (httpReq.getParameter("id") != null) {
                 String getFactoryUrl = fromUri(apiEndPoint).path(FactoryService.class)
@@ -89,7 +89,7 @@ public class FactoryRetrieverFilter implements Filter {
                 requestedFactory = httpRequestFactory.fromUrl(getFactoryUrl)
                                                      .setMethod("GET")
                                                      .request()
-                                                     .asDto(Factory.class);
+                                                     .asDto(FactoryDto.class);
             } else if (httpReq.getParameter("user") != null && httpReq.getParameter("name") != null) {
 
                 final String getFactoryUrl = fromUri(apiEndPoint).path(FactoryService.class)
@@ -101,19 +101,19 @@ public class FactoryRetrieverFilter implements Filter {
                                                                     .build()
                                                                     .toString();
                 final UserDto user = httpRequestFactory.fromUrl(getUserByNameUrl)
-                                                              .setMethod("GET")
-                                                              .request()
-                                                              .asDto(UserDto.class);
-                final List<Factory> matchedFactories = httpRequestFactory.fromUrl(getFactoryUrl)
-                                                                         .setMethod("GET")
-                                                                         .addQueryParam("name", httpReq.getParameter("name"))
-                                                                         .addQueryParam("creator.userId", user.getId())
-                                                                         .request()
-                                                                         .asList(Factory.class);
+                                                       .setMethod("GET")
+                                                       .request()
+                                                       .asDto(UserDto.class);
+                final List<FactoryDto> matchedFactories = httpRequestFactory.fromUrl(getFactoryUrl)
+                                                                            .setMethod("GET")
+                                                                            .addQueryParam("name", httpReq.getParameter("name"))
+                                                                            .addQueryParam("creator.userId", user.getId())
+                                                                            .request()
+                                                                            .asList(FactoryDto.class);
                 if (matchedFactories.isEmpty()) {
                     dispatchToErrorPage(httpReq, resp, INVALID_FACTORY_URL_PAGE, "We can not find factory with given name and user id.");
                     return;
-                } 
+                }
                 requestedFactory = matchedFactories.get(0);
             } else {
                 // asked for a parameters factory
@@ -122,20 +122,20 @@ public class FactoryRetrieverFilter implements Filter {
                 Map<String, String> map = new HashMap<>();
                 Enumeration<String> parameterNames = httpReq.getParameterNames();
                 while (parameterNames.hasMoreElements()) {
-                    String parameterName  = parameterNames.nextElement();
+                    String parameterName = parameterNames.nextElement();
                     map.put(parameterName, httpReq.getParameter(parameterName));
                 }
 
                 // Create URL
                 final String resolveFactoryUrl = fromUri(apiEndPoint).path(FactoryService.class)
-                                                                 .path(FactoryService.class, "resolveFactory")
-                                                                 .build().toString();
+                                                                     .path(FactoryService.class, "resolveFactory")
+                                                                     .build().toString();
                 // perform call
                 requestedFactory = httpRequestFactory.fromUrl(resolveFactoryUrl)
                                                      .setMethod(POST)
                                                      .setBody(map)
                                                      .request()
-                                                     .asDto(Factory.class);
+                                                     .asDto(FactoryDto.class);
             }
 
             req.setAttribute("factory", requestedFactory);

@@ -15,7 +15,7 @@
 package com.codenvy.plugin.pullrequest.client.utils;
 
 import org.eclipse.che.api.core.rest.shared.dto.Link;
-import org.eclipse.che.api.factory.shared.dto.Factory;
+import org.eclipse.che.api.factory.shared.dto.FactoryDto;
 
 import javax.validation.constraints.NotNull;
 
@@ -40,7 +40,7 @@ public final class FactoryHelper {
      *         the factory.
      * @return the create project url or {@code null} if none.
      */
-    public static String getAcceptFactoryUrl(@NotNull Factory factory) {
+    public static String getAcceptFactoryUrl(@NotNull FactoryDto factory) {
         for (final Link oneLink : factory.getLinks()) {
             if (ACCEPT_FACTORY_LINK_REF.equals(oneLink.getRel())) {
                 return oneLink.getHref();

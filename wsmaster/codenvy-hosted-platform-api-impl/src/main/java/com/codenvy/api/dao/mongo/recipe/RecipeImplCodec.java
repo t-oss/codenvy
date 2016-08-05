@@ -14,8 +14,6 @@
  */
 package com.codenvy.api.dao.mongo.recipe;
 
-import com.codenvy.api.dao.mongo.AbstractDocumentCodec;
-
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
@@ -23,13 +21,9 @@ import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 import org.bson.codecs.configuration.CodecRegistry;
-import org.eclipse.che.api.machine.server.model.impl.AclEntryImpl;
 import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
 
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * Encodes and decodes {@link RecipeImpl}EntryImp
@@ -39,11 +33,9 @@ import static java.util.stream.Collectors.toList;
 public class RecipeImplCodec implements Codec<RecipeImpl> {
 
     private final Codec<Document>                     codec;
-    private final AbstractDocumentCodec<AclEntryImpl> aclEntryCodec;
 
     public RecipeImplCodec(CodecRegistry registry) {
         this.codec = registry.get(Document.class);
-        this.aclEntryCodec = (AbstractDocumentCodec<AclEntryImpl>)registry.get(AclEntryImpl.class);
     }
 
     @Override
@@ -52,23 +44,12 @@ public class RecipeImplCodec implements Codec<RecipeImpl> {
         @SuppressWarnings("unchecked")//tags is always list of strings
         final List<String> tags = (List<String>)document.get("tags");
 
-        @SuppressWarnings("unchecked")//acl is always list of strings
-        final List<Document> aclDocument = (List<Document>)document.get("acl");
-
-        List<AclEntryImpl> aclEntries = null;
-        if (aclDocument != null) {
-            aclEntries = aclDocument.stream()
-                                    .map(aclEntryCodec::decode)
-                                    .collect(toList());
-        }
-
         return new RecipeImpl().withId(document.getString("_id"))
                                .withName(document.getString("name"))
                                .withCreator(document.getString("creator"))
                                .withType(document.getString("type"))
                                .withScript(document.getString("script"))
-                               .withTags(tags)
-                               .withAcl(aclEntries);
+                               .withTags(tags);
     }
 
     @Override
@@ -79,11 +60,6 @@ public class RecipeImplCodec implements Codec<RecipeImpl> {
                                                 .append("script", recipe.getScript())
                                                 .append("type", recipe.getType())
                                                 .append("tags", recipe.getTags());
-        if (recipe.getAcl() != null) {
-            document.append("acl", recipe.getAcl().stream()
-                                         .map(aclEntryCodec::encode)
-                                         .collect(Collectors.toList()));
-        }
 
         codec.encode(writer, document, encoderContext);
     }

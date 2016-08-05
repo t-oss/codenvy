@@ -15,14 +15,8 @@
 package com.codenvy.api.deploy;
 
 import com.codenvy.api.AdminApiModule;
-import com.codenvy.api.dao.authentication.PasswordEncryptor;
-import com.codenvy.api.dao.authentication.SSHAPasswordEncryptor;
-import com.codenvy.api.dao.ldap.AdminUserDaoImpl;
-import com.codenvy.api.dao.ldap.LdapProfileDao;
-import com.codenvy.api.dao.ldap.LdapUserDao;
 import com.codenvy.api.dao.mongo.MachineMongoDatabaseProvider;
 import com.codenvy.api.dao.mongo.OrganizationMongoDatabaseProvider;
-import com.codenvy.api.dao.mongo.WorkspaceDaoImpl;
 import com.codenvy.api.factory.FactoryMongoDatabaseProvider;
 import com.codenvy.api.permission.server.PermissionChecker;
 import com.codenvy.api.user.server.AdminUserService;
@@ -49,10 +43,14 @@ import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
+import com.google.inject.persist.jpa.JpaPersistModule;
 import com.mongodb.client.MongoDatabase;
 import com.palominolabs.metrics.guice.InstrumentationModule;
 
+import org.eclipse.che.api.auth.AuthenticationDao;
 import org.eclipse.che.api.auth.AuthenticationService;
+import org.eclipse.che.api.core.jdbc.jpa.eclipselink.EntityListenerInjectionManagerInitializer;
+import org.eclipse.che.api.core.jdbc.jpa.guice.JpaInitializer;
 import org.eclipse.che.api.core.notification.WSocketEventBusServer;
 import org.eclipse.che.api.core.rest.ApiInfoService;
 import org.eclipse.che.api.factory.server.FactoryAcceptValidator;
@@ -60,32 +58,31 @@ import org.eclipse.che.api.factory.server.FactoryCreateValidator;
 import org.eclipse.che.api.factory.server.FactoryEditValidator;
 import org.eclipse.che.api.factory.server.FactoryParametersResolver;
 import org.eclipse.che.api.factory.server.FactoryService;
+import org.eclipse.che.api.factory.server.jpa.JpaFactoryDao;
+import org.eclipse.che.api.factory.server.spi.FactoryDao;
 import org.eclipse.che.api.machine.server.MachineServiceLinksInjector;
-import org.eclipse.che.api.machine.server.spi.RecipeDao;
+import org.eclipse.che.api.machine.server.jpa.MachineJpaModule;
 import org.eclipse.che.api.machine.server.recipe.RecipeLoader;
 import org.eclipse.che.api.machine.server.recipe.RecipeService;
 import org.eclipse.che.api.machine.server.recipe.providers.RecipeProvider;
-import org.eclipse.che.api.machine.server.spi.SnapshotDao;
 import org.eclipse.che.api.machine.server.wsagent.WsAgentLauncher;
 import org.eclipse.che.api.project.server.handlers.ProjectHandler;
 import org.eclipse.che.api.project.server.template.ProjectTemplateDescriptionLoader;
 import org.eclipse.che.api.project.server.template.ProjectTemplateRegistry;
 import org.eclipse.che.api.project.server.template.ProjectTemplateService;
-import org.eclipse.che.api.ssh.server.spi.SshDao;
+import org.eclipse.che.api.ssh.server.jpa.SshJpaModule;
 import org.eclipse.che.api.user.server.PreferencesService;
 import org.eclipse.che.api.user.server.ProfileService;
 import org.eclipse.che.api.user.server.TokenValidator;
 import org.eclipse.che.api.user.server.UserService;
-import org.eclipse.che.api.user.server.spi.PreferenceDao;
-import org.eclipse.che.api.user.server.spi.ProfileDao;
-import org.eclipse.che.api.user.server.spi.UserDao;
+import org.eclipse.che.api.user.server.jpa.UserJpaModule;
 import org.eclipse.che.api.workspace.server.WorkspaceManager;
 import org.eclipse.che.api.workspace.server.WorkspaceService;
 import org.eclipse.che.api.workspace.server.WorkspaceServiceLinksInjector;
 import org.eclipse.che.api.workspace.server.WorkspaceValidator;
 import org.eclipse.che.api.workspace.server.event.WorkspaceMessenger;
+import org.eclipse.che.api.workspace.server.jpa.WorkspaceJpaModule;
 import org.eclipse.che.api.workspace.server.spi.StackDao;
-import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 import org.eclipse.che.api.workspace.server.stack.StackLoader;
 import org.eclipse.che.api.workspace.server.stack.StackService;
 import org.eclipse.che.commons.schedule.executor.ScheduleModule;
@@ -157,7 +154,6 @@ public class OnPremisesIdeApiModule extends AbstractModule {
                                  .toProvider(FactoryMongoDatabaseProvider.class);
 
 
-        bind(org.eclipse.che.api.factory.server.FactoryStore.class).to(com.codenvy.api.dao.mongo.MongoDBFactoryStore.class);
         bind(FactoryAcceptValidator.class).to(org.eclipse.che.api.factory.server.impl.FactoryAcceptValidatorImpl.class);
         bind(FactoryCreateValidator.class).to(org.eclipse.che.api.factory.server.impl.FactoryCreateValidatorImpl.class);
         bind(FactoryEditValidator.class).to(org.eclipse.che.api.factory.server.impl.FactoryEditValidatorImpl.class);
@@ -175,25 +171,33 @@ public class OnPremisesIdeApiModule extends AbstractModule {
 
 
         //user-workspace-account
-        bind(PasswordEncryptor.class).toInstance(new SSHAPasswordEncryptor());
 
-        bind(WorkspaceDao.class).to(WorkspaceDaoImpl.class);
-        bind(UserDao.class).to(LdapUserDao.class);
-        bind(ProfileDao.class).to(LdapProfileDao.class);
-        bind(AdminUserDao.class).to(AdminUserDaoImpl.class);
-        bind(PreferenceDao.class).to(com.codenvy.api.dao.mongo.PreferenceDaoImpl.class);
-        bind(SshDao.class).to(com.codenvy.api.dao.mongo.ssh.SshDaoImpl.class);
+//        bind(WorkspaceDao.class).to(WorkspaceDaoImpl.class);
+//        bind(UserDao.class).to(LdapUserDao.class);
+//        bind(ProfileDao.class).to(LdapProfileDao.class);
+//        bind(AdminUserDao.class).to(AdminUserDaoImpl.class);
+//        bind(PreferenceDao.class).to(com.codenvy.api.dao.mongo.PreferenceDaoImpl.class);
+//        bind(RecipeDao.class).to(com.codenvy.api.dao.mongo.recipe.RecipeDaoImpl.class);
+
+        install(new JpaPersistModule("main"));
+        bind(JpaInitializer.class).asEagerSingleton();
+        bind(EntityListenerInjectionManagerInitializer.class).asEagerSingleton();
+        install(new UserJpaModule());
+        install(new SshJpaModule());
+        install(new WorkspaceJpaModule());
+        install(new MachineJpaModule());
+        bind(FactoryDao.class).to(JpaFactoryDao.class);
         bind(WorkerDao.class).to(com.codenvy.api.dao.mongo.WorkerDaoImpl.class);
-        bind(org.eclipse.che.api.auth.AuthenticationDao.class).to(com.codenvy.api.dao.authentication.AuthenticationDaoImpl.class);
-        bind(RecipeDao.class).to(com.codenvy.api.dao.mongo.recipe.RecipeDaoImpl.class);
-        bind(RecipeLoader.class);
-        Multibinder<String> recipeBinder = Multibinder.newSetBinder(binder(), String.class, Names.named("predefined.recipe.path"));
-        recipeBinder.addBinding().toProvider(RecipeProvider.class);
-        recipeBinder.addBinding().toInstance("predefined-recipes.json");
+        bind(AuthenticationDao.class).to(com.codenvy.api.dao.authentication.AuthenticationDaoImpl.class);
+        bind(AdminUserDao.class).to(com.codenvy.api.dao.jpa.JpaAdminUserDao.class);
+//        bind(RecipeLoader.class);
+//        final Multibinder<String> recipeBinder = Multibinder.newSetBinder(binder(), String.class, Names.named("predefined.recipe.path"));
+//        recipeBinder.addBinding().toProvider(RecipeProvider.class);
+//        recipeBinder.addBinding().toInstance("predefined-recipes.json");
 
         bind(StackService.class);
-        bind(StackLoader.class);
-        bind(StackDao.class).to(com.codenvy.api.dao.mongo.stack.StackDaoImpl.class);
+//        bind(StackLoader.class);
+//        bind(StackDao.class).to(com.codenvy.api.dao.mongo.stack.StackDaoImpl.class);
 
         bind(WorkspaceValidator.class).to(org.eclipse.che.api.workspace.server.DefaultWorkspaceValidator.class);
         bind(WorkspaceManager.class).to(com.codenvy.api.workspace.LimitsCheckingWorkspaceManager.class);
@@ -286,7 +290,6 @@ public class OnPremisesIdeApiModule extends AbstractModule {
         install(new InstrumentationModule());
         bind(org.eclipse.che.api.ssh.server.SshService.class);
         bind(org.eclipse.che.api.machine.server.MachineService.class);
-        bind(SnapshotDao.class).to(com.codenvy.api.dao.mongo.SnapshotDaoImpl.class);
         bind(com.mongodb.DB.class).annotatedWith(Names.named("mongo.db.machine"))
                                   .toProvider(com.codenvy.api.dao.mongo.MachineMongoDBProvider.class);
 
