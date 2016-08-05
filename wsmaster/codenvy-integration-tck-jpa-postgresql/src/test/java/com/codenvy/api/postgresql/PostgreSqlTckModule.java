@@ -117,7 +117,6 @@ public class PostgreSqlTckModule extends TckModule {
             final EntityManager manager = managerProvider.get();
             for (Pair<String, Map<String, String>> pair : entities) {
                 manager.persist(new UserImpl(pair.first, "email_" + pair.first, "name_" + pair.first));
-                manager.persist(new PreferenceEntity(pair.first, pair.second));
             }
         }
 
@@ -127,7 +126,6 @@ public class PostgreSqlTckModule extends TckModule {
             manager.createQuery("SELECT prefs FROM Preference prefs", PreferenceEntity.class)
                    .getResultList()
                    .forEach(manager::remove);
-            manager.createQuery("DELETE FROM \"User\"").executeUpdate();
         }
     }
 }
