@@ -62,6 +62,4 @@ public class WorkerPrimaryKey implements Serializable {
         hash = 31 * hash + Objects.hashCode(workspaceId);
         return hash;
     }
-
-
 }

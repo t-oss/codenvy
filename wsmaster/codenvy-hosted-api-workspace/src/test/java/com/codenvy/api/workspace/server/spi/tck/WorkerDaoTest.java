@@ -28,6 +28,7 @@ import org.testng.annotations.Test;
 
 import javax.inject.Inject;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.testng.Assert.assertEquals;
@@ -75,7 +76,7 @@ public class WorkerDaoTest {
 
     @Test
     public void shouldReplaceExistingWorkerOnStoring() throws Exception {
-        WorkerImpl replace = new WorkerImpl("ws1", "user1", Arrays.asList("read"));
+        WorkerImpl replace = new WorkerImpl("ws1", "user1", Collections.singletonList("read"));
         workerDao.store(replace);
         assertEquals(workerDao.getWorker("ws1", "user1"), replace);
     }
@@ -111,7 +112,7 @@ public class WorkerDaoTest {
     @Test
     public void shouldGetWorkersByWorkspaceId() throws Exception {
         List<WorkerImpl> actual = workerDao.getWorkers("ws1");
-        assertEquals(actual, Arrays.asList(workers).subList(0,2));
+        assertEquals(actual, Arrays.asList(workers).subList(0, 2));
     }
 
     public void shouldGetWorkersByUserId() throws Exception {
@@ -165,5 +166,4 @@ public class WorkerDaoTest {
     public void shouldThrowNotFoundExceptionOnRemoveIfWorkerWithSuchUserIdDoesNotExist() throws Exception {
         workerDao.removeWorker("ws1", "unexisted_user");
     }
-
 }

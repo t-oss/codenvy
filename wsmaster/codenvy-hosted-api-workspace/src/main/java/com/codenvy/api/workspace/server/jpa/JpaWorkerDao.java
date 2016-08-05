@@ -33,7 +33,6 @@ import static java.util.Objects.requireNonNull;
  * Jpa implementation of {@link WorkerDao},
  *
  * @author Max Shaposhnik
- *
  */
 public class JpaWorkerDao implements WorkerDao {
 
@@ -112,7 +111,7 @@ public class JpaWorkerDao implements WorkerDao {
 
     @Transactional
     protected void doCreate(WorkerImpl entity) {
-       managerProvider.get().merge(entity);
+        managerProvider.get().merge(entity);
     }
 
     @Transactional
