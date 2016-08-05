@@ -24,9 +24,15 @@ export class FactoryInformationCtrl {
    * Default constructor that is using resource injection
    * @ngInject for Dependency injection
    */
-  constructor($scope, codenvyAPI, cheNotification) {
+  constructor($scope, codenvyAPI, cheNotification, $location, $mdDialog, $log, $timeout) {
     this.codenvyAPI = codenvyAPI;
     this.cheNotification = cheNotification;
+    this.$location = $location;
+    this.$mdDialog = $mdDialog;
+    this.$log = $log;
+    this.$timeout = $timeout;
+
+    this.timeoutPromise;
 
     let ctrl = this;
 
@@ -38,9 +44,19 @@ export class FactoryInformationCtrl {
     });
   }
 
-  //Udpate factory content.
-  updateFactory(factory) {
+  updateFactory(isFormValid) {
+    if (!isFormValid || this.copyOriginFactory.name === this.factory.originFactory.name) {
+      return;
+    }
 
+    this.$timeout.cancel(this.timeoutPromise);
+    this.timeoutPromise = this.$timeout(() => {
+      this.doUpdateFactory(this.copyOriginFactory);
+    }, 2000);
+  }
+
+  //Udpate factory content.
+  doUpdateFactory(factory) {
     let promise = this.codenvyAPI.getFactory().setFactory(factory);
 
     promise.then(() => {
@@ -48,7 +64,29 @@ export class FactoryInformationCtrl {
       this.cheNotification.showInfo('Factory information successfully updated.');
     }, (error) => {
       this.cheNotification.showError(error.data.message ? error.data.message : 'Update factory failed.');
-      console.log('error', error);
+      this.$log.log(error);
+    });
+  }
+
+  //Perform factory deletion.
+  deleteFactory(event) {
+    let confirm = this.$mdDialog.confirm()
+      .title('Would you like to delete the factory ' + (this.factory.originFactory.name ? '"' + this.factory.originFactory.name + '"' : this.factory.originFactory.id + '?'))
+      .content('Please confirm for the factory removal.')
+      .ariaLabel('Remove factory')
+      .ok('Delete it!')
+      .cancel('Cancel')
+      .clickOutsideToClose(true)
+      .targetEvent(event);
+    this.$mdDialog.show(confirm).then(() => {
+      // remove it !
+      let promise = this.codenvyAPI.getFactory().deleteFactoryById(this.factory.originFactory.id);
+      promise.then(() => {
+        this.$location.path('/factories');
+      }, (error) => {
+        this.cheNotification.showError(error.data.message ? error.data.message : 'Delete failed.');
+        this.$log.log(error);
+      });
     });
   }
 }
