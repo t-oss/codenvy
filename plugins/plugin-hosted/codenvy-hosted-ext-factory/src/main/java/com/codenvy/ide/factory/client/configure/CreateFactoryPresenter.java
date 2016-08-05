@@ -19,7 +19,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.api.core.rest.shared.dto.Link;
-import org.eclipse.che.api.factory.shared.dto.Factory;
+import org.eclipse.che.api.factory.shared.dto.FactoryDto;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.PromiseError;
@@ -62,9 +62,9 @@ public class CreateFactoryPresenter implements CreateFactoryView.ActionDelegate 
     public void onCreateClicked() {
         final String factoryName = view.getFactoryName();
         factoryService.getFactoryJson(appContext.getWorkspace().getId(), null)
-                      .then(new Operation<Factory>() {
+                      .then(new Operation<FactoryDto>() {
                           @Override
-                          public void apply(final Factory factory) throws OperationException {
+                          public void apply(final FactoryDto factory) throws OperationException {
                               factoryService.findFactory(null, null, Collections.singletonList(Pair.of("name", factoryName)))
                                             .then(saveFactory(factory, factoryName))
                                             .catchError(logError());
@@ -83,17 +83,17 @@ public class CreateFactoryPresenter implements CreateFactoryView.ActionDelegate 
         view.close();
     }
 
-    private Operation<List<Factory>> saveFactory(final Factory factory, final String factoryName) {
-        return new Operation<List<Factory>>() {
+    private Operation<List<FactoryDto>> saveFactory(final FactoryDto factory, final String factoryName) {
+        return new Operation<List<FactoryDto>>() {
             @Override
-            public void apply(List<Factory> factories) throws OperationException {
+            public void apply(List<FactoryDto> factories) throws OperationException {
                 if (!factories.isEmpty()) {
                     view.showFactoryNameError(locale.createFactoryAlreadyExist(), null);
                 } else {
                     factoryService.saveFactory(factory.withName(factoryName))
-                                  .then(new Operation<Factory>() {
+                                  .then(new Operation<FactoryDto>() {
                                       @Override
-                                      public void apply(Factory factory) throws OperationException {
+                                      public void apply(FactoryDto factory) throws OperationException {
                                           final Link link = factory.getLink("accept-named");
                                           if (link != null) {
                                               view.setAcceptFactoryLink(link.getHref());

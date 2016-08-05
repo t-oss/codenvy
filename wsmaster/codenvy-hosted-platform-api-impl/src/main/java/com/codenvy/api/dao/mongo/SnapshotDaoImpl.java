@@ -24,9 +24,9 @@ import com.mongodb.client.model.IndexOptions;
 
 import org.bson.Document;
 import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.machine.server.spi.SnapshotDao;
 import org.eclipse.che.api.machine.server.exception.SnapshotException;
 import org.eclipse.che.api.machine.server.model.impl.SnapshotImpl;
+import org.eclipse.che.api.machine.server.spi.SnapshotDao;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -101,11 +101,10 @@ public class SnapshotDaoImpl implements SnapshotDao {
     }
 
     @Override
-    public List<SnapshotImpl> findSnapshots(String namespace, String workspaceId) throws SnapshotException {
-        requireNonNull(namespace, "Snapshot namespace must not be null");
+    public List<SnapshotImpl> findSnapshots(String workspaceId) throws SnapshotException {
         requireNonNull(workspaceId, "Workspace id must not be null");
 
-        return collection.find(and(eq("workspaceId", workspaceId), eq("namespace", namespace))).into(new ArrayList<>());
+        return collection.find(eq("workspaceId", workspaceId)).into(new ArrayList<>());
     }
 
     @Override

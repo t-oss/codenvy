@@ -20,9 +20,9 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.api.factory.shared.dto.Action;
-import org.eclipse.che.api.factory.shared.dto.Factory;
-import org.eclipse.che.api.factory.shared.dto.Ide;
+import org.eclipse.che.api.factory.shared.dto.IdeActionDto;
+import org.eclipse.che.api.factory.shared.dto.FactoryDto;
+import org.eclipse.che.api.factory.shared.dto.IdeDto;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.factory.FactoryAcceptedEvent;
@@ -70,7 +70,7 @@ public class AcceptFactoryHandler {
      * Accepts factory if it is present in context of application
      */
     public void process() {
-        final Factory factory;
+        final FactoryDto factory;
         if ((factory = appContext.getFactory()) == null) {
             return;
         }
@@ -95,7 +95,7 @@ public class AcceptFactoryHandler {
         });
     }
 
-    private void startImporting(final Factory factory) {
+    private void startImporting(final FactoryDto factory) {
         factoryProjectImporter.startImporting(factory,
                                               new AsyncCallback<Void>() {
                                                   @Override
@@ -113,23 +113,23 @@ public class AcceptFactoryHandler {
                                               });
     }
 
-    private void performOnAppLoadedActions(final Factory factory) {
-        final Ide ide = factory.getIde();
+    private void performOnAppLoadedActions(final FactoryDto factory) {
+        final IdeDto ide = factory.getIde();
         if (ide == null || ide.getOnAppLoaded() == null) {
             return;
         }
-        for (Action action : ide.getOnAppLoaded().getActions()) {
+        for (IdeActionDto action : ide.getOnAppLoaded().getActions()) {
             actionManager.performAction(action.getId(), action.getProperties());
         }
     }
 
-    private void performOnProjectsLoadedActions(final Factory factory) {
-        final Ide ide = factory.getIde();
+    private void performOnProjectsLoadedActions(final FactoryDto factory) {
+        final IdeDto ide = factory.getIde();
         if (ide == null || ide.getOnProjectsLoaded() == null) {
             eventBus.fireEvent(new FactoryAcceptedEvent(factory));
             return;
         }
-        for (Action action : ide.getOnProjectsLoaded().getActions()) {
+        for (IdeActionDto action : ide.getOnProjectsLoaded().getActions()) {
             actionManager.performAction(action.getId(), action.getProperties());
         }
         eventBus.fireEvent(new FactoryAcceptedEvent(factory));

@@ -24,7 +24,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.inject.Singleton;
 
-import org.eclipse.che.api.factory.shared.dto.Factory;
+import org.eclipse.che.api.factory.shared.dto.FactoryDto;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Operation;
@@ -65,13 +65,13 @@ public class GenerateReviewFactoryStep implements Step {
     public void execute(final WorkflowExecutor executor, final Context context) {
         factoryService.getFactoryJson(appContext.getWorkspaceId(), null)
                       .then(updateProjectAttributes(context))
-                      .then(new Operation<Factory>() {
+                      .then(new Operation<FactoryDto>() {
                           @Override
-                          public void apply(Factory factory) throws OperationException {
+                          public void apply(FactoryDto factory) throws OperationException {
                               factoryService.saveFactory(factory)
-                                            .then(new Operation<Factory>() {
+                                            .then(new Operation<FactoryDto>() {
                                                 @Override
-                                                public void apply(Factory factory) throws OperationException {
+                                                public void apply(FactoryDto factory) throws OperationException {
                                                     context.setReviewFactoryUrl(FactoryHelper.getAcceptFactoryUrl(factory));
                                                     executor.done(GenerateReviewFactoryStep.this, context);
                                                 }
@@ -98,10 +98,10 @@ public class GenerateReviewFactoryStep implements Step {
                       });
     }
 
-    private Function<Factory, Factory> updateProjectAttributes(final Context context) {
-        return new Function<Factory, Factory>() {
+    private Function<FactoryDto, FactoryDto> updateProjectAttributes(final Context context) {
+        return new Function<FactoryDto, FactoryDto>() {
             @Override
-            public Factory apply(Factory factory) throws FunctionException {
+            public FactoryDto apply(FactoryDto factory) throws FunctionException {
                 final Optional<ProjectConfigDto> projectOpt = FluentIterable.from(factory.getWorkspace().getProjects())
                                                                             .filter(new Predicate<ProjectConfigDto>() {
                                                                                 @Override

@@ -54,7 +54,7 @@ import static org.testng.Assert.assertEquals;
 @Listeners(value = MockitoTestNGListener.class)
 public class SshDaoImplTest {
     private static final String OWNER = "user123";
-    MongoCollection<UsersSshPair> collection;
+    MongoCollection<SshPairImpl> collection;
     SshDaoImpl                    sshDao;
 
     @BeforeMethod
@@ -64,15 +64,15 @@ public class SshDaoImplTest {
         final MongoDatabase database = fongo.getDatabase("ssh")
                                             .withCodecRegistry(fromRegistries(defaultRegistry,
                                                                               fromCodecs(new UsersSshPairCodec(defaultRegistry))));
-        collection = database.getCollection("ssh", UsersSshPair.class);
+        collection = database.getCollection("ssh", SshPairImpl.class);
         sshDao = new SshDaoImpl(database, "ssh");
     }
 
     @Test
     public void shouldCreateSshPair() throws Exception {
-        SshPairImpl sshPair = createSshPair();
+        SshPairImpl sshPair = createSshPair(OWNER);
 
-        sshDao.create(OWNER, sshPair);
+        sshDao.create(sshPair);
 
         final SshPairImpl result = collection.find(and(eq("owner", OWNER),
                                                        eq("service", sshPair.getService()),
@@ -84,13 +84,13 @@ public class SshDaoImplTest {
     @Test(expectedExceptions = NullPointerException.class,
           expectedExceptionsMessageRegExp = "Ssh pair must not be null")
     public void shouldThrowExceptionIfSshPairIsNull() throws Exception {
-        sshDao.create(OWNER, null);
+        sshDao.create(null);
     }
 
     @Test(expectedExceptions = NullPointerException.class,
           expectedExceptionsMessageRegExp = "Owner must not be null")
     public void shouldThrowExceptionIfOwnerIsNull() throws Exception {
-        sshDao.create(null, createSshPair());
+        sshDao.create(createSshPair(null));
     }
 
     @Test(expectedExceptions = ConflictException.class,
@@ -102,7 +102,7 @@ public class SshDaoImplTest {
         when(writeError.getCategory()).thenReturn(ErrorCategory.DUPLICATE_KEY);
         final MongoDatabase db = mockDatabase(col -> doThrow(exception).when(col).insertOne(any()));
 
-        new SshDaoImpl(db, "ssh").create(OWNER, createSshPair());
+        new SshDaoImpl(db, "ssh").create(createSshPair(OWNER));
     }
 
     @Test(expectedExceptions = ServerException.class)
@@ -112,20 +112,20 @@ public class SshDaoImplTest {
         when(exception.getError()).thenReturn(writeError);
         final MongoDatabase db = mockDatabase(col -> doThrow(exception).when(col).insertOne(any()));
 
-        new SshDaoImpl(db, "ssh").create(OWNER, createSshPair());
+        new SshDaoImpl(db, "ssh").create(createSshPair(OWNER));
     }
 
     @Test(expectedExceptions = ServerException.class)
     public void shouldThrowExceptionWhenMongoExceptionWasThrew() throws Exception {
         final MongoDatabase db = mockDatabase(col -> doThrow(mock(MongoException.class)).when(col).insertOne(any()));
 
-        new SshDaoImpl(db, "ssh").create(OWNER, createSshPair());
+        new SshDaoImpl(db, "ssh").create(createSshPair(OWNER));
     }
 
     @Test
     public void shouldRemoveSshPair() throws Exception {
-        SshPairImpl sshPair = createSshPair();
-        sshDao.create(OWNER, sshPair);
+        SshPairImpl sshPair = createSshPair(OWNER);
+        sshDao.create(sshPair);
 
         sshDao.remove(OWNER, sshPair.getService(), sshPair.getName());
 
@@ -140,8 +140,8 @@ public class SshDaoImplTest {
 
     @Test
     public void testGetSnapshotByOwnerAndServiceAndName() throws Exception {
-        SshPairImpl sshPair = createSshPair();
-        sshDao.create(OWNER, sshPair);
+        SshPairImpl sshPair = createSshPair(OWNER);
+        sshDao.create(sshPair);
 
         final SshPairImpl result = sshDao.get(OWNER, sshPair.getService(), sshPair.getName());
 
@@ -155,8 +155,8 @@ public class SshDaoImplTest {
 
     @Test
     public void testGetSnapshotByOwnerAndService() throws Exception {
-        SshPairImpl sshPair = createSshPair();
-        sshDao.create(OWNER, sshPair);
+        SshPairImpl sshPair = createSshPair(OWNER);
+        sshDao.create(sshPair);
 
         final List<SshPairImpl> result = sshDao.get(OWNER, sshPair.getService());
 
@@ -164,20 +164,21 @@ public class SshDaoImplTest {
         assertEquals(result.get(0), sshPair);
     }
 
-    private SshPairImpl createSshPair() {
-        return new SshPairImpl("service",
+    private SshPairImpl createSshPair(String owner) {
+        return new SshPairImpl(owner,
+                               "service",
                                "name",
                                "publicKey",
                                "privateKey");
     }
 
-    private MongoDatabase mockDatabase(Consumer<MongoCollection<UsersSshPair>> consumer) {
+    private MongoDatabase mockDatabase(Consumer<MongoCollection<SshPairImpl>> consumer) {
         @SuppressWarnings("unchecked")
-        final MongoCollection<UsersSshPair> collection = mock(MongoCollection.class);
+        final MongoCollection<SshPairImpl> collection = mock(MongoCollection.class);
         consumer.accept(collection);
 
         final MongoDatabase database = mock(MongoDatabase.class);
-        when(database.getCollection("ssh", UsersSshPair.class)).thenReturn(collection);
+        when(database.getCollection("ssh", SshPairImpl.class)).thenReturn(collection);
 
         return database;
     }

@@ -27,10 +27,6 @@
     <name>Codenvy :: Hosted :: Workspace API</name>
     <dependencies>
         <dependency>
-            <groupId>aopalliance</groupId>
-            <artifactId>aopalliance</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.codenvy.onpremises.wsmaster</groupId>
             <artifactId>codenvy-hosted-api-permission</artifactId>
         </dependency>
@@ -93,10 +89,6 @@
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-api-workspace-shared</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-commons-inject</artifactId>
         </dependency>
         <dependency>
             <groupId>org.everrest</groupId>
