@@ -32,7 +32,7 @@ public class WorkerPrimaryKey implements Serializable {
     public WorkerPrimaryKey() {
     }
 
-    public WorkerPrimaryKey(String userId, String workspaceId) {
+    public WorkerPrimaryKey(String workspaceId, String userId) {
         this.userId = userId;
         this.workspaceId = workspaceId;
     }

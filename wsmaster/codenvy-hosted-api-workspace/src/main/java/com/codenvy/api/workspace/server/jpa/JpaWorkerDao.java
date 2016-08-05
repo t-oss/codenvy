@@ -56,7 +56,7 @@ public class JpaWorkerDao implements WorkerDao {
         requireNonNull(workspaceId, "Workspace identifier required");
         requireNonNull(userId, "User identifier required");
         try {
-            final WorkerImpl result = managerProvider.get().find(WorkerImpl.class, new WorkerPrimaryKey(userId, workspaceId));
+            final WorkerImpl result = managerProvider.get().find(WorkerImpl.class, new WorkerPrimaryKey(workspaceId, userId));
             if (result == null) {
                 throw new NotFoundException(String.format("Worker of workspace '%s' with id '%s' was not found.", workspaceId, userId));
             }
@@ -112,9 +112,7 @@ public class JpaWorkerDao implements WorkerDao {
 
     @Transactional
     protected void doCreate(WorkerImpl entity) {
-
-        //???
-
+       managerProvider.get().merge(entity);
     }
 
     @Transactional
