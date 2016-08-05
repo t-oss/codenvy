@@ -17,26 +17,27 @@
     from Codenvy S.A..
 
 -->
-<che-panel che-title="Factory Configuration">
-  <div class="factory-configuration-panel" ng-show="factoryConfigurationCtrl.factory && factoryConfigurationCtrl.factory.originFactory">
+<che-label-container che-label-name="Factory Configuration">
+  <div class="factory-configuration-panel"
+       ng-show="factoryConfigurationCtrl.factory && factoryConfigurationCtrl.factory.originFactory">
     <md-content layout="column" layout-fill>
       <div class="json-editor">
         <textarea ui-codemirror ng-model="factoryConfigurationCtrl.factoryContent"></textarea>
       </div>
     </md-content>
-    <a href="http://docs.codenvy.com/user/factories/#configuration-reference" target="_blank">Factory reference documentation</a>
+    <a href="http://docs.codenvy.com/user/factories/#configuration-reference"
+       target="_blank">Factory reference documentation</a>
 
     <div class="configuration-panel-button">
-          <span>
-            <che-button-default che-button-title="Reload"
-                                ng-click="factoryConfigurationCtrl.updateFactory(factoryConfigurationCtrl.factoryId)"></che-button-default>
-          </span>
-          <span>
-            <che-button-primary
-              ng-disabled="factoryConfigurationCtrl.factoryContent === factoryConfigurationCtrl.$filter('json')(factoryConfigurationCtrl.originFactoryContent, 2);"
-              che-button-title="Update"
-              ng-click="factoryConfigurationCtrl.setFactoryContent(factoryConfigurationCtrl.factoryId, factoryConfigurationCtrl.factoryContent)"></che-button-primary>
-          </span>
+      <span>
+        <che-button-default che-button-title="Reload"
+                            ng-click="factoryConfigurationCtrl.updateFactory(factoryConfigurationCtrl.factoryId)"></che-button-default>
+      </span>
+      <span>
+        <che-button-primary che-button-title="Update"
+          ng-disabled="factoryConfigurationCtrl.factoryContent === factoryConfigurationCtrl.$filter('json')(factoryConfigurationCtrl.originFactoryContent, 2);"
+          ng-click="factoryConfigurationCtrl.setFactoryContent(factoryConfigurationCtrl.factoryId, factoryConfigurationCtrl.factoryContent)"></che-button-primary>
+      </span>
     </div>
   </div>
-</che-panel>
+</che-label-container>
