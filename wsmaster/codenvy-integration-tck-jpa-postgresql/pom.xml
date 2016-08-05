@@ -96,12 +96,12 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <!-- TODO Remove to enable analyze! -->
-                    <!--<execution>-->
-                        <!--<id>analyze</id>-->
-                        <!--<configuration>-->
-                            <!--<skip>true</skip>-->
-                        <!--</configuration>-->
-                    <!--</execution>-->
+                    <execution>
+                        <id>analyze</id>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </execution>
                     <execution>
                         <goals>
                             <goal>unpack-dependencies</goal>
