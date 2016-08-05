@@ -25,8 +25,8 @@
              che-breadcrumb-title="All factories"
              che-breadcrumb-href="#/factories">
 </che-toolbar>
-<md-content md-scroll-y flex class="factory-details" md-theme="maincontent-theme">
-  <md-tabs md-dynamic-height md-stretch-tabs="always" md-selected="factoryDetailsCtrl.selectedTabIndex" class="project-details-menu">
+<md-content md-scroll-y flex class="factory-details factory-details-content" md-theme="maincontent-theme">
+  <md-tabs md-dynamic-height md-stretch-tabs="auto" md-center-tabs="" md-selected="factoryDetailsCtrl.selectedTabIndex" class="project-details-menu">
     <md-tab>
       <md-tab-label>
         <md-icon md-font-icon="material-design icon-ic_bookmark_24px" class="che-tab-label-icon"></md-icon>
@@ -35,7 +35,6 @@
       <md-tab-body>
         <cdvy-factory-information cdvy-factory="factoryDetailsCtrl.factory"></cdvy-factory-information>
         <!-- Temporary removed, while we are not able to change routing <cdvy-factory-routing cdvy-factory="factoryDetailsCtrl.factory"></cdvy-factory-routing>-->
-        <cdvy-delete-factory cdvy-factory="factoryDetailsCtrl.factory"></cdvy-delete-factory>
       </md-tab-body>
     </md-tab>
     <md-tab>
