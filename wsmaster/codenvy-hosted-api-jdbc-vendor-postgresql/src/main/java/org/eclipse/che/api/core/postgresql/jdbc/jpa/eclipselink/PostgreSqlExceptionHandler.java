@@ -29,14 +29,13 @@ import java.sql.SQLException;
  */
 public class PostgreSqlExceptionHandler implements ExceptionHandler {
 
-    // TODO copy-paste from H2, might not work!
     public Object handleException(RuntimeException exception) {
         if (exception instanceof DatabaseException && exception.getCause() instanceof SQLException) {
             final SQLException sqlEx = (SQLException)exception.getCause();
             switch (sqlEx.getErrorCode()) {
                 case 23505:
                     throw new DuplicateKeyException(exception.getMessage(), exception);
-                case 23506:
+                case 23503:
                     throw new IntegrityConstraintViolationException(exception.getMessage(), exception);
             }
         }
