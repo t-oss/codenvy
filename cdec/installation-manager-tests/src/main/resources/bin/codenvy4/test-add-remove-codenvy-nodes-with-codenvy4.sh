@@ -51,32 +51,29 @@ doGet "http://${HOST_URL}:23750/info"
 validateExpectedString ".*Nodes\",\"2\".*\[\" ${HOST_URL}\",\"${HOST_URL}:2375\"\].*\[\" node1.${HOST_URL}\",\"node1.${HOST_URL}:2375\"\].*"
 
 # throw error that node has been already used
-executeIMCommand "--valid-exit-code=1" "add-node" "node1.codenvy"
+executeIMCommand "--valid-exit-code=1" "add-node" "node1.${HOST_URL}"
 validateExpectedString ".*Node..node1.${HOST_URL}..has.been.already.used.*"
 
 # throw error that dns is incorrect
 executeIMCommand "--valid-exit-code=1" "add-node" "bla-bla-bla"
-validateExpectedString ".*Illegal.DNS.name.'bla-bla-bla'.of.node..Correct.DNS.name.templates\:.\['codenvy',.'node<number>.${HOST_URL}'\].*"
+validateExpectedString ".*Illegal.DNS.name.'bla-bla-bla'.of.node..Correct.DNS.name.templates\:.\['${HOST_URL}',.'node<number>.${HOST_URL}'\].*"
 
 # throw error that host is not reachable
-executeIMCommand "--valid-exit-code=1" "add-node" "node3.codenvy"
-validateExpectedString ".*Can.t.connect.to.host..vagrant@node3.codenvy:22.*"
+executeIMCommand "--valid-exit-code=1" "add-node" "node3.${HOST_URL}"
+validateExpectedString ".*Can.t.connect.to.host..vagrant@node3.${HOST_URL}:22.*"
 
 ############# Start of change Codenvy hostname workflow
-# change 'codenvy' hostname on 'test.codenvy' on puppet master
-executeSshCommand "sudo hostname test.codenvy"
-executeSshCommand "sudo sed -i 's/192.168.56.110 ${HOST_URL}//' /etc/hosts"
-executeSshCommand "sudo sed -i 's/ ${HOST_URL}/ ${NEW_HOST_URL}/' /etc/hosts"
+# change '${HOST_URL}' hostname on 'test.${HOST_URL}' on puppet master
 executeSshCommand "sudo sed -i 's/ ${HOST_URL}/ ${NEW_HOST_URL}/' /etc/hosts" "node1.${HOST_URL}"
 executeSshCommand "sudo sed -i 's/ ${HOST_URL}/ ${NEW_HOST_URL}/' /etc/hosts" "node2.${NEW_HOST_URL}"
 
-# change Codenvy host_url from 'codenvy' to 'test.codenvy'
+# change Codenvy host_url from '${HOST_URL}' to 'test.${HOST_URL}'
 executeIMCommand "config" "--hostname" "${NEW_HOST_URL}"
 
-# change 'node1.codenvy' hostname on 'node1.test.codenvy' on node1
+# change 'node1.${HOST_URL}' hostname on 'node1.test.${HOST_URL}' on node1
 executeSshCommand "sudo sed -i 's/ node1.${HOST_URL}/ node1.${NEW_HOST_URL}/' /etc/hosts" "node1.${HOST_URL}"
 executeSshCommand "sudo sed -i 's/192.168.56.15 node1.${HOST_URL}//' /etc/hosts" "node1.${HOST_URL}"
-executeSshCommand "sudo hostname node1.test.codenvy" "node1.${HOST_URL}"
+executeSshCommand "sudo hostname node1.test.${HOST_URL}" "node1.${HOST_URL}"
 executeSshCommand "sudo sed -i 's/ node1.${HOST_URL}/ node1.${NEW_HOST_URL}/' /etc/hosts"
 executeSshCommand "sudo sed -i 's/ node1.${HOST_URL}/ node1.${NEW_HOST_URL}/' /etc/hosts" "node2.${NEW_HOST_URL}"
 

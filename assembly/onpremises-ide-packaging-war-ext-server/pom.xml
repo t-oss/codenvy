@@ -20,35 +20,35 @@
     <parent>
         <artifactId>onpremises-ide-parent</artifactId>
         <groupId>com.codenvy.onpremises</groupId>
-        <version>4.6.0-SNAPSHOT</version>
+        <version>4.7.0-SNAPSHOT</version>
     </parent>
     <artifactId>onpremises-ide-packaging-war-ext-server</artifactId>
     <packaging>war</packaging>
     <name>Onpremises IDE :: WAR    :: Ws agent</name>
     <dependencies>
         <dependency>
-            <groupId>com.codenvy.hosted-infrastructure</groupId>
-            <artifactId>codenvy-hosted-authorization</artifactId>
+            <groupId>com.codenvy.onpremises</groupId>
+            <artifactId>wsagent-codenvy</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.codenvy.hosted-infrastructure</groupId>
-            <artifactId>codenvy-hosted-commons-j2ee</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.codenvy.hosted-infrastructure</groupId>
+            <groupId>com.codenvy.onpremises.wsagent</groupId>
             <artifactId>codenvy-hosted-machine-authentication-agent</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.codenvy.hosted-infrastructure</groupId>
-            <artifactId>codenvy-hosted-sso-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.codenvy.hosted-infrastructure</groupId>
+            <groupId>com.codenvy.onpremises.wsagent</groupId>
             <artifactId>codenvy-hosted-workspace-activity-agent</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.codenvy.onpremises</groupId>
-            <artifactId>wsagent-codenvy</artifactId>
+            <groupId>com.codenvy.onpremises.wsmaster</groupId>
+            <artifactId>codenvy-hosted-authorization</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.codenvy.onpremises.wsmaster</groupId>
+            <artifactId>codenvy-hosted-commons-j2ee</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.codenvy.onpremises.wsmaster</groupId>
+            <artifactId>codenvy-hosted-sso-client</artifactId>
         </dependency>
         <dependency>
             <groupId>com.codenvy.plugin</groupId>
@@ -149,10 +149,6 @@
         <dependency>
             <groupId>org.eclipse.che.plugin</groupId>
             <artifactId>che-plugin-gdb-server</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.che.plugin</groupId>
-            <artifactId>che-plugin-git-provider-che</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.plugin</groupId>

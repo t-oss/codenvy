@@ -14,6 +14,7 @@
  */
 package com.codenvy.machine.backup;
 
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.machine.Machine;
 import org.eclipse.che.api.core.model.machine.MachineStatus;
@@ -47,6 +48,7 @@ import java.util.List;
 import static java.lang.Thread.sleep;
 import static java.util.Collections.singletonMap;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -317,6 +319,7 @@ public class WorkspaceFsBackupSchedulerTest {
             }
         }).when(scheduler).backupWorkspaceInMachine(any(MachineImpl.class));
 
+        // when
         scheduler.scheduleBackup();
         sleep(FAKE_BACKUP_TIME_MS / 2);
         // run next backup while previous is still running
@@ -325,6 +328,18 @@ public class WorkspaceFsBackupSchedulerTest {
         // then
         verify(machineManager, times(2)).getMachines();
         verify(scheduler, timeout(2000).times(1)).backupWorkspaceInMachine(eq(machine1));
+    }
+
+    @Test
+    public void shouldSkipWorkspaceBackupIfMachineAlreadyStopped() throws Exception {
+        // given
+        when(machineManager.getInstance(anyString())).thenThrow(new NotFoundException(""));
+
+        // when
+        scheduler.scheduleBackup();
+
+        // then
+        verify(backupManager, never()).backupWorkspace(anyString(), anyString(), anyString());
     }
 
 }

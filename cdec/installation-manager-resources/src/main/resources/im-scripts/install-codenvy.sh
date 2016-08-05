@@ -107,6 +107,8 @@ URL_REGEX="^https?:\/\/[\da-zA-Z_\-\.\/?&#+]+"
 
 MIN_OS_VERSION=7.1
 
+UNRECOGNIZED_PARAMETERS=()
+
 cleanUp() {
     setterm -cursor on
     killTimer
@@ -138,6 +140,8 @@ setRunOptions() {
     LICENSE_ACCEPTED=false
     INSTALL_DIR=./codenvy
     DISABLE_MONITORING_TOOLS=false
+
+    local i=0
 
     for var in "$@"; do
         if [[ "$var" == "--multi" ]]; then
@@ -208,6 +212,9 @@ setRunOptions() {
 
         elif [[ "$var" == "--disable-monitoring-tools" ]]; then
             DISABLE_MONITORING_TOOLS=true
+
+        else
+            UNRECOGNIZED_PARAMETERS[$((i++))]="$var"
 
         fi
     done
@@ -815,6 +822,7 @@ insertProperty() {
     sed -i "s|$1=.*|$1=$value|g" "${CONFIG}"
 }
 
+
 validateHostname() {
     DNS=$1
     OUTPUT=$(ping -c 1 ${DNS} &> /dev/null && echo success || echo fail)
@@ -840,13 +848,6 @@ askHostnameAndInsertProperty() {
         print "$(printf "%-35s" "${PROMPT}:") "
 
         read VALUE
-
-        OUTPUT=$(validateHostname ${VALUE})
-        if [ "${OUTPUT}" == "success" ]; then
-           break
-        else
-            println $(printError "ERROR: The hostname '${VALUE}' isn't available or wrong. Please try again...")
-        fi
     done
 
     insertProperty "${VARIABLE}" ${VALUE}
@@ -1034,11 +1035,6 @@ doCheckAvailablePorts_multi() {
 }
 
 printPreInstallInfo_single() {
-    clear
-
-    println "Welcome. This program installs ${ARTIFACT_DISPLAY} ${VERSION}."
-    println
-
     doEnsureLicenseAgreement
 
     println "Checking system pre-requisites..."
@@ -1077,11 +1073,6 @@ printPreInstallInfo_single() {
     fi
 
     if [ -n "${HOST_NAME}" ]; then
-        if [ "$(validateHostname "${HOST_NAME}")" != "success" ]; then
-            println $(printError "ERROR: The hostname '${HOST_NAME}' isn't available or wrong.")
-            exit 1
-        fi
-
         insertProperty "host_url" ${HOST_NAME}
     fi
 
@@ -1417,11 +1408,6 @@ doCheckRedhatSubscription() {
 }
 
 printPreInstallInfo_multi() {
-    clear
-
-    println "Welcome. This program installs ${ARTIFACT_DISPLAY} ${VERSION}."
-    println
-
     doEnsureLicenseAgreement
 
     println "Checking system pre-requisites..."
@@ -1936,7 +1922,27 @@ printPostInstallInfo_installation-manager-cli() {
     println "Codenvy Installation Manager is installed into ${INSTALL_DIR}/cli directory"
 }
 
+
+clear
+
 setRunOptions "$@"
+
+println "Welcome. This program installs ${ARTIFACT_DISPLAY} ${VERSION}."
+println
+
+if [[ ${#UNRECOGNIZED_PARAMETERS[@]} != 0 ]]; then
+    println $(printWarning "!!! You passed unrecognized parameters:")
+    for var in "${UNRECOGNIZED_PARAMETERS[@]}"; do
+        println $(printWarning "'$var'")
+    done
+
+    if [[ ${SUPPRESS} == false ]]; then
+        pressYKeyToContinue "Proceed?"
+    fi
+
+    println
+fi
+
 printPreInstallInfo_${CODENVY_TYPE}
 
 setterm -cursor off

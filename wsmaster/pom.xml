@@ -20,13 +20,34 @@
     <parent>
         <artifactId>onpremises-assembly-parent</artifactId>
         <groupId>com.codenvy.onpremises</groupId>
-        <version>4.6.0-SNAPSHOT</version>
+        <version>4.7.0-SNAPSHOT</version>
     </parent>
+    <groupId>com.codenvy.onpremises.wsmaster</groupId>
     <artifactId>codenvy-master-parent</artifactId>
-    <version>4.6.0-SNAPSHOT</version>
+    <version>4.7.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Codenvy Master Parent</name>
     <modules>
+        <module>codenvy-hosted-api-admin</module>
+        <module>codenvy-hosted-mail-client</module>
+        <module>codenvy-hosted-mail-server</module>
+        <module>codenvy-hosted-platform-api-impl</module>
+        <module>codenvy-hosted-infra-filters</module>
+        <module>codenvy-hosted-recoverpassword</module>
+        <module>codenvy-hosted-events</module>
+        <module>codenvy-hosted-commons-j2ee</module>
+        <module>codenvy-hosted-machine-authentication-shared</module>
+        <module>codenvy-hosted-machine-authentication</module>
+        <module>codenvy-hosted-machine-authentication-ide</module>
+        <module>codenvy-hosted-sso-server</module>
+        <module>codenvy-hosted-sso-auth-bearer</module>
+        <module>codenvy-hosted-sso-client</module>
+        <module>codenvy-hosted-sso-oauth</module>
+        <module>codenvy-hosted-sso-server-organization</module>
+        <module>codenvy-hosted-workspace-activity</module>
+        <module>codenvy-hosted-api-permission</module>
+        <module>codenvy-hosted-api-workspace</module>
+        <module>codenvy-hosted-authorization</module>
         <module>codenvy-hosted-api-factory</module>
     </modules>
 </project>

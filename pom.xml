@@ -20,24 +20,23 @@
     <parent>
         <artifactId>maven-depmgt-pom</artifactId>
         <groupId>org.eclipse.che.depmgt</groupId>
-        <version>4.6.0-SNAPSHOT</version>
+        <version>4.7.0-SNAPSHOT</version>
     </parent>
     <groupId>com.codenvy.onpremises</groupId>
     <artifactId>onpremises-assembly-parent</artifactId>
-    <version>4.6.0-SNAPSHOT</version>
+    <version>4.7.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Onpremises :: Parent</name>
     <modules>
         <module>lib</module>
-        <module>core</module>
+        <module>wsmaster</module>
+        <module>wsagent</module>
         <module>plugins</module>
         <module>dashboard</module>
         <module>site</module>
         <module>platform-api-client-java</module>
         <module>cli</module>
         <module>cdec</module>
-        <module>wsmaster</module>
-        <module>wsagent</module>
         <module>assembly</module>
     </modules>
     <scm>
@@ -46,8 +45,8 @@
         <tag>HEAD</tag>
     </scm>
     <properties>
-        <che.lib.version>4.6.0-SNAPSHOT</che.lib.version>
-        <che.version>4.6.0-SNAPSHOT</che.version>
+        <che.lib.version>4.7.0-SNAPSHOT</che.lib.version>
+        <che.version>4.7.0-SNAPSHOT</che.version>
         <codenvy.analytics.version>3.13.4</codenvy.analytics.version>
         <com.braintreepayments.gateway.version>2.39.2</com.braintreepayments.gateway.version>
         <com.codahale.metrics.version>3.0.2</com.codahale.metrics.version>
@@ -143,142 +142,6 @@
                 <type>war</type>
             </dependency>
             <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-api-admin</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-api-creditcard</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-api-permission</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-api-subscription</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-api-workspace</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-authorization</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-commons-j2ee</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-events</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-infra-filters</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-machine-authentication</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-machine-authentication-agent</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-machine-authentication-ide</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-machine-authentication-shared</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-mail-client</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-mail-server</artifactId>
-                <version>${project.version}</version>
-                <type>war</type>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-platform-api-impl</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-recoverpassword</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-sql-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-sso-auth-bearer</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-sso-client</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-sso-oauth</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-sso-server</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-sso-server-organization</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-subscription-onpremises</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-subscription-saas</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-workspace-activity</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-workspace-activity-agent</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.codenvy.im</groupId>
                 <artifactId>installation-manager-cli-bundle</artifactId>
                 <version>${project.version}</version>
@@ -325,11 +188,6 @@
                 <version>${project.version}</version>
                 <type>zip</type>
                 <classifier>linux_arm7</classifier>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.onpremises</groupId>
-                <artifactId>codenvy-hosted-api-factory</artifactId>
-                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.codenvy.onpremises</groupId>
@@ -417,6 +275,12 @@
             </dependency>
             <dependency>
                 <groupId>com.codenvy.onpremises</groupId>
+                <artifactId>onpremises-ide-packaging-war-webroot-codenvy</artifactId>
+                <version>${project.version}</version>
+                <type>war</type>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises</groupId>
                 <artifactId>onpremises-ide-packaging-war-website-codenvy</artifactId>
                 <version>${project.version}</version>
                 <type>war</type>
@@ -424,6 +288,137 @@
             <dependency>
                 <groupId>com.codenvy.onpremises</groupId>
                 <artifactId>wsagent-codenvy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsagent</groupId>
+                <artifactId>codenvy-hosted-machine-authentication-agent</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsagent</groupId>
+                <artifactId>codenvy-hosted-workspace-activity-agent</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-api-admin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-api-creditcard</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-api-factory</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-api-permission</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-api-subscription</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-api-workspace</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-authorization</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-commons-j2ee</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-events</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-infra-filters</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-machine-authentication</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-machine-authentication-ide</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-machine-authentication-shared</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-mail-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-mail-server</artifactId>
+                <version>${project.version}</version>
+                <type>war</type>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-platform-api-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-recoverpassword</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-sql-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-sso-auth-bearer</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-sso-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-sso-oauth</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-sso-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-sso-server-organization</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codenvy.onpremises.wsmaster</groupId>
+                <artifactId>codenvy-hosted-workspace-activity</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

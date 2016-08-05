@@ -20,7 +20,7 @@
     <parent>
         <artifactId>codenvy-im</artifactId>
         <groupId>com.codenvy.im</groupId>
-        <version>4.6.0-SNAPSHOT</version>
+        <version>4.7.0-SNAPSHOT</version>
     </parent>
     <artifactId>installation-manager-core</artifactId>
     <name>Codenvy :: IM :: Installation Manager Core</name>
@@ -34,7 +34,7 @@
             <artifactId>logback-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.codenvy.hosted-infrastructure</groupId>
+            <groupId>com.codenvy.onpremises.wsmaster</groupId>
             <artifactId>codenvy-hosted-platform-api-impl</artifactId>
         </dependency>
         <dependency>
