@@ -28,6 +28,7 @@
     <packaging>pom</packaging>
     <name>Codenvy Master Parent</name>
     <modules>
+        <module>codenvy-integration-tck-jpa-postgresql</module>
         <module>codenvy-hosted-api-admin</module>
         <module>codenvy-hosted-mail-client</module>
         <module>codenvy-hosted-mail-server</module>
