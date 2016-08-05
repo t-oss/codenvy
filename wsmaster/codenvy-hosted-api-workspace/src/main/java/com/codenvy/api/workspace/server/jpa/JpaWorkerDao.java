@@ -74,7 +74,6 @@ public class JpaWorkerDao implements WorkerDao {
         } catch (RuntimeException e) {
             throw new ServerException(e);
         }
-
     }
 
     @Override
