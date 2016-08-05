@@ -15,8 +15,8 @@
 package com.codenvy.onpremises.factory.filter;
 
 import org.eclipse.che.api.factory.server.FactoryConstants;
-import org.eclipse.che.api.factory.shared.dto.Factory;
-import org.eclipse.che.api.factory.shared.dto.Policies;
+import org.eclipse.che.api.factory.shared.dto.FactoryDto;
+import org.eclipse.che.api.factory.shared.dto.PoliciesDto;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -61,16 +61,16 @@ public class ReferrerCheckerFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest req, ServletResponse resp, FilterChain filterChain)
-            throws IOException, ServletException {
+    public void doFilter(ServletRequest req, ServletResponse resp, FilterChain filterChain) throws IOException,
+                                                                                                   ServletException {
 
-        Factory requestedFactory = (Factory)req.getAttribute("factory");
+        FactoryDto requestedFactory = (FactoryDto)req.getAttribute("factory");
         if (requestedFactory == null) {
             dispatchToErrorPage(req, resp, CREATION_FAILED_PAGE, "Unable to get factory from request.");
         }
 
         String referrerHostName = null;
-        final Policies policies = requestedFactory.getPolicies();
+        final PoliciesDto policies = requestedFactory.getPolicies();
         if (policies != null && policies.getReferer() != null) {
             referrerHostName = policies.getReferer();
         }

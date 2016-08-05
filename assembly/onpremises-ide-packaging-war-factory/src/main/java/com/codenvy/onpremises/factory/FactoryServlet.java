@@ -14,7 +14,7 @@
  */
 package com.codenvy.onpremises.factory;
 
-import org.eclipse.che.api.factory.shared.dto.Factory;
+import org.eclipse.che.api.factory.shared.dto.FactoryDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +65,7 @@ public class FactoryServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-        Factory requestedFactory = (Factory)req.getAttribute("factory");
+        FactoryDto requestedFactory = (FactoryDto)req.getAttribute("factory");
         if (requestedFactory == null) {
             dispatchToErrorPage(req, resp, creationFailedPage, "Unable to get factory from request.");
         }

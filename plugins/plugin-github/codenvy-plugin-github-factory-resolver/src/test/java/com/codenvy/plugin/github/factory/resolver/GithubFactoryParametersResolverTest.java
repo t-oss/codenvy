@@ -19,7 +19,7 @@ import com.codenvy.plugin.urlfactory.ProjectConfigDtoMerger;
 import com.codenvy.plugin.urlfactory.URLFactoryBuilder;
 
 import org.eclipse.che.api.core.BadRequestException;
-import org.eclipse.che.api.factory.shared.dto.Factory;
+import org.eclipse.che.api.factory.shared.dto.FactoryDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.mockito.ArgumentCaptor;
@@ -138,7 +138,7 @@ public class GithubFactoryParametersResolverTest {
 
         String githubUrl = "https://github.com/eclipse/che";
 
-        Factory computedFactory = newDto(Factory.class).withV("4.0");
+        FactoryDto computedFactory = newDto(FactoryDto.class).withV("4.0");
         when(urlFactoryBuilder.createFactory(any(CreateFactoryParams.class))).thenReturn(computedFactory);
 
         githubFactoryParametersResolver.createFactory(singletonMap(URL_PARAMETER_NAME, githubUrl));
@@ -152,7 +152,7 @@ public class GithubFactoryParametersResolverTest {
         verify(urlFactoryBuilder).buildWorkspaceConfig(eq("che"), eq("eclipse"), eq("https://raw.githubusercontent.com/eclipse/che/master/.codenvy.dockerfile"));
 
         // check project config built
-        verify(projectConfigDtoMerger).merge(any(Factory.class), projectConfigDtoArgumentCaptor.capture());
+        verify(projectConfigDtoMerger).merge(any(FactoryDto.class), projectConfigDtoArgumentCaptor.capture());
 
         ProjectConfigDto projectConfigDto = projectConfigDtoArgumentCaptor.getValue();
 
@@ -175,7 +175,7 @@ public class GithubFactoryParametersResolverTest {
         String githubCloneUrl = "https://github.com/eclipse/che";
         String githubBranch = "4.2.x";
 
-        Factory computedFactory = newDto(Factory.class).withV("4.0");
+        FactoryDto computedFactory = newDto(FactoryDto.class).withV("4.0");
         when(urlFactoryBuilder.createFactory(any(CreateFactoryParams.class))).thenReturn(computedFactory);
 
         githubFactoryParametersResolver.createFactory(singletonMap(URL_PARAMETER_NAME, githubUrl));
@@ -188,7 +188,7 @@ public class GithubFactoryParametersResolverTest {
         verify(urlFactoryBuilder).buildWorkspaceConfig(eq("che"), eq("eclipse"), eq("https://raw.githubusercontent.com/eclipse/che/4.2.x/.codenvy.dockerfile"));
 
         // check project config built
-        verify(projectConfigDtoMerger).merge(any(Factory.class), projectConfigDtoArgumentCaptor.capture());
+        verify(projectConfigDtoMerger).merge(any(FactoryDto.class), projectConfigDtoArgumentCaptor.capture());
 
         ProjectConfigDto projectConfigDto = projectConfigDtoArgumentCaptor.getValue();
         SourceStorageDto sourceStorageDto = projectConfigDto.getSource();
@@ -212,7 +212,7 @@ public class GithubFactoryParametersResolverTest {
         String githubBranch = "4.2.x";
         String githubKeepdir = "dashboard";
 
-        Factory computedFactory = newDto(Factory.class).withV("4.0");
+        FactoryDto computedFactory = newDto(FactoryDto.class).withV("4.0");
         when(urlFactoryBuilder.createFactory(any(CreateFactoryParams.class))).thenReturn(computedFactory);
 
         githubFactoryParametersResolver.createFactory(singletonMap(URL_PARAMETER_NAME, githubUrl));
@@ -225,7 +225,7 @@ public class GithubFactoryParametersResolverTest {
         verify(urlFactoryBuilder).buildWorkspaceConfig(eq("che"), eq("eclipse"), eq("https://raw.githubusercontent.com/eclipse/che/4.2.x/.codenvy.dockerfile"));
 
         // check project config built
-        verify(projectConfigDtoMerger).merge(any(Factory.class), projectConfigDtoArgumentCaptor.capture());
+        verify(projectConfigDtoMerger).merge(any(FactoryDto.class), projectConfigDtoArgumentCaptor.capture());
 
         ProjectConfigDto projectConfigDto = projectConfigDtoArgumentCaptor.getValue();
         SourceStorageDto sourceStorageDto = projectConfigDto.getSource();

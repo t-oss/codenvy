@@ -35,15 +35,12 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.function.Consumer;
 
 import static com.codenvy.api.dao.mongo.WorkspaceImplCodec.MACHINE_SOURCE;
 import static com.codenvy.api.dao.mongo.WorkspaceImplCodec.MACHINE_SOURCE_CONTENT;
 import static com.codenvy.api.dao.mongo.WorkspaceImplCodec.MACHINE_SOURCE_LOCATION;
 import static com.codenvy.api.dao.mongo.WorkspaceImplCodec.MACHINE_SOURCE_TYPE;
-import static java.util.Arrays.asList;
 import static org.bson.codecs.configuration.CodecRegistries.fromCodecs;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 import static org.mockito.Matchers.any;
@@ -51,7 +48,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 /**
  * Tests for {@link WorkspaceDaoImpl}.
  *
@@ -195,35 +191,6 @@ public class SnapshotDaoImplTest {
     }
 
     @Test
-    public void testGetSnapshotByOwner() throws Exception {
-        //given
-        final SnapshotImpl.SnapshotBuilder builder = createSnapshotBuilder();
-        final SnapshotImpl snapshot1 = builder.build();
-        final SnapshotImpl snapshot2 = builder.generateId().setEnvName("env44").build();
-        final SnapshotImpl snapshot3 = builder.generateId().setEnvName("ev55").setNamespace("ow2").build();
-        collection.insertMany(asList(snapshot1, snapshot2, snapshot3));
-        //when
-        final List<SnapshotImpl> result = snapshotDao.findSnapshots(snapshot1.getNamespace(),snapshot1.getWorkspaceId());
-       //then
-        assertEquals(new HashSet<>(result), new HashSet<>(asList(snapshot1, snapshot2)));
-    }
-
-    @Test
-    public void testGetSnapshotByOwnerWhenUserDoesNotOwnAnyWorkspace() throws Exception {
-        assertTrue(snapshotDao.findSnapshots("test-user", "wsid-1232").isEmpty());
-    }
-
-    @Test(expectedExceptions = NullPointerException.class, expectedExceptionsMessageRegExp = "Snapshot namespace must not be null")
-    public void testGetSnapshotByOwnerWhenOwnerIsNull() throws Exception {
-        snapshotDao.findSnapshots(null, "wsid-1232");
-    }
-
-    @Test(expectedExceptions = NullPointerException.class, expectedExceptionsMessageRegExp = "Workspace id must not be null")
-    public void testGetSnapshotByOwnerWhenWsIdIsNull() throws Exception {
-        snapshotDao.findSnapshots("user-234", null);
-    }
-
-    @Test
     public void testSnapshotEncoding() {
         // mocking DocumentCodec
         final DocumentCodec documentCodec = mock(DocumentCodec.class);
@@ -252,7 +219,6 @@ public class SnapshotDaoImplTest {
         assertEquals(result.getString("machineName"), snapshot.getMachineName(), "Machine name");
         assertEquals(result.getString("envName"), snapshot.getEnvName(), "Environment name");
         assertEquals(result.getString("type"), snapshot.getType(), "Snapshot type");
-        assertEquals(result.getString("namespace"), snapshot.getNamespace(), "Snapshot owner");
         assertEquals(result.getBoolean("dev").booleanValue(), snapshot.isDev(), "Snapshot isdev");
         assertEquals(result.getLong("creationDate").longValue(), snapshot.getCreationDate(), "Snapshot creation date");
         assertEquals(result.getString("type"), snapshot.getType(), "Snapshot defaultEnvName");
@@ -324,7 +290,6 @@ public class SnapshotDaoImplTest {
                            .setType("docker")
                            .setMachineSource(new MachineSourceImpl(CUSTOM_MACHINE_SOURCE_TYPE).setContent(CUSTOM_MACHINE_SOURCE_CONTENT).setLocation(
                                    CUSTOM_MACHINE_SOURCE_LOCATION))
-                           .setNamespace("user123")
                            .setWorkspaceId("workspace123")
                            .setMachineName("machine123")
                            .setEnvName("env123")

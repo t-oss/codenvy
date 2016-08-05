@@ -20,7 +20,7 @@ import com.codenvy.plugin.urlfactory.ProjectConfigDtoMerger;
 import com.codenvy.plugin.urlfactory.URLFactoryBuilder;
 
 import org.eclipse.che.api.core.BadRequestException;
-import org.eclipse.che.api.factory.shared.dto.Factory;
+import org.eclipse.che.api.factory.shared.dto.FactoryDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.mockito.ArgumentCaptor;
@@ -140,7 +140,7 @@ public class GitlabFactoryParametersResolverTest {
         String gitlabUrl = "https://gitlab.com/eclipse/che";
         String gitlabUrlRepository = gitlabUrl + ".git";
 
-        Factory computedFactory = newDto(Factory.class).withV("4.0");
+        FactoryDto computedFactory = newDto(FactoryDto.class).withV("4.0");
         when(urlFactoryBuilder.createFactory(any(CreateFactoryParams.class))).thenReturn(computedFactory);
 
         gitlabFactoryParametersResolver.createFactory(singletonMap(URL_PARAMETER_NAME, gitlabUrl));
@@ -154,7 +154,7 @@ public class GitlabFactoryParametersResolverTest {
         verify(urlFactoryBuilder).buildWorkspaceConfig(eq("che"), eq("eclipse"), eq("https://gitlab.com/eclipse/che/raw/master/.codenvy.dockerfile"));
 
         // check project config built
-        verify(projectConfigDtoMerger).merge(any(Factory.class), projectConfigDtoArgumentCaptor.capture());
+        verify(projectConfigDtoMerger).merge(any(FactoryDto.class), projectConfigDtoArgumentCaptor.capture());
 
         ProjectConfigDto projectConfigDto = projectConfigDtoArgumentCaptor.getValue();
 
@@ -179,7 +179,7 @@ public class GitlabFactoryParametersResolverTest {
         String gitlabCloneUrlRespository = gitlabCloneUrl + ".git";
 
 
-        Factory computedFactory = newDto(Factory.class).withV("4.0");
+        FactoryDto computedFactory = newDto(FactoryDto.class).withV("4.0");
         when(urlFactoryBuilder.createFactory(any(CreateFactoryParams.class))).thenReturn(computedFactory);
 
         gitlabFactoryParametersResolver.createFactory(singletonMap(URL_PARAMETER_NAME, gitlabUrl));
@@ -192,7 +192,7 @@ public class GitlabFactoryParametersResolverTest {
         verify(urlFactoryBuilder).buildWorkspaceConfig(eq("che"), eq("eclipse"), eq("https://gitlab.com/eclipse/che/raw/4.2.x/.codenvy.dockerfile"));
 
         // check project config built
-        verify(projectConfigDtoMerger).merge(any(Factory.class), projectConfigDtoArgumentCaptor.capture());
+        verify(projectConfigDtoMerger).merge(any(FactoryDto.class), projectConfigDtoArgumentCaptor.capture());
 
         ProjectConfigDto projectConfigDto = projectConfigDtoArgumentCaptor.getValue();
         SourceStorageDto sourceStorageDto = projectConfigDto.getSource();
@@ -218,7 +218,7 @@ public class GitlabFactoryParametersResolverTest {
         String gitlabCloneUrlRespository = gitlabCloneUrl + ".git";
 
 
-        Factory computedFactory = newDto(Factory.class).withV("4.0");
+        FactoryDto computedFactory = newDto(FactoryDto.class).withV("4.0");
         when(urlFactoryBuilder.createFactory(any(CreateFactoryParams.class))).thenReturn(computedFactory);
 
         gitlabFactoryParametersResolver.createFactory(singletonMap(URL_PARAMETER_NAME, gitlabUrl));
@@ -231,7 +231,7 @@ public class GitlabFactoryParametersResolverTest {
         verify(urlFactoryBuilder).buildWorkspaceConfig(eq("che"), eq("eclipse"), eq("https://gitlab.com/eclipse/che/raw/4.2.x/.codenvy.dockerfile"));
 
         // check project config built
-        verify(projectConfigDtoMerger).merge(any(Factory.class), projectConfigDtoArgumentCaptor.capture());
+        verify(projectConfigDtoMerger).merge(any(FactoryDto.class), projectConfigDtoArgumentCaptor.capture());
 
         ProjectConfigDto projectConfigDto = projectConfigDtoArgumentCaptor.getValue();
         SourceStorageDto sourceStorageDto = projectConfigDto.getSource();
