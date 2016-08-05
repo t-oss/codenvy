@@ -58,7 +58,8 @@ public class WorkspacePermissionStorage implements PermissionsStorage {
 
     @Override
     public void store(PermissionsImpl permissions) throws ServerException {
-        workerDao.store(new WorkerImpl(permissions.getInstance(), permissions.getUser(),
+        workerDao.store(new WorkerImpl(permissions.getInstance(),
+                                       permissions.getUser(),
                                        permissions.getActions()));
     }
 
