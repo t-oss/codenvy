@@ -19,15 +19,15 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>codenvy-master-parent</artifactId>
-        <groupId>com.codenvy.onpremises</groupId>
-        <version>4.6.0-SNAPSHOT</version>
+        <groupId>com.codenvy.onpremises.wsmaster</groupId>
+        <version>4.7.0-SNAPSHOT</version>
     </parent>
     <artifactId>codenvy-hosted-api-factory</artifactId>
     <packaging>jar</packaging>
     <name>Codenvy :: Hosted :: Factory API</name>
     <dependencies>
         <dependency>
-            <groupId>com.codenvy.hosted-infrastructure</groupId>
+            <groupId>com.codenvy.onpremises.wsmaster</groupId>
             <artifactId>codenvy-hosted-api-workspace</artifactId>
         </dependency>
         <dependency>
@@ -94,7 +94,7 @@
                         <id>analyze</id>
                         <configuration>
                             <ignoredDependencies>
-                                <ignoreDependenvy>com.codenvy.hosted-infrastructure:codenvy-hosted-api-workspace</ignoreDependenvy>
+                                <ignoreDependenvy>com.codenvy.onpremises.wsmaster:codenvy-hosted-api-workspace</ignoreDependenvy>
                             </ignoredDependencies>
                         </configuration>
                     </execution>

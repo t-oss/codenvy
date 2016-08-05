@@ -199,10 +199,11 @@ public class TestCDECArtifact extends BaseTest {
         // check install puppet commands
         List<Command> commands = ((MacroCommand) spyCdecArtifact.getInstallCommand(versionToInstall, pathToBinaries, options.setStep(1))).getCommands();
         assertEquals(commands.size(), 8);
-        assertEquals(commands.toString(), "[{'command'='if ! sudo grep -Eq \"127.0.0.1.*puppet\" /etc/hosts; then\n"
-                                          + " echo '\n"
-                                          + "127.0.0.1 puppet' | sudo tee --append /etc/hosts > /dev/null\n"
-                                          + "fi', 'agent'='LocalAgent'}, {'command'='if ! sudo grep -Eq \" host_url$\" /etc/hosts; then\n"
+        assertEquals(commands.toString(), "[{'command'='if ! sudo grep -Eq \"^127.0.0.1.*\\spuppet\\s.*$|^127.0.0.1.*\\spuppet$\" /etc/hosts; then\n"
+                                          + "  echo \"\n"
+                                          + "127.0.0.1 puppet\" | sudo tee --append /etc/hosts > /dev/null\n"
+                                          + "fi', 'agent'='LocalAgent'}, "
+                                          + "{'command'='if ! sudo grep -Eq \"^127.0.0.1.*\\shost_url\\s.*$|^127.0.0.1.*\\shost_url$\" /etc/hosts; then\n"
                                           + "  echo \"\n"
                                           + "127.0.0.1 host_url\" | sudo tee --append /etc/hosts > /dev/null\n"
                                           + "fi', 'agent'='LocalAgent'}, "
@@ -223,11 +224,10 @@ public class TestCDECArtifact extends BaseTest {
         doReturn(environment).when(spyConfigManager).getEnvironment();
         commands = ((MacroCommand) spyCdecArtifact.getInstallCommand(versionToInstall, pathToBinaries, options.setStep(1))).getCommands();
         assertEquals(commands.size(), 8);
-        assertEquals(commands.toString(), "[{'command'='if ! sudo grep -Eq \"127.0.0.1.*puppet\" /etc/hosts; then\n"
-                                          + " echo '\n"
-                                          + "127.0.0.1 puppet' | sudo tee --append /etc/hosts > /dev/null\n"
-                                          + "fi', 'agent'='LocalAgent'}, "
-                                          + "{'command'='if ! sudo grep -Eq \" host_url$\" /etc/hosts; then\n"
+        assertEquals(commands.toString(), "[{'command'='if ! sudo grep -Eq \"^127.0.0.1.*\\spuppet\\s.*$|^127.0.0.1.*\\spuppet$\" /etc/hosts; then\n"
+                                          + "  echo \"\n"
+                                          + "127.0.0.1 puppet\" | sudo tee --append /etc/hosts > /dev/null\n"
+                                          + "fi', 'agent'='LocalAgent'}, {'command'='if ! sudo grep -Eq \"^127.0.0.1.*\\shost_url\\s.*$|^127.0.0.1.*\\shost_url$\" /etc/hosts; then\n"
                                           + "  echo \"\n"
                                           + "127.0.0.1 host_url\" | sudo tee --append /etc/hosts > /dev/null\n"
                                           + "fi', 'agent'='LocalAgent'}, "
@@ -427,7 +427,7 @@ public class TestCDECArtifact extends BaseTest {
         assertEquals(spyCdecArtifact.getUpdateCommand(versionToUpdate, pathToBinaries, options.setStep(5)).toString(),
                      format("[{'command'='sudo cat %1$s/patches/single_server/patch_after_update.sh | sed ':a;N;$!ba;s/\\n/~n/g' | sed 's|$host_url|host_url|g' | sed 's|~n|\\n|g' > tmp.tmp && sudo mv tmp.tmp %1$s/patches/single_server/patch_after_update.sh', 'agent'='LocalAgent'}, "
                             + "{'command'='sudo cat %1$s/patches/single_server/patch_after_update.sh | sed ':a;N;$!ba;s/\\n/~n/g' | sed 's|$some property|some value|g' | sed 's|~n|\\n|g' > tmp.tmp && sudo mv tmp.tmp %1$s/patches/single_server/patch_after_update.sh', 'agent'='LocalAgent'}, "
-                            + "{'command'='bash %1$s/patches/single_server/patch_after_update.sh', 'agent'='LocalAgent'}]", ETC_PUPPET, TMP_CODENVY));
+                            + "{'command'='bash %1$s/patches/single_server/patch_after_update.sh', 'agent'='LocalAgent'}]", ETC_PUPPET));
     }
 
     @Test(expectedExceptions = IllegalStateException.class, expectedExceptionsMessageRegExp = "Codenvy On-Prem can be updated on CentOS 7 only")
@@ -506,7 +506,7 @@ public class TestCDECArtifact extends BaseTest {
                      + "{'command'='sudo cat %1$s/patches/multi_server/patch_after_update.sh | sed ':a;N;$!ba;s/\\n/~n/g' | sed 's|$api_host_name|api.example.com|g' | sed 's|~n|\\n|g' > tmp.tmp && sudo mv tmp.tmp %1$s/patches/multi_server/patch_after_update.sh', 'agent'='LocalAgent'}, "
                      + "{'command'='sudo cat %1$s/patches/multi_server/patch_after_update.sh | sed ':a;N;$!ba;s/\\n/~n/g' | sed 's|$analytics_host_name|analytics.example.com|g' | sed 's|~n|\\n|g' > tmp.tmp && sudo mv tmp.tmp %1$s/patches/multi_server/patch_after_update.sh', 'agent'='LocalAgent'}, "
                      + "{'command'='sudo cat %1$s/patches/multi_server/patch_after_update.sh | sed ':a;N;$!ba;s/\\n/~n/g' | sed 's|$version|3.3.0|g' | sed 's|~n|\\n|g' > tmp.tmp && sudo mv tmp.tmp %1$s/patches/multi_server/patch_after_update.sh', 'agent'='LocalAgent'}, "
-                     + "{'command'='bash %1$s/patches/multi_server/patch_after_update.sh', 'agent'='LocalAgent'}]", ETC_PUPPET, TMP_CODENVY));
+                     + "{'command'='bash %1$s/patches/multi_server/patch_after_update.sh', 'agent'='LocalAgent'}]", ETC_PUPPET));
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "Step number .* is out of update range")
@@ -752,7 +752,27 @@ public class TestCDECArtifact extends BaseTest {
     }
 
     @Test
-    public void testUpdateCodenvyConfig() throws IOException {
+    public void testUpdateSingleNodeCodenvyConfig() throws IOException {
+        String newHostName = "localhost";
+        Map<String, String> properties = ImmutableMap.of(Config.HOST_URL, newHostName);
+
+        String oldHostName = "a";
+        Config testConfig = new Config(ImmutableMap.of(Config.HOST_URL, oldHostName, "property2", "b"));
+        doReturn(testConfig).when(spyConfigManager).loadInstalledCodenvyConfig();
+
+        doReturn(InstallType.SINGLE_SERVER).when(spyConfigManager).detectInstallationType();
+
+        doReturn(mockCommand).when(spyCDECSingleServerHelper).getUpdateHostnameCommand(testConfig, oldHostName, newHostName);
+        doReturn(mockCommand).when(spyCDECSingleServerHelper).getUpdateConfigCommand(testConfig, properties);
+
+        spyCdecArtifact.updateConfig(properties);
+        verify(spyCDECSingleServerHelper).getUpdateConfigCommand(testConfig, properties);
+        verify(spyCDECSingleServerHelper).getUpdateConfigCommand(testConfig, properties);
+        verify(mockNodeManager).updatePuppetConfig(oldHostName, newHostName);
+    }
+
+    @Test
+    public void testUpdateMultiNodeCodenvyConfig() throws IOException {
         String newHostName = "localhost";
         Map<String, String> properties = ImmutableMap.of(Config.HOST_URL, newHostName);
 
@@ -762,27 +782,11 @@ public class TestCDECArtifact extends BaseTest {
 
         doReturn(InstallType.MULTI_SERVER).when(spyConfigManager).detectInstallationType();
 
+        doReturn(mockCommand).when(spyCDECMultiServerHelper).getUpdateHostnameCommand(testConfig, oldHostName, newHostName);
         doReturn(mockCommand).when(spyCDECMultiServerHelper).getUpdateConfigCommand(testConfig, properties);
 
         spyCdecArtifact.updateConfig(properties);
         verify(spyCDECMultiServerHelper).getUpdateConfigCommand(testConfig, properties);
-        verify(mockNodeManager).updatePuppetConfig(oldHostName, newHostName);
-    }
-
-    @Test(expectedExceptions = IOException.class, expectedExceptionsMessageRegExp = "The hostname '20348520381283.com' isn't available or wrong.")
-    public void testUpdateCodenvyConfigWithWrongHostname() throws IOException {
-        String newHostName = "20348520381283.com";
-        Map<String, String> properties = ImmutableMap.of(Config.HOST_URL, newHostName);
-
-        String oldHostName = "a";
-        Config testConfig = new Config(ImmutableMap.of(Config.HOST_URL, oldHostName, "property2", "b"));
-        doReturn(testConfig).when(spyConfigManager).loadInstalledCodenvyConfig();
-
-        doReturn(InstallType.MULTI_SERVER).when(spyConfigManager).detectInstallationType();
-
-        doReturn(mockCommand).when(spyCDECMultiServerHelper).getUpdateConfigCommand(testConfig, properties);
-
-        spyCdecArtifact.updateConfig(properties);
         verify(spyCDECMultiServerHelper).getUpdateConfigCommand(testConfig, properties);
         verify(mockNodeManager).updatePuppetConfig(oldHostName, newHostName);
     }
@@ -842,7 +846,11 @@ public class TestCDECArtifact extends BaseTest {
         MacroCommand updatePuppetConfigCommand = (MacroCommand) testHelper.getUpdateHostnameCommand(testConfig, oldHostName, newHostName);
         List<Command> commands = updatePuppetConfigCommand.getCommands();
         k = 0;
-        assertEquals(commands.size(), 8);
+        assertEquals(commands.size(), 9);
+        assertEquals(commands.get(k++).toString(), "{'command'='if ! sudo grep -Eq \"^127.0.0.1.*\\snew\\s.*$|^127.0.0.1.*\\snew$\" /etc/hosts; then\n"
+                                                   + "  echo \"\n"
+                                                   + "127.0.0.1 new\" | sudo tee --append /etc/hosts > /dev/null\n"
+                                                   + "fi', 'agent'='LocalAgent'}");
         assertEquals(commands.get(k++).toString(), format("{'command'='sudo sed -i 's/node \"old\"/node \"new\"/g' %1$s/manifests/nodes/single_server/base_config.pp', 'agent'='LocalAgent'}", ETC_PUPPET));
         assertEquals(commands.get(k++).toString(), format("{'command'='sudo sed -i 's/node \"old\"/node \"new\"/g' %1$s/manifests/nodes/single_server/single_server.pp', 'agent'='LocalAgent'}", ETC_PUPPET));
 
@@ -920,8 +928,12 @@ public class TestCDECArtifact extends BaseTest {
 
         MacroCommand updatePuppetConfigCommand = (MacroCommand) testHelper.getUpdateHostnameCommand(testConfig, oldHostName, newHostName);
         List<Command> commands = updatePuppetConfigCommand.getCommands();
-        assertEquals(commands.size(), 10);
+        assertEquals(commands.size(), 11);
         k = 0;
+        assertEquals(commands.get(k++).toString(), "{'command'='if ! sudo grep -Eq \"^127.0.0.1.*\\snew\\s.*$|^127.0.0.1.*\\snew$\" /etc/hosts; then\n"
+                                                   + "  echo \"\n"
+                                                   + "127.0.0.1 new\" | sudo tee --append /etc/hosts > /dev/null\n"
+                                                   + "fi', 'agent'='LocalAgent'}");
         assertEquals(commands.get(k++).toString(), format("{'command'='sudo sed -i 's/node \"old\"/node \"new\"/g' %1$s/manifests/nodes/single_server/base_config.pp', 'agent'='LocalAgent'}", ETC_PUPPET));
         assertEquals(commands.get(k++).toString(), format("{'command'='sudo sed -i 's/\\^node\\\\d+\\\\.old\\$/\\^node\\\\d+\\\\.new\\$/g' %1$s/manifests/nodes/single_server/base_config.pp', 'agent'='LocalAgent'}", ETC_PUPPET));
         assertEquals(commands.get(k++).toString(), format("{'command'='sudo sed -i 's/node \"old\"/node \"new\"/g' %1$s/manifests/nodes/single_server/single_server.pp', 'agent'='LocalAgent'}", ETC_PUPPET));

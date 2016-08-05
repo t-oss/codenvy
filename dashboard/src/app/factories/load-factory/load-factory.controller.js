@@ -235,28 +235,22 @@ export class LoadFactoryCtrl {
 
   subscribeOnEvents(data, bus) {
     // get channels
-    let environments = data.config.environments;
-    let envName = data.config.defaultEnv;
-    let defaultEnvironment = this.lodash.find(environments, (environment) => {
-      return environment.name === envName;
+    let statusLink = this.lodash.find(data.links, (link) => {
+      return link.rel === 'environment.status_channel';
     });
 
-
-    let machineConfigsLinks = defaultEnvironment.machineConfigs[0].links;
-    let findStatusLink = this.lodash.find(machineConfigsLinks, (machineConfigsLink) => {
-      return machineConfigsLink.rel === 'get machine status channel';
-    });
-    let findOutputLink = this.lodash.find(machineConfigsLinks, (machineConfigsLink) => {
-      return machineConfigsLink.rel === 'get machine logs channel';
+    let outputLink = this.lodash.find(data.links, (link) => {
+      return link.rel === 'environment.output_channel';
     });
 
     let workspaceId = data.id;
 
     let agentChannel = 'workspace:' + data.id + ':ext-server:output';
-    let statusChannel = findStatusLink ? findStatusLink.parameters[0].defaultValue : null;
-    let outputChannel = findOutputLink ? findOutputLink.parameters[0].defaultValue : null;
+    let statusChannel = statusLink ? statusLink.parameters[0].defaultValue : null;
+    let outputChannel = outputLink ? outputLink.parameters[0].defaultValue : null;
 
     bus.subscribe(outputChannel, (message) => {
+      message = this.getDisplayMachineLog(message);
       if (this.getLoadingSteps()[this.getCurrentProgressStep()].logs.length > 0) {
         this.getLoadingSteps()[this.getCurrentProgressStep()].logs = this.getLoadingSteps()[this.getCurrentProgressStep()].logs + '\n' + message;
       } else {
@@ -325,6 +319,21 @@ export class LoadFactoryCtrl {
       }
     });
 
+  }
+
+  /**
+   * Gets the log to be displayed per machine.
+   *
+   * @param log origin log content
+   * @returns {*} parsed log
+   */
+  getDisplayMachineLog(log) {
+    log = angular.fromJson(log);
+    if (angular.isObject(log)) {
+      return '[' + log.machineName + '] ' + log.content;
+    } else {
+      return log;
+    }
   }
 
   importProjects(bus) {

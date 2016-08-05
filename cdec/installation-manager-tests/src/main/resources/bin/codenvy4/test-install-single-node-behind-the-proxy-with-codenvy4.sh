@@ -27,7 +27,7 @@ else
     vagrantUp ${SINGLE_CODENVY4_WITH_ADDITIONAL_NODES_VAGRANT_FILE}
 fi
 
-NO_PROXY="codenvy"
+NO_PROXY=${HOST_URL}
 
 # install Codenvy 4.x behind the proxy
 executeSshCommand "echo '$PROXY_IP $PROXY_SERVER' | sudo tee --append /etc/hosts > /dev/null"

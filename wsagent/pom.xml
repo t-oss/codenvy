@@ -20,13 +20,16 @@
     <parent>
         <artifactId>onpremises-assembly-parent</artifactId>
         <groupId>com.codenvy.onpremises</groupId>
-        <version>4.6.0-SNAPSHOT</version>
+        <version>4.7.0-SNAPSHOT</version>
     </parent>
+    <groupId>com.codenvy.onpremises.wsagent</groupId>
     <artifactId>codenvy-agent-parent</artifactId>
-    <version>4.6.0-SNAPSHOT</version>
+    <version>4.7.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Codenvy Agent Parent</name>
     <modules>
         <module>wsagent-codenvy</module>
+        <module>codenvy-hosted-machine-authentication-agent</module>
+        <module>codenvy-hosted-workspace-activity-agent</module>
     </modules>
 </project>

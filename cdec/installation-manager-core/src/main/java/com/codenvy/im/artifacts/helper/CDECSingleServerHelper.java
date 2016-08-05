@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.codenvy.im.commands.CommandLibrary.createAppendTextIfAbsentToFileCommand;
 import static com.codenvy.im.commands.CommandLibrary.createFileBackupCommand;
 import static com.codenvy.im.commands.CommandLibrary.createFileRestoreOrBackupCommand;
 import static com.codenvy.im.commands.CommandLibrary.createForcePuppetAgentCommand;
@@ -104,12 +105,15 @@ public class CDECSingleServerHelper extends CDECArtifactHelper {
 
             case 1:
                 return new MacroCommand(new ArrayList<Command>() {{
-                    add(createCommand("if ! sudo grep -Eq \"127.0.0.1.*puppet\" /etc/hosts; then\n" +
-                                      " echo '\n127.0.0.1 puppet' | sudo tee --append /etc/hosts > /dev/null\n" +
-                                      "fi"));
-                    add(createCommand(format("if ! sudo grep -Eq \" %1$s$\" /etc/hosts; then\n" +
-                                             "  echo \"\n127.0.0.1 %1$s\" | sudo tee --append /etc/hosts > /dev/null\n" +
-                                             "fi", config.getHostUrl())));
+                    add(createAppendTextIfAbsentToFileCommand(Paths.get("/etc/hosts"),
+                                                              "\n127.0.0.1 puppet",
+                                                              "^127.0.0.1.*\\spuppet\\s.*$|^127.0.0.1.*\\spuppet$"
+                    ));
+
+                    add(createAppendTextIfAbsentToFileCommand(Paths.get("/etc/hosts"),
+                                                              format("\n127.0.0.1 %1$s", config.getHostUrl()),
+                                                              format("^127.0.0.1.*\\s%1$s\\s.*$|^127.0.0.1.*\\s%1$s$", config.getHostUrl())
+                    ));
 
                     // install puppet
                     add(createCommand("yum clean all"));   // cleanup to avoid yum install failures
@@ -534,6 +538,12 @@ public class CDECSingleServerHelper extends CDECArtifactHelper {
     @Override
     public Command getUpdateHostnameCommand(Config config, String oldHostName, String newHostName) {
         List<Command> commands = new ArrayList<>();
+
+        // add <127.0.0.1 new-hostname> record into the /etc/hosts on master
+        commands.add(createAppendTextIfAbsentToFileCommand(Paths.get("/etc/hosts"),
+                                                           format("\n127.0.0.1 %1$s", newHostName),
+                                                           format("^127.0.0.1.*\\s%1$s\\s.*$|^127.0.0.1.*\\s%1$s$", newHostName)
+        ));
 
         // update "node <hostname>" statement in puppet manifest file
         Iterator<Path> propertiesFiles = configManager.getCodenvyPropertiesFiles(InstallType.SINGLE_SERVER);

@@ -78,7 +78,7 @@ public class ConfigCommand extends AbstractIMCommand {
         }
 
         if (!StringUtils.isEmpty(property)) {
-            if (!StringUtils.isEmpty(value)) {
+            if (value != null) {
                 doUpdateCdecConfigProperty(property, value);
                 return;
             }

@@ -71,7 +71,7 @@ public class TestNodeConfigHelperCodenvy4 {
     public Object[][] dataRecognizeNodeTypeConfig() {
         return new Object[][] {
             { "", null, null },
-            { format("$host_url:2375", TEST_NODE_DNS),  null, NodeConfig.NodeType.MACHINE_NODE },
+            { "$host_url:2375",  null, NodeConfig.NodeType.MACHINE_NODE },
             { format("%s:2375", TEST_NODE_DNS),  NodeConfig.NodeType.MACHINE_NODE, null },
             { format("$host_url:2375\n%s:2375", TEST_NODE_DNS),  NodeConfig.NodeType.MACHINE_NODE, NodeConfig.NodeType.MACHINE_NODE }
         };

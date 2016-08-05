@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.codenvy.im.commands.CommandLibrary.createAppendTextIfAbsentToFileCommand;
 import static com.codenvy.im.commands.CommandLibrary.createCompressCommand;
 import static com.codenvy.im.commands.CommandLibrary.createCopyFromLocalToRemoteCommand;
 import static com.codenvy.im.commands.CommandLibrary.createCopyFromRemoteToLocalCommand;
@@ -821,6 +822,10 @@ public class CDECMultiServerHelper extends CDECArtifactHelper {
 
     @Override
     public Command getUpdateHostnameCommand(Config config, String oldHostName, String newHostName) {
-        return CommandLibrary.EMPTY_COMMAND;
+        // add <127.0.0.1 new-hostname> record into the /etc/hosts on master
+        return createAppendTextIfAbsentToFileCommand(Paths.get("/etc/hosts"),
+                                                     format("\n127.0.0.1 %1$s", newHostName),
+                                                     format("^127.0.0.1.*\\s%1$s\\s.*$|^127.0.0.1.*\\s%1$s$", newHostName)
+        );
     }
 }

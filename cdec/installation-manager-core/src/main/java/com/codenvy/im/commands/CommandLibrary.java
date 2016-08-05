@@ -101,17 +101,28 @@ public class CommandLibrary {
     }
 
     /**
-     * Update existed text in the file, or append it to the end of file if replacement pattern doesn't find.
+     * Update existed text in the file on node, or append it to the end of the file if replacement pattern doesn't find any occurrences.
      * @param fileToUpdate
      * @param textToPutIntoFile  (symbol "$" doesn't supported)
      * @param replacementPattern
      * @param node
-     * @return command to update file
+     * @return command to update file on node
      * @throws IOException
      */
     public static Command createUpdateFileCommand(Path fileToUpdate, String textToPutIntoFile, String replacementPattern, NodeConfig node) throws IOException {
-        return SimpleCommand.createCommand(getUpdateFileCommand(fileToUpdate, textToPutIntoFile, replacementPattern, true),
-                                           node);
+        return createCommand(getUpdateFileCommand(fileToUpdate, textToPutIntoFile, replacementPattern, true),
+                             node);
+    }
+
+    /**
+     * Update existed text in the local file, or append it to the end of the file if replacement pattern doesn't find any occurrences.
+     * @param fileToUpdate
+     * @param textToPutIntoFile  (symbol "$" doesn't supported)
+     * @param replacementPattern
+     * @return command to update local file
+     */
+    public static Command createUpdateFileCommand(Path fileToUpdate, String textToPutIntoFile, String replacementPattern) {
+        return createCommand(getUpdateFileCommand(fileToUpdate, textToPutIntoFile, replacementPattern, true));
     }
 
     static String getUpdateFileCommand(Path fileToUpdate, String textToPutIntoFile, String replacementPattern, boolean withSudo) {
@@ -125,6 +136,27 @@ public class CommandLibrary {
                                textToPutIntoFile.replace("\\$", "\\\\$").replace("\"", "\\\"").replace("\n", "\\n").replace("|", "\\|").replace("&", "\\&"),
                                replacementPattern,
                                textToPutIntoFile.replace("\"", "\\\""));
+        return withSudo ? command : command.replaceAll("sudo ", "");
+    }
+
+    /**
+     * Append text to file, if 'grep [checkIfTextPresentRegex]' command doesn't find any occurrences.
+     * @param pathToFile
+     * @param textToAppend
+     * @param checkIfTextPresentRegex
+     * @return command to append non-existed content to file
+     */
+    public static Command createAppendTextIfAbsentToFileCommand(Path pathToFile, String textToAppend, String checkIfTextPresentRegex) {
+        return createCommand(getAppendTextToFileCommand(pathToFile, textToAppend, checkIfTextPresentRegex, true));
+    }
+
+    static String getAppendTextToFileCommand(Path pathToFile, String textToAppend, String checkIfTextPresentRegex, boolean withSudo) {
+        String command = format("if ! sudo grep -Eq \"%3$s\" %1$s; then\n" +
+                                "  echo \"%2$s\" | sudo tee --append %1$s > /dev/null\n" +
+                                "fi",
+                                pathToFile.toString(),
+                                textToAppend,
+                                checkIfTextPresentRegex);
         return withSudo ? command : command.replaceAll("sudo ", "");
     }
 

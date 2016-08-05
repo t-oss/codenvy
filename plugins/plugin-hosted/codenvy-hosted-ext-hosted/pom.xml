@@ -20,7 +20,7 @@
     <parent>
         <artifactId>codenvy-plugin-hosted-parent</artifactId>
         <groupId>com.codenvy.plugin</groupId>
-        <version>4.6.0-SNAPSHOT</version>
+        <version>4.7.0-SNAPSHOT</version>
     </parent>
     <artifactId>codenvy-hosted-ext-hosted</artifactId>
     <packaging>jar</packaging>
@@ -31,7 +31,7 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>com.codenvy.hosted-infrastructure</groupId>
+            <groupId>com.codenvy.onpremises.wsmaster</groupId>
             <artifactId>codenvy-hosted-workspace-activity</artifactId>
         </dependency>
         <dependency>
@@ -101,7 +101,7 @@
                         <id>analyze</id>
                         <configuration>
                             <ignoredDependencies>
-                                <ignoredDependency>com.codenvy.hosted-infrastructure:codenvy-hosted-workspace-activity</ignoredDependency>
+                                <ignoredDependency>com.codenvy.onpremises.wsmaster:codenvy-hosted-workspace-activity</ignoredDependency>
                             </ignoredDependencies>
                         </configuration>
                     </execution>

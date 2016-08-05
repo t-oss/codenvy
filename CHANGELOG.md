@@ -1,5 +1,142 @@
 # Change Log
 
+## [4.6.0](https://github.com/codenvy/codenvy/tree/4.6.0) (2016-08-01)
+[Full Changelog](https://github.com/codenvy/codenvy/compare/4.5.1...4.6.0)
+
+**Issues with no labels:**
+
+- Impossibele to create pull request with plugin into own repository. [\#483](https://github.com/codenvy/codenvy/issues/483)
+- Unexpected disappearense project from the project explorer [\#481](https://github.com/codenvy/codenvy/issues/481)
+- Can't install version 4.4.0 [\#477](https://github.com/codenvy/codenvy/issues/477)
+- upload file to the project [\#439](https://github.com/codenvy/codenvy/issues/439)
+- hi new problem with my bot [\#438](https://github.com/codenvy/codenvy/issues/438)
+- Remove beta designation on hosted C4 systems [\#436](https://github.com/codenvy/codenvy/issues/436)
+- Control-C has stopped working [\#429](https://github.com/codenvy/codenvy/issues/429)
+- Shared workspace doesn't refresh automatically [\#422](https://github.com/codenvy/codenvy/issues/422)
+- codenvy config --hostname=${hostname} fails [\#420](https://github.com/codenvy/codenvy/issues/420)
+- help plz cant find my data when added some git [\#417](https://github.com/codenvy/codenvy/issues/417)
+- Sometimes machine.ws\_agent.run\_command can't execute properly [\#405](https://github.com/codenvy/codenvy/issues/405)
+- PreferenceDao implementation on JPA [\#393](https://github.com/codenvy/codenvy/issues/393)
+- FactoryDao implementation on JPA [\#392](https://github.com/codenvy/codenvy/issues/392)
+- Codenvy standalone server. Workspaces creation hanging. [\#390](https://github.com/codenvy/codenvy/issues/390)
+- How to run python script? [\#385](https://github.com/codenvy/codenvy/issues/385)
+- OAuth with github appears to be broken [\#357](https://github.com/codenvy/codenvy/issues/357)
+- Maven dependencies not resolved by IDE [\#351](https://github.com/codenvy/codenvy/issues/351)
+- Backup subs-system removes projects of workspace in some cases [\#488](https://github.com/codenvy/codenvy/issues/488)
+- Milestone Summary 4.6.0 [\#478](https://github.com/codenvy/codenvy/issues/478)
+- Missing pull request panel [\#458](https://github.com/codenvy/codenvy/issues/458)
+- On beta in logs \[ERROR\] \[m.b.WorkspaceFsBackupScheduler 84\] - Machine machine???? is not found [\#454](https://github.com/codenvy/codenvy/issues/454)
+- Codenvy 4.6.0 on-prem integration test of backup/restore failed [\#452](https://github.com/codenvy/codenvy/issues/452)
+- Methods "updateAttributesById" and "updateAttributes" in the ProfileService clean up user lastName in some case of partial update [\#451](https://github.com/codenvy/codenvy/issues/451)
+- VSTS projects does cloning failed [\#449](https://github.com/codenvy/codenvy/issues/449)
+- Vagrant installer uses wrong proxy settings [\#440](https://github.com/codenvy/codenvy/issues/440)
+- Unable to create user by Admin Dashbord [\#435](https://github.com/codenvy/codenvy/issues/435)
+- Cloning a VSTS repo feature does not work [\#431](https://github.com/codenvy/codenvy/issues/431)
+- Sourcegraph factory examples from getting-started page works wrong [\#430](https://github.com/codenvy/codenvy/issues/430)
+- Marketo interceptors doesn't send data to the Marketo [\#427](https://github.com/codenvy/codenvy/issues/427)
+- Bitbucket oAuth is broken [\#426](https://github.com/codenvy/codenvy/issues/426)
+- Investigate exception  'Machine with name ws-machine already exists' [\#411](https://github.com/codenvy/codenvy/issues/411)
+- Change default dns http://codenvy to any dns which contain dot symbol [\#407](https://github.com/codenvy/codenvy/issues/407)
+- Make sure  "Delete this account" Button actually deletes this account [\#382](https://github.com/codenvy/codenvy/issues/382)
+
+**Pull requests merged:**
+
+- CODENVY-488: fix bug in backup manager, update tests [\#490](https://github.com/codenvy/codenvy/pull/490) ([garagatyi](https://github.com/garagatyi))
+- \(\#407\) fix codenvy 3.x integration tests [\#487](https://github.com/codenvy/codenvy/pull/487) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- \(\#407\) change default dns 'codenvy' to 'codenvy.onprem' [\#485](https://github.com/codenvy/codenvy/pull/485) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- CODENVY-483; fix PR creation from own repo by sending name of origin [\#484](https://github.com/codenvy/codenvy/pull/484) ([mshaposhnik](https://github.com/mshaposhnik))
+- CODENVY-458; fix plugin pullrequest appearing; [\#462](https://github.com/codenvy/codenvy/pull/462) ([mshaposhnik](https://github.com/mshaposhnik))
+- CODENVY-454: Remove error log when machine was stopped while its backup task was in executor queue [\#461](https://github.com/codenvy/codenvy/pull/461) ([mmorhun](https://github.com/mmorhun))
+- codenvy-451: Fix clean up 'lastName' profile attribute. [\#460](https://github.com/codenvy/codenvy/pull/460) ([AndrienkoAleksandr](https://github.com/AndrienkoAleksandr))
+- CODENVY-449; fix VSTS project URL matching regexp [\#450](https://github.com/codenvy/codenvy/pull/450) ([mshaposhnik](https://github.com/mshaposhnik))
+- CHE-1849 Fix according to changes in Workspace API [\#448](https://github.com/codenvy/codenvy/pull/448) ([vinokurig](https://github.com/vinokurig))
+- CODENVY-411: Fix bug machine with name ws-machine already exists [\#446](https://github.com/codenvy/codenvy/pull/446) ([mmorhun](https://github.com/mmorhun))
+- codenvy-435: Fix user creation by Admin dashboard [\#437](https://github.com/codenvy/codenvy/pull/437) ([AndrienkoAleksandr](https://github.com/AndrienkoAleksandr))
+- CODENVY-601: Do not run new backup/restore process when another one is still running [\#425](https://github.com/codenvy/codenvy/pull/425) ([mmorhun](https://github.com/mmorhun))
+- Fix test to not set workspaceId into environment context [\#424](https://github.com/codenvy/codenvy/pull/424) ([mshaposhnik](https://github.com/mshaposhnik))
+- Fix update IM CLI message [\#423](https://github.com/codenvy/codenvy/pull/423) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- CODENVY-413: Make it possible to mark MachineNode as 'sheduled for maintenace' [\#418](https://github.com/codenvy/codenvy/pull/418) ([mmorhun](https://github.com/mmorhun))
+- Use Model.gwt.xml see https://github.com/eclipse/che/pull/1869 [\#415](https://github.com/codenvy/codenvy/pull/415) ([vparfonov](https://github.com/vparfonov))
+- CHE-1248 remove workspace information from EnvironmentContext [\#350](https://github.com/codenvy/codenvy/pull/350) ([mshaposhnik](https://github.com/mshaposhnik))
+- Updated to support 4.4.x proxy installation [\#441](https://github.com/codenvy/codenvy/pull/441) ([TylerJewell](https://github.com/TylerJewell))
+- CODENVY-572: Add exception to method signature [\#421](https://github.com/codenvy/codenvy/pull/421) ([vinokurig](https://github.com/vinokurig))
+- CODENVY-509: remove current user instead of sending email [\#381](https://github.com/codenvy/codenvy/pull/381) ([ashumilova](https://github.com/ashumilova))
+- CODENVY-651 Use 'dev' instead 'isDev' for machine configs in Mongo [\#356](https://github.com/codenvy/codenvy/pull/356) ([mkuznyetsov](https://github.com/mkuznyetsov))
+- Update accordingly to changes in everrest [\#341](https://github.com/codenvy/codenvy/pull/341) ([mkuznyetsov](https://github.com/mkuznyetsov))
+
+## [4.5.1](https://github.com/codenvy/codenvy/tree/4.5.1) (2016-07-19)
+[Full Changelog](https://github.com/codenvy/codenvy/compare/4.4.2...4.5.1)
+
+**Issues with no labels:**
+
+- Study how to integrate with customers ldap [\#399](https://github.com/codenvy/codenvy/issues/399)
+- Create list of all entries that connected to user [\#387](https://github.com/codenvy/codenvy/issues/387)
+- Workspace should update project by path instead by name [\#383](https://github.com/codenvy/codenvy/issues/383)
+- Running a Java Applet on Codenvy's android emulator [\#366](https://github.com/codenvy/codenvy/issues/366)
+- Cannot create a workspace nor a project [\#365](https://github.com/codenvy/codenvy/issues/365)
+- Managing machine snapshots [\#349](https://github.com/codenvy/codenvy/issues/349)
+- Existing workspaces taking 10+ minutes to load after being stopped [\#303](https://github.com/codenvy/codenvy/issues/303)
+
+**Pull requests merged:**
+
+- CODENVY-726: fix error of waiting on aliveness of Codenvy behind the proxy. [\#384](https://github.com/codenvy/codenvy/pull/384) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- CODENVY-702: check availability of Codenvy hostname [\#380](https://github.com/codenvy/codenvy/pull/380) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- CODENVY-718: add bootstrap script option to disable monitoring tools [\#379](https://github.com/codenvy/codenvy/pull/379) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- CODENVY-756: replace comma separator on pipeline in -Dhttp.nonProxyHosts [\#378](https://github.com/codenvy/codenvy/pull/378) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- CODENVY-726: fix checking if Codenvy on-prem is alive behind the proxy [\#377](https://github.com/codenvy/codenvy/pull/377) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- CODENVY-673: Fix IndexOutOfBoundsException [\#376](https://github.com/codenvy/codenvy/pull/376) ([vinokurig](https://github.com/vinokurig))
+- Revert "CODENVY-413: Make it possible to mark MachineNode as 'sheduled for maintenace'" [\#375](https://github.com/codenvy/codenvy/pull/375) ([mmorhun](https://github.com/mmorhun))
+- CODENVY-726: fix Codenvy on-prem apiEndpoint url [\#374](https://github.com/codenvy/codenvy/pull/374) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- Update default Codenvy on-prem properties [\#373](https://github.com/codenvy/codenvy/pull/373) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- CODENVY-413: Make it possible to mark MachineNode as 'sheduled for maintenace' [\#372](https://github.com/codenvy/codenvy/pull/372) ([mmorhun](https://github.com/mmorhun))
+- CODENVY-418: fix test to create project on node behind the proxy [\#371](https://github.com/codenvy/codenvy/pull/371) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- CODENVY-556 Add service for fetching recipe script [\#370](https://github.com/codenvy/codenvy/pull/370) ([mkuznyetsov](https://github.com/mkuznyetsov))
+- CHE-1397: change styles of error page [\#368](https://github.com/codenvy/codenvy/pull/368) ([ashumilova](https://github.com/ashumilova))
+- Codenvy 361 [\#367](https://github.com/codenvy/codenvy/pull/367) ([garagatyi](https://github.com/garagatyi))
+- Fix integration test of adding nodes behind the proxy [\#364](https://github.com/codenvy/codenvy/pull/364) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- Restore user creation url in integration tests of Codenvy 3.x [\#362](https://github.com/codenvy/codenvy/pull/362) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- Add 'auth.sso.client\_allow\_anonymous=false' property [\#361](https://github.com/codenvy/codenvy/pull/361) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- Fix user creation url in integration tests of IM CLI [\#360](https://github.com/codenvy/codenvy/pull/360) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- CODENVY-418: make Codenvy machine node add/remove behind the proxy [\#359](https://github.com/codenvy/codenvy/pull/359) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- CHE-1390: remove projects from main menu [\#358](https://github.com/codenvy/codenvy/pull/358) ([ashumilova](https://github.com/ashumilova))
+- Fix share workspace: getting workspace id, find user method, do not t… [\#355](https://github.com/codenvy/codenvy/pull/355) ([ashumilova](https://github.com/ashumilova))
+
+## [4.4.2](https://github.com/codenvy/codenvy/tree/4.4.2) (2016-07-06)
+[Full Changelog](https://github.com/codenvy/codenvy/compare/4.4.1...4.4.2)
+
+**Issues with no labels:**
+
+- Copy/paste not working in command configuration dialog \(Chrome only\) [\#354](https://github.com/codenvy/codenvy/issues/354)
+
+**Pull requests merged:**
+
+- CHE-1144: fix in accordance with changes in che [\#353](https://github.com/codenvy/codenvy/pull/353) ([garagatyi](https://github.com/garagatyi))
+- CODENVY-720: Fix snapshot recovering [\#352](https://github.com/codenvy/codenvy/pull/352) ([garagatyi](https://github.com/garagatyi))
+
+## [4.4.1](https://github.com/codenvy/codenvy/tree/4.4.1) (2016-07-05)
+[Full Changelog](https://github.com/codenvy/codenvy/compare/4.4.0...4.4.1)
+
+**Issues with no labels:**
+
+- Some Enforcer rules have failed. Look above for specific messages explaining why the rule failed. [\#339](https://github.com/codenvy/codenvy/issues/339)
+
+**Pull requests merged:**
+
+- CODENVY-520 Remove allow\_anonymous from war configuration [\#347](https://github.com/codenvy/codenvy/pull/347) ([mkuznyetsov](https://github.com/mkuznyetsov))
+- CHE-1353: Add possibility to configure specific docker api version [\#346](https://github.com/codenvy/codenvy/pull/346) ([AndrienkoAleksandr](https://github.com/AndrienkoAleksandr))
+- Resource management [\#345](https://github.com/codenvy/codenvy/pull/345) ([vzhukovskii](https://github.com/vzhukovskii))
+- CHE-1365: remove usage of deprecated methods [\#344](https://github.com/codenvy/codenvy/pull/344) ([garagatyi](https://github.com/garagatyi))
+- CHE-1395: fix browser titles [\#343](https://github.com/codenvy/codenvy/pull/343) ([ashumilova](https://github.com/ashumilova))
+- CODENVY-706: check if there is subscription-manager command in RHEL OS [\#342](https://github.com/codenvy/codenvy/pull/342) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- CODENVY-575; cleanup environment context after each request lifecycle [\#340](https://github.com/codenvy/codenvy/pull/340) ([mshaposhnik](https://github.com/mshaposhnik))
+- CHE-1256: Set Jgit implementation as default Git implementation [\#338](https://github.com/codenvy/codenvy/pull/338) ([vinokurig](https://github.com/vinokurig))
+- CODENVY-84: work around default node of Codenvy on-prem [\#337](https://github.com/codenvy/codenvy/pull/337) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- Fix update IM CLI message [\#336](https://github.com/codenvy/codenvy/pull/336) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- CODENVY-702: fix command which hangs up when changing Codenvy hostname [\#335](https://github.com/codenvy/codenvy/pull/335) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- Add default properties of Codenvy on-prem 4.4.0 [\#334](https://github.com/codenvy/codenvy/pull/334) ([dmytro-ndp](https://github.com/dmytro-ndp))
+- CHE-1298; remove war name from url schema [\#324](https://github.com/codenvy/codenvy/pull/324) ([mshaposhnik](https://github.com/mshaposhnik))
+- CHE-1078: Adapt code to user service refactorings [\#243](https://github.com/codenvy/codenvy/pull/243) ([evoevodin](https://github.com/evoevodin))
+
 ## [4.4.0](https://github.com/codenvy/codenvy/tree/4.4.0) (2016-06-28)
 [Full Changelog](https://github.com/codenvy/codenvy/compare/4.3.5...4.4.0)
 

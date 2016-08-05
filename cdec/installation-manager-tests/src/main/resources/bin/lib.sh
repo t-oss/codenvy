@@ -88,27 +88,27 @@ retrieveTestLogs() {
     if [[ ${INSTALL_ON_NODE} == "master.${HOST_URL}" ]]; then
         for HOST in master api analytics data site runner1 builder1 datasource; do
             # store puppet logs
-            executeSshCommand --bypass-validation "sudo chown -R root:root /var/log/puppet" ${HOST}.codenvy
-            executeSshCommand --bypass-validation "sudo chmod 777 /var/log/puppet" ${HOST}.codenvy
-            scp -o StrictHostKeyChecking=no -i ~/.vagrant.d/insecure_private_key vagrant@${HOST}.codenvy:/var/log/puppet/puppet-agent.log ${logDirName}/puppet-agent-${HOST}.log
+            executeSshCommand --bypass-validation "sudo chown -R root:root /var/log/puppet" ${HOST}.${HOST_URL}
+            executeSshCommand --bypass-validation "sudo chmod 777 /var/log/puppet" ${HOST}.${HOST_URL}
+            scp -o StrictHostKeyChecking=no -i ~/.vagrant.d/insecure_private_key vagrant@${HOST}.${HOST_URL}:/var/log/puppet/puppet-agent.log ${logDirName}/puppet-agent-${HOST}.log
 
             # store messages log
-            executeSshCommand --bypass-validation "sudo cp /var/log/messages /home/vagrant/messages" ${HOST}.codenvy
-            executeSshCommand --bypass-validation "sudo chmod 777 /home/vagrant/messages" ${HOST}.codenvy
-            scp -o StrictHostKeyChecking=no -i ~/.vagrant.d/insecure_private_key vagrant@${HOST}.codenvy:messages ${logDirName}/messages-${HOST}
+            executeSshCommand --bypass-validation "sudo cp /var/log/messages /home/vagrant/messages" ${HOST}.${HOST_URL}
+            executeSshCommand --bypass-validation "sudo chmod 777 /home/vagrant/messages" ${HOST}.${HOST_URL}
+            scp -o StrictHostKeyChecking=no -i ~/.vagrant.d/insecure_private_key vagrant@${HOST}.${HOST_URL}:messages ${logDirName}/messages-${HOST}
 
             if [[ ${HOST} == "api" || ${HOST} == "analytics" || ${HOST} == "site" || ${HOST} == "runner1" || ${HOST} == "builder1" ]]; then
                 # store Codenvy log
-                executeSshCommand --bypass-validation "sudo cp /home/codenvy/codenvy-tomcat/logs/catalina.out /home/vagrant/codenvy-catalina.out" ${HOST}.codenvy   # for codenvy 3.x
-                executeSshCommand --bypass-validation "sudo chmod 777 /home/vagrant/codenvy-catalina.out" ${HOST}.codenvy
-                scp -o StrictHostKeyChecking=no -i ~/.vagrant.d/insecure_private_key vagrant@${HOST}.codenvy:codenvy-catalina.out ${logDirName}/codenvy-catalina-${HOST}.out
+                executeSshCommand --bypass-validation "sudo cp /home/codenvy/codenvy-tomcat/logs/catalina.out /home/vagrant/codenvy-catalina.out" ${HOST}.${HOST_URL}   # for Codenvy 3.x
+                executeSshCommand --bypass-validation "sudo chmod 777 /home/vagrant/codenvy-catalina.out" ${HOST}.${HOST_URL}
+                scp -o StrictHostKeyChecking=no -i ~/.vagrant.d/insecure_private_key vagrant@${HOST}.${HOST_URL}:codenvy-catalina.out ${logDirName}/codenvy-catalina-${HOST}.out
             fi
 
             if [[ ${HOST} == "master" ]]; then
                 # store IM Server log
-                executeSshCommand --bypass-validation "sudo cp /home/codenvy-im/codenvy-im-tomcat/logs/catalina.out /home/vagrant/im-server-catalina.out" ${HOST}.codenvy
-                executeSshCommand --bypass-validation "sudo chmod 777 /home/vagrant/im-server-catalina.out" ${HOST}.codenvy
-                scp -o StrictHostKeyChecking=no -i ~/.vagrant.d/insecure_private_key vagrant@${HOST}.codenvy:im-server-catalina-${HOST}.out ${logDirName}/
+                executeSshCommand --bypass-validation "sudo cp /home/codenvy-im/codenvy-im-tomcat/logs/catalina.out /home/vagrant/im-server-catalina.out" ${HOST}.${HOST_URL}
+                executeSshCommand --bypass-validation "sudo chmod 777 /home/vagrant/im-server-catalina.out" ${HOST}.${HOST_URL}
+                scp -o StrictHostKeyChecking=no -i ~/.vagrant.d/insecure_private_key vagrant@${HOST}.${HOST_URL}:im-server-catalina-${HOST}.out ${logDirName}/
             fi
         done
     else
@@ -139,11 +139,9 @@ retrieveTestLogs() {
 }
 
 vagrantDestroy() {
-    if [[ $RHEL_OS == true ]]; then
-        # remove RHEL OS subscription
-        executeSshCommand --bypass-validation "sudo subscription-manager remove --all"
-        executeSshCommand --bypass-validation "sudo subscription-manager unregister"
-    fi
+    # remove RHEL OS subscription
+    executeSshCommand --bypass-validation "sudo subscription-manager remove --all"
+    executeSshCommand --bypass-validation "sudo subscription-manager unregister"
 
     vagrant destroy -f >> ${TEST_LOG}
 }
@@ -202,8 +200,7 @@ installCodenvy() {
     ssh -o StrictHostKeyChecking=no -i ~/.vagrant.d/insecure_private_key vagrant@${INSTALL_ON_NODE} "export TERM='xterm' && bash <(curl -L -s ${UPDATE_SERVICE}/repository/public/download/install-codenvy) --suppress --license=accept ${MULTI_OPTION} ${VERSION_OPTION} $@" >> ${TEST_LOG}
     EXIT_CODE=$?
 
-    # to get last several rows from test log file
-    OUTPUT=$(tail ${TEST_LOG})
+    OUTPUT=$(cat ${TEST_LOG})
 
     validateExitCode ${EXIT_CODE} ${validCode} --installCodenvy
 
@@ -230,8 +227,7 @@ installImCliClient() {
     ssh -o StrictHostKeyChecking=no -i ~/.vagrant.d/insecure_private_key vagrant@${INSTALL_ON_NODE} "export TERM='xterm' && bash <(curl -L -s ${UPDATE_SERVICE}/repository/public/download/install-im-cli) --license=accept ${VERSION_OPTION} $@" >> ${TEST_LOG}
     EXIT_CODE=$?
 
-    # to get last several rows from test log file
-    OUTPUT=$(tail ${TEST_LOG})
+    OUTPUT=$(cat ${TEST_LOG})
 
     validateExitCode ${EXIT_CODE} ${validCode}
 
@@ -320,9 +316,7 @@ executeSshCommand() {
         shift
     fi
 
-    if [[ $bypassValidation == false ]]; then
-        logStartCommand "executeSshCommand "$@
-    fi
+    logStartCommand "executeSshCommand "$@
 
     COMMAND=$1
 
