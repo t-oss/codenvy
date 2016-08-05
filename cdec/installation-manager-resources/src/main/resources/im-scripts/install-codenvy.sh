@@ -1910,7 +1910,11 @@ printPostInstallInfo_codenvy() {
     fi
 
     println
-    println "Codenvy is ready: $(printImportantLink "http://$HOST_NAME")"
+    if [[ "${VERSION}" =~ ^(4).* ]]; then
+        postFlightCheck_${ARTIFACT}
+    fi
+
+    println "Codenvy at:       $(printImportantLink "http://$HOST_NAME")"
     println "Admin user name:  $(printImportantInfo $SYSTEM_ADMIN_NAME)"
     println "Admin password:   $(printImportantInfo $SYSTEM_ADMIN_PASSWORD)"
     println
@@ -1922,6 +1926,48 @@ printPostInstallInfo_installation-manager-cli() {
     println "Codenvy Installation Manager is installed into ${INSTALL_DIR}/cli directory"
 }
 
+postFlightCheckOfCodenvy() {
+    println "Verifying installation..."
+
+    local i=0
+    local errorMessage=
+    local failedOperation=
+    local status=
+
+#    updateLine ${STEP_LINE}
+    print "$((i++)). Authenticating as admin."
+
+#   checking ...
+# $status=[0|1]
+# $errorMessage=...
+# $failedOperation=...
+
+    if [[ ! $status ]]; then
+        println $(printError "[NOT OK]")
+        postFlightCheckOfCodenvyErrorDisplay $failedOperation $errorMessage
+        return
+    fi
+
+    println $(printSuccess "[OK]")
+
+    print "$((i++)). Generating 'your-first-workspace'."
+
+    print "$((i++)). Starting workspace runtime. (downloads ~500MB image)"
+
+    print "$((i++)). Creating Spring project in 'your-first-workspace'."
+}
+
+# $1 - failed operation
+# $2 - error message
+postFlightCheckOfCodenvyErrorDisplay() {
+    local failedOperation=$1
+    local errorMessage=$2
+    println "Codenvy is installed, but basic post-flight API tests failed."
+    println "The command that failed is:"
+    println "$failedOperation"
+    println "with failure output of:"
+    println "$errorMessage"
+}
 
 clear
 
@@ -1982,5 +2028,9 @@ fi
 pauseTimer
 pauseInternetAccessChecker
 pauseFooterUpdater
+
+if [[ "${ARTIFACT}" == "codenvy" ]]; then
+    postFlightCheckOfCodenvy
+fi
 
 printPostInstallInfo_${ARTIFACT}
