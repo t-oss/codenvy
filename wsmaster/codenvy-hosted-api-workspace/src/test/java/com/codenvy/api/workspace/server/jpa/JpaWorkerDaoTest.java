@@ -24,6 +24,7 @@ import org.eclipse.che.api.user.server.model.impl.UserImpl;
 import org.eclipse.che.api.workspace.server.event.BeforeWorkspaceRemovedEvent;
 import org.eclipse.che.api.workspace.server.model.impl.WorkspaceConfigImpl;
 import org.eclipse.che.api.workspace.server.model.impl.WorkspaceImpl;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -78,12 +79,16 @@ public class JpaWorkerDaoTest {
     }
 
     @AfterMethod
-    private void cleanup() {
+    public void cleanup() {
         manager.getTransaction().begin();
         manager.createQuery("SELECT e FROM Worker e", WorkerImpl.class)
                .getResultList()
                .forEach(manager::remove);
         manager.getTransaction().commit();
+    }
+
+    @AfterClass
+    public void shutdown() throws Exception {
         manager.getEntityManagerFactory().close();
     }
 
