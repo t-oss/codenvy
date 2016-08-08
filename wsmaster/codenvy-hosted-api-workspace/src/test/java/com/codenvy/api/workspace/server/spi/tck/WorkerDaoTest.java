@@ -29,9 +29,11 @@ import org.testng.annotations.Test;
 import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Compatibility test for {@link WorkerDao}
@@ -112,12 +114,16 @@ public class WorkerDaoTest {
     @Test
     public void shouldGetWorkersByWorkspaceId() throws Exception {
         List<WorkerImpl> actual = workerDao.getWorkers("ws1");
-        assertEquals(actual, Arrays.asList(workers).subList(0, 2));
+        List<WorkerImpl> expected = Arrays.asList(workers).subList(0, 2);
+        assertEquals(actual.size(), expected.size());
+        assertTrue(new HashSet<>(actual).equals(new HashSet<>(expected)));
     }
 
     public void shouldGetWorkersByUserId() throws Exception {
         List<WorkerImpl> actual = workerDao.getWorkersByUser("user1");
-        assertEquals(actual, Arrays.asList(workers[0], workers[2]));
+        List<WorkerImpl> expected = Arrays.asList(workers[0], workers[2]);
+        assertEquals(actual.size(), expected.size());
+        assertTrue(new HashSet<>(actual).equals(new HashSet<>(expected)));
     }
 
     @Test(expectedExceptions = NullPointerException.class)

@@ -19,12 +19,13 @@ import com.codenvy.api.workspace.server.model.impl.WorkerImpl;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
+import org.eclipse.che.api.user.server.event.BeforeUserRemovedEvent;
+import org.eclipse.che.api.user.server.model.impl.UserImpl;
 import org.eclipse.che.api.workspace.server.event.BeforeWorkspaceRemovedEvent;
 import org.eclipse.che.api.workspace.server.model.impl.WorkspaceConfigImpl;
 import org.eclipse.che.api.workspace.server.model.impl.WorkspaceImpl;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import javax.persistence.EntityManager;
@@ -42,23 +43,27 @@ public class JpaWorkerDaoTest {
 
     private JpaWorkerDao workerDao;
 
+    private JpaWorkerDao.RemoveWorkersBeforeWorkspaceRemovedEventSubscriber removeWorkersBeforeWorkspaceRemovedEventSubscriber;
+
+    private JpaWorkerDao.RemoveWorkersBeforeUserRemovedEventSubscriber removeWorkersBeforeUserRemovedEventSubscriber;
+
     WorkerImpl[] workers;
 
-    @AfterMethod
-    private void cleanup() {
-        manager.getEntityManagerFactory().close();
-    }
-
-    @BeforeTest
+    @BeforeMethod
     public void setUp() throws Exception {
         workers = new WorkerImpl[]{new WorkerImpl("ws1", "user1", Arrays.asList("read", "use", "run")),
                                    new WorkerImpl("ws1", "user2", Arrays.asList("read", "use")),
                                    new WorkerImpl("ws2", "user1", Arrays.asList("read", "run")),
                                    new WorkerImpl("ws2", "user2", Arrays.asList("read", "use", "run", "configure"))};
 
-        Injector injector = Guice.createInjector(new WorkerTckModule());
+        Injector injector = Guice.createInjector(new WorkerTckModule(), new WorkerJpaModule());
         manager = injector.getInstance(EntityManager.class);
-        workerDao  = injector.getInstance(JpaWorkerDao.class);
+        workerDao = injector.getInstance(JpaWorkerDao.class);
+        removeWorkersBeforeWorkspaceRemovedEventSubscriber = injector.getInstance(
+                JpaWorkerDao.RemoveWorkersBeforeWorkspaceRemovedEventSubscriber.class);
+
+        removeWorkersBeforeUserRemovedEventSubscriber = injector.getInstance(
+                JpaWorkerDao.RemoveWorkersBeforeUserRemovedEventSubscriber.class);
 
         manager.getTransaction().begin();
         for (WorkerImpl worker : workers) {
@@ -68,13 +73,28 @@ public class JpaWorkerDaoTest {
         manager.clear();
     }
 
+    @AfterMethod
+    private void cleanup() {
+        manager.getTransaction().begin();
+        manager.createQuery("SELECT e FROM Worker e", WorkerImpl.class)
+               .getResultList()
+               .forEach(manager::remove);
+        manager.getTransaction().commit();
+        manager.getEntityManagerFactory().close();
+    }
+
     @Test
     public void shouldRemoveWorkersWhenWorkspaceIsRemoved() throws Exception {
-        WorkspaceConfigImpl wsConfig = new WorkspaceConfigImpl();
-        wsConfig.setName("ws1");
-        BeforeWorkspaceRemovedEvent event =  new BeforeWorkspaceRemovedEvent(new WorkspaceImpl("id1", "ns", wsConfig));
-        new JpaWorkerDao.RemoveWorkersBeforeWorkspaceRemovedEventSubscriber().onEvent(event);
+        BeforeWorkspaceRemovedEvent event =  new BeforeWorkspaceRemovedEvent(new WorkspaceImpl("ws1", "ns", new WorkspaceConfigImpl()));
+        removeWorkersBeforeWorkspaceRemovedEventSubscriber.onEvent(event);
         assertTrue(workerDao.getWorkers("ws1").isEmpty());
+    }
+
+    @Test
+    public void shouldRemoveWorkersWhenUserIsRemoved() throws Exception {
+        BeforeUserRemovedEvent event =  new BeforeUserRemovedEvent(new UserImpl("user1", "email@co.com", "user"));
+        removeWorkersBeforeUserRemovedEventSubscriber.onEvent(event);
+        assertTrue(workerDao.getWorkersByUser("user1").isEmpty());
     }
 
 }
