@@ -23,19 +23,22 @@ import java.sql.SQLException;
 
 /**
  * Rethrows vendor specific exceptions as common exceptions.
- * See <a href="http://www.h2database.com/javadoc/org/h2/api/ErrorCode.html">H2 error codes</a>.
+ * See <a https://www.postgresql.org/docs/9.4/static/errcodes-appendix.html">PostgreSQL error codes</a>.
  *
  * @author Yevhenii Voevodin
+ * @author Sergii Kabashniuk
+ *
  */
 public class PostgreSqlExceptionHandler implements ExceptionHandler {
 
     public Object handleException(RuntimeException exception) {
+
         if (exception instanceof DatabaseException && exception.getCause() instanceof SQLException) {
             final SQLException sqlEx = (SQLException)exception.getCause();
-            switch (sqlEx.getErrorCode()) {
-                case 23505:
+            switch (sqlEx.getSQLState()) {
+                case "23505":
                     throw new DuplicateKeyException(exception.getMessage(), exception);
-                case 23503:
+                case "23503":
                     throw new IntegrityConstraintViolationException(exception.getMessage(), exception);
             }
         }

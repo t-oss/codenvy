@@ -52,9 +52,14 @@ import org.eclipse.che.commons.test.tck.repository.TckRepository;
 import org.eclipse.che.commons.test.tck.repository.TckRepositoryException;
 import org.eclipse.che.security.PasswordEncryptor;
 import org.eclipse.che.security.SHA512PasswordEncryptor;
+import org.postgresql.ds.PGPoolingDataSource;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import java.util.Collection;
 import java.util.Map;
@@ -68,23 +73,73 @@ public class PostgreSqlTckModule extends TckModule {
 
     @Override
     protected void configure() {
+
+        try {
+            System.setProperty(Context.INITIAL_CONTEXT_FACTORY,
+                               "org.apache.naming.java.javaURLContextFactory");
+            System.setProperty(Context.URL_PKG_PREFIXES,
+                               "org.apache.naming");
+
+            InitialContext ic = new InitialContext();
+
+            try {
+                ic.lookup("java:/comp/env/jdbc/codenvy");
+                // Create initial context
+            } catch (NameNotFoundException e) {
+
+                try {
+                    ic.createSubcontext("java:");
+                    ic.createSubcontext("java:/comp");
+                    ic.createSubcontext("java:/comp/env");
+                    ic.createSubcontext("java:/comp/env/jdbc");
+
+                    PGPoolingDataSource source = new PGPoolingDataSource();
+                    source.setDataSourceName("A Data Source");
+                    source.setServerName(System.getProperty("postgresql.host"));
+                    source.setPortNumber(Integer.parseInt(System.getProperty("postgresql.port")));
+                    source.setDatabaseName("codenvy");
+                    source.setUser("postgres");
+                    source.setPassword("postgres");
+                    source.setMaxConnections(10);
+                    ic.bind("java:/comp/env/jdbc/codenvy", source);
+
+                } catch (NamingException ex) {
+                    ex.printStackTrace();
+                }
+            } catch (NamingException e) {
+                e.printStackTrace();
+            }
+        } catch (NamingException e) {
+            e.printStackTrace();
+        }
+
         install(new JpaPersistModule("main"));
         bind(JpaInitializer.class).asEagerSingleton();
         bind(EntityListenerInjectionManagerInitializer.class).asEagerSingleton();
 
         //repositories
         //api-user
-        bind(new TypeLiteral<TckRepository<UserImpl>>() {}).toInstance(new JpaTckRepository<>(UserImpl.class));
-        bind(new TypeLiteral<TckRepository<ProfileImpl>>() {}).toInstance(new JpaTckRepository<>(ProfileImpl.class));
-        bind(new TypeLiteral<TckRepository<Pair<String, Map<String, String>>>>() {}).toInstance(new PreferenceJpaTckRepository());
+        bind(new TypeLiteral<TckRepository<UserImpl>>() {}).to(UserJpaTckRepository.class);
+        bind(new TypeLiteral<TckRepository<ProfileImpl>>() {
+        }).toInstance(new JpaTckRepository<>(ProfileImpl.class));
+        bind(new TypeLiteral<TckRepository<Pair<String, Map<String, String>>>>() {
+        }).toInstance(new PreferenceJpaTckRepository());
+
+
+
         //api-workspace
-        bind(new TypeLiteral<TckRepository<WorkspaceImpl>>() {}).toInstance(new JpaTckRepository<>(WorkspaceImpl.class));
-        bind(new TypeLiteral<TckRepository<StackImpl>>() {}).toInstance(new JpaTckRepository<>(StackImpl.class));
+        bind(new TypeLiteral<TckRepository<WorkspaceImpl>>() {
+        }).toInstance(new JpaTckRepository<>(WorkspaceImpl.class));
+        bind(new TypeLiteral<TckRepository<StackImpl>>() {
+        }).toInstance(new JpaTckRepository<>(StackImpl.class));
         //api-machine
-        bind(new TypeLiteral<TckRepository<RecipeImpl>>() {}).toInstance(new JpaTckRepository<>(RecipeImpl.class));
-        bind(new TypeLiteral<TckRepository<SnapshotImpl>>() {}).toInstance(new JpaTckRepository<>(SnapshotImpl.class));
+        bind(new TypeLiteral<TckRepository<RecipeImpl>>() {
+        }).toInstance(new JpaTckRepository<>(RecipeImpl.class));
+        bind(new TypeLiteral<TckRepository<SnapshotImpl>>() {
+        }).toInstance(new JpaTckRepository<>(SnapshotImpl.class));
         //api ssh
-        bind(new TypeLiteral<TckRepository<SshPairImpl>>(){}).toInstance(new JpaTckRepository<>(SshPairImpl.class));
+        bind(new TypeLiteral<TckRepository<SshPairImpl>>() {
+        }).toInstance(new JpaTckRepository<>(SshPairImpl.class));
 
         //dao
         //api-user
@@ -126,6 +181,36 @@ public class PostgreSqlTckModule extends TckModule {
             manager.createQuery("SELECT prefs FROM Preference prefs", PreferenceEntity.class)
                    .getResultList()
                    .forEach(manager::remove);
+        }
+    }
+
+
+    @Transactional
+    public static class UserJpaTckRepository implements TckRepository<UserImpl> {
+
+        @Inject
+        private Provider<EntityManager> managerProvider;
+
+        @Inject
+        private PasswordEncryptor encryptor;
+
+        @Override
+        public void createAll(Collection<? extends UserImpl> entities) throws TckRepositoryException {
+            final EntityManager manager = managerProvider.get();
+            entities.stream()
+                    .map(user -> new UserImpl(user.getId(),
+                                              user.getEmail(),
+                                              user.getName(),
+                                              encryptor.encrypt(user.getPassword()),
+                                              user.getAliases()))
+                    .forEach(manager::persist);
+        }
+
+        @Override
+        public void removeAll() throws TckRepositoryException {
+            managerProvider.get()
+                           .createQuery("DELETE FROM \"User\"")
+                           .executeUpdate();
         }
     }
 }
