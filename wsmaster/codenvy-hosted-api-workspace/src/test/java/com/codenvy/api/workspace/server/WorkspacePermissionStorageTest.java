@@ -16,8 +16,8 @@ package com.codenvy.api.workspace.server;
 
 import com.codenvy.api.permission.server.AbstractPermissionsDomain;
 import com.codenvy.api.permission.server.PermissionsImpl;
-import com.codenvy.api.workspace.server.dao.WorkerDao;
-import com.codenvy.api.workspace.server.model.WorkerImpl;
+import com.codenvy.api.workspace.server.spi.WorkerDao;
+import com.codenvy.api.workspace.server.model.impl.WorkerImpl;
 import com.google.common.collect.ImmutableSet;
 
 import org.eclipse.che.api.core.NotFoundException;
@@ -64,13 +64,13 @@ public class WorkspacePermissionStorageTest {
                                                     "workspace123",
                                                     asList(READ, USE)));
 
-        verify(workerDao).store(eq(new WorkerImpl("user123", "workspace123", asList(READ, USE))));
+        verify(workerDao).store(eq(new WorkerImpl("workspace123", "user123", asList(READ, USE))));
     }
 
     @Test
     public void shouldBeAbleToGetPermissionsByUserAndDomainAndInstance() throws Exception {
         when(workerDao.getWorker(anyString(), anyString()))
-                .thenReturn(new WorkerImpl("user123", "workspace123", asList(READ, USE)));
+                .thenReturn(new WorkerImpl("workspace123", "user123", asList(READ, USE)));
 
         PermissionsImpl result = permissionStorage.get("user123", DOMAIN_ID, "workspace123");
 
@@ -84,7 +84,7 @@ public class WorkspacePermissionStorageTest {
     @Test
     public void shouldBeAbleToGetPermissionsByDomainAndInstance() throws Exception {
         when(workerDao.getWorkers(anyString()))
-                .thenReturn(Collections.singletonList(new WorkerImpl("user123", "workspace123", asList(READ, USE))));
+                .thenReturn(Collections.singletonList(new WorkerImpl("workspace123", "user123", asList(READ, USE))));
 
         List<PermissionsImpl> result = permissionStorage.getByInstance(DOMAIN_ID, "workspace123");
 
@@ -99,7 +99,7 @@ public class WorkspacePermissionStorageTest {
     @Test
     public void shouldBeAbleToCheckPermissionExistence() throws Exception {
         when(workerDao.getWorker(anyString(), anyString()))
-                .thenReturn(new WorkerImpl("user123", "workspace123", asList(READ,
+                .thenReturn(new WorkerImpl("workspace123", "user123", asList(READ,
                                                                              USE)));
 
         boolean existence = permissionStorage.exists("user123", DOMAIN_ID, "workspace123", READ);

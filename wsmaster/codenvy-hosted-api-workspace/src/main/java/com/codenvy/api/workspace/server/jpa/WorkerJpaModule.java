@@ -12,29 +12,21 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.workspace.server.model;
+package com.codenvy.api.workspace.server.jpa;
 
-
-import java.util.List;
+import com.codenvy.api.workspace.server.spi.WorkerDao;
+import com.google.inject.AbstractModule;
 
 /**
- * Describes relations between user and workspace
  *
- * @author Sergii Leschenko
+ * @author Max Shaposhnik
  */
-public interface Worker {
-    /**
-     * Returns user id
-     */
-    String getUserId();
+public class WorkerJpaModule extends AbstractModule {
 
-    /**
-     * Returns workspace id
-     */
-    String getWorkspaceId();
-
-    /**
-     * Returns list of workspace actions which can be performed by current user
-     */
-    List<String> getActions();
+    @Override
+    protected void configure() {
+      bind(WorkerDao.class).to(JpaWorkerDao.class);
+      bind(JpaWorkerDao.RemoveWorkersBeforeUserRemovedEventSubscriber.class).asEagerSingleton();
+      bind(JpaWorkerDao.RemoveWorkersBeforeWorkspaceRemovedEventSubscriber.class).asEagerSingleton();
+    }
 }

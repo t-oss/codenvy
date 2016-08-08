@@ -14,8 +14,8 @@
  */
 package com.codenvy.api.dao.mongo;
 
-import com.codenvy.api.workspace.server.dao.WorkerDao;
-import com.codenvy.api.workspace.server.model.WorkerImpl;
+import com.codenvy.api.workspace.server.spi.WorkerDao;
+import com.codenvy.api.workspace.server.model.impl.WorkerImpl;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -67,8 +67,8 @@ public class WorkerDaoImpl implements WorkerDao {
     @Override
     public void store(WorkerImpl worker) throws ServerException {
         try {
-            collection.replaceOne(and(eq("user", worker.getUser()),
-                                      eq("workspace", worker.getWorkspace())),
+            collection.replaceOne(and(eq("user", worker.getUserId()),
+                                      eq("workspace", worker.getWorkspaceId())),
                                   worker,
                                   new UpdateOptions().upsert(true));
         } catch (MongoException e) {
@@ -77,31 +77,31 @@ public class WorkerDaoImpl implements WorkerDao {
     }
 
     @Override
-    public WorkerImpl getWorker(String workspace, String user) throws NotFoundException, ServerException {
+    public WorkerImpl getWorker(String workspaceId, String userId) throws NotFoundException, ServerException {
         WorkerImpl found;
         try {
-            found = collection.find(and(eq("user", user),
-                                        eq("workspace", workspace)))
+            found = collection.find(and(eq("user", userId),
+                                        eq("workspace", workspaceId)))
                               .first();
         } catch (MongoException e) {
             throw new ServerException(e.getMessage(), e);
         }
 
         if (found == null) {
-            throw new NotFoundException(format("Worker with user '%s' and workspace '%s' was not found", user, workspace));
+            throw new NotFoundException(format("Worker with user '%s' and workspace '%s' was not found", userId, workspaceId));
         }
 
         return found;
     }
 
     @Override
-    public void removeWorker(String workspace, String user) throws ServerException, NotFoundException {
+    public void removeWorker(String workspaceId, String userId) throws ServerException, NotFoundException {
         try {
-            final DeleteResult deleteResult = collection.deleteOne(and(eq("user", user),
-                                                                       eq("workspace", workspace)));
+            final DeleteResult deleteResult = collection.deleteOne(and(eq("user", userId),
+                                                                       eq("workspace", workspaceId)));
 
             if (deleteResult.getDeletedCount() == 0) {
-                throw new NotFoundException(format("Worker with user '%s' and workspace '%s' was not found", user, workspace));
+                throw new NotFoundException(format("Worker with user '%s' and workspace '%s' was not found", userId, workspaceId));
             }
         } catch (MongoException e) {
             throw new ServerException(e.getMessage(), e);
@@ -109,9 +109,9 @@ public class WorkerDaoImpl implements WorkerDao {
     }
 
     @Override
-    public List<WorkerImpl> getWorkers(String workspace) throws ServerException {
+    public List<WorkerImpl> getWorkers(String workspaceId) throws ServerException {
         try {
-            return collection.find(eq("workspace", workspace))
+            return collection.find(eq("workspace", workspaceId))
                              .into(new ArrayList<>());
         } catch (MongoException e) {
             throw new ServerException(e.getMessage(), e);
@@ -119,9 +119,9 @@ public class WorkerDaoImpl implements WorkerDao {
     }
 
     @Override
-    public List<WorkerImpl> getWorkersByUser(String user) throws ServerException {
+    public List<WorkerImpl> getWorkersByUser(String userId) throws ServerException {
         try {
-            return collection.find(eq("user", user))
+            return collection.find(eq("user", userId))
                              .into(new ArrayList<>());
         } catch (MongoException e) {
             throw new ServerException(e.getMessage(), e);
