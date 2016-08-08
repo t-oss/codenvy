@@ -24,6 +24,7 @@ import org.eclipse.che.api.core.ServerException;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.inject.Singleton;
 import javax.persistence.EntityManager;
 import java.util.List;
 
@@ -34,6 +35,7 @@ import static java.util.Objects.requireNonNull;
  *
  * @author Max Shaposhnik
  */
+@Singleton
 public class JpaWorkerDao implements WorkerDao {
 
     @Inject
@@ -82,9 +84,7 @@ public class JpaWorkerDao implements WorkerDao {
         requireNonNull(workspaceId, "Workspace identifier required");
         try {
             return managerProvider.get()
-                                  .createQuery("SELECT worker " +
-                                               "FROM Worker worker " +
-                                               "WHERE worker.workspaceId = :workspaceId ", WorkerImpl.class)
+                                  .createNamedQuery("Worker.getByWorkspaceId", WorkerImpl.class)
                                   .setParameter("workspaceId", workspaceId)
                                   .getResultList();
         } catch (RuntimeException e) {
@@ -98,9 +98,7 @@ public class JpaWorkerDao implements WorkerDao {
         requireNonNull(userId, "User identifier required");
         try {
             return managerProvider.get()
-                                  .createQuery("SELECT worker " +
-                                               "FROM Worker worker " +
-                                               "WHERE worker.userId = :userId ", WorkerImpl.class)
+                                  .createNamedQuery("Worker.getByUserId", WorkerImpl.class)
                                   .setParameter("userId", userId)
                                   .getResultList();
         } catch (RuntimeException e) {

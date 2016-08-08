@@ -21,6 +21,8 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -29,6 +31,18 @@ import java.util.Objects;
  * @author Sergii Leschenko
  */
 @Entity(name = "Worker")
+@NamedQueries(
+        {
+                @NamedQuery(name = "Worker.getByWorkspaceId",
+                            query = "SELECT worker " +
+                                    "FROM Worker worker " +
+                                    "WHERE worker.workspaceId = :workspaceId "),
+                @NamedQuery(name = "Worker.getByUserId",
+                            query = "SELECT worker " +
+                                    "FROM Worker worker " +
+                                    "WHERE worker.userId = :userId ")
+        }
+)
 @IdClass(WorkerPrimaryKey.class)
 public class WorkerImpl implements Worker {
     @Id
