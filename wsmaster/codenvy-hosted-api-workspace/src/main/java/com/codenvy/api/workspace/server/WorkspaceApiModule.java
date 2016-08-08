@@ -31,10 +31,10 @@ public class WorkspaceApiModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(WorkspacePermissionsFilter.class);
-        bind(RecipePermissionsFilter.class);
+//        bind(RecipePermissionsFilter.class);
         bind(MachinePermissionsFilter.class);
-        bind(StackPermissionsFilter.class);
-        bind(AclSetPermissionsFilter.class);
+//        bind(StackPermissionsFilter.class);
+//        bind(AclSetPermissionsFilter.class);
         bind(RecipeScriptDownloadPermissionFilter.class);
 
         bind(WorkspaceCreatorPermissionsProvider.class).asEagerSingleton();

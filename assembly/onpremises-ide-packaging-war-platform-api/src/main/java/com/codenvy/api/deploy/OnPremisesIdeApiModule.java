@@ -190,13 +190,13 @@ public class OnPremisesIdeApiModule extends AbstractModule {
         bind(WorkerDao.class).to(com.codenvy.api.dao.mongo.WorkerDaoImpl.class);
         bind(AuthenticationDao.class).to(com.codenvy.api.dao.authentication.AuthenticationDaoImpl.class);
         bind(AdminUserDao.class).to(com.codenvy.api.dao.jpa.JpaAdminUserDao.class);
-//        bind(RecipeLoader.class);
-//        final Multibinder<String> recipeBinder = Multibinder.newSetBinder(binder(), String.class, Names.named("predefined.recipe.path"));
-//        recipeBinder.addBinding().toProvider(RecipeProvider.class);
-//        recipeBinder.addBinding().toInstance("predefined-recipes.json");
+        bind(RecipeLoader.class);
+        final Multibinder<String> recipeBinder = Multibinder.newSetBinder(binder(), String.class, Names.named("predefined.recipe.path"));
+        recipeBinder.addBinding().toProvider(RecipeProvider.class);
+        recipeBinder.addBinding().toInstance("predefined-recipes.json");
 
         bind(StackService.class);
-//        bind(StackLoader.class);
+        bind(StackLoader.class);
 //        bind(StackDao.class).to(com.codenvy.api.dao.mongo.stack.StackDaoImpl.class);
 
         bind(WorkspaceValidator.class).to(org.eclipse.che.api.workspace.server.DefaultWorkspaceValidator.class);
