@@ -62,7 +62,8 @@ public class WorkspaceCreatorPermissionsProvider implements EventSubscriber<Work
     @Override
     public void onEvent(WorkspaceCreatedEvent event) {
         try {
-            workerDao.store(new WorkerImpl(event.getWorkspace().getId(), EnvironmentContext.getCurrent().getSubject().getUserId(),
+            workerDao.store(new WorkerImpl(event.getWorkspace().getId(),
+                                           EnvironmentContext.getCurrent().getSubject().getUserId(),
                                            new ArrayList<>(new WorkspaceDomain().getAllowedActions())));
         } catch (ServerException e) {
             LOG.error("Can't add creator's permissions for workspace with id '" + event.getWorkspace().getId() + "'", e);
