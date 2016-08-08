@@ -18,8 +18,8 @@ import com.codenvy.api.workspace.server.spi.WorkerDao;
 import com.google.inject.AbstractModule;
 
 /**
- * @author Max Shaposhnik
  *
+ * @author Max Shaposhnik
  */
 public class WorkerJpaModule extends AbstractModule {
 

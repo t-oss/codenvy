@@ -25,6 +25,7 @@ import org.eclipse.che.api.workspace.server.event.BeforeWorkspaceRemovedEvent;
 import org.eclipse.che.api.workspace.server.model.impl.WorkspaceConfigImpl;
 import org.eclipse.che.api.workspace.server.model.impl.WorkspaceImpl;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -49,8 +50,8 @@ public class JpaWorkerDaoTest {
 
     WorkerImpl[] workers;
 
-    @BeforeMethod
-    public void setUp() throws Exception {
+    @BeforeClass
+    public void setupEntities() throws Exception {
         workers = new WorkerImpl[]{new WorkerImpl("ws1", "user1", Arrays.asList("read", "use", "run")),
                                    new WorkerImpl("ws1", "user2", Arrays.asList("read", "use")),
                                    new WorkerImpl("ws2", "user1", Arrays.asList("read", "run")),
@@ -64,7 +65,10 @@ public class JpaWorkerDaoTest {
 
         removeWorkersBeforeUserRemovedEventSubscriber = injector.getInstance(
                 JpaWorkerDao.RemoveWorkersBeforeUserRemovedEventSubscriber.class);
+    }
 
+    @BeforeMethod
+    public void setUp() throws Exception {
         manager.getTransaction().begin();
         for (WorkerImpl worker : workers) {
             manager.persist(worker);
