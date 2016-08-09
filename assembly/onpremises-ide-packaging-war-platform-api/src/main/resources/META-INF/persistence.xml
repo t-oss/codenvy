@@ -55,6 +55,8 @@
         <class>org.eclipse.che.api.factory.server.model.impl.PoliciesImpl</class>
         <class>org.eclipse.che.api.factory.server.FactoryImage</class>
 
+        <class>com.codenvy.api.workspace.server.model.impl.WorkerImpl</class>
+
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name="eclipselink.target-server" value="None"/>
