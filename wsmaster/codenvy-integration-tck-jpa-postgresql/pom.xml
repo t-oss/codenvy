@@ -25,6 +25,9 @@
     <artifactId>codenvy-integration-tck-jpa-postgresql</artifactId>
     <packaging>jar</packaging>
     <name>Codenvy :: Hosted :: Integration JPA PostgreSQL</name>
+    <properties>
+        <POSTGRES_PASSWORD>codenvy</POSTGRES_PASSWORD>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
@@ -137,6 +140,7 @@
                     <systemPropertyVariables>
                         <postgresql.host>${docker.host.address}</postgresql.host>
                         <postgresql.port>${postgresql.port}</postgresql.port>
+                        <postgresql.password>${POSTGRES_PASSWORD}</postgresql.password>
                     </systemPropertyVariables>
                     <includes>
                         <include>**/tck/**</include>
@@ -186,14 +190,14 @@
                                     <port>postgresql.port:5432</port>
                                 </ports>
                                 <wait>
-                                    <log>database system is ready to accept connections</log>
-                                    <time>20000</time>
+                                    <log>PostgreSQL init process complete</log>
                                 </wait>
                                 <restartPolicy>
                                     <name>always</name>
                                 </restartPolicy>
                                 <env>
                                     <POSTGRES_DB>codenvy</POSTGRES_DB>
+                                    <POSTGRES_PASSWORD>${POSTGRES_PASSWORD}</POSTGRES_PASSWORD>
                                 </env>
                             </run>
                         </image>

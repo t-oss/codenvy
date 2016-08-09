@@ -102,7 +102,7 @@ public class PostgreSqlTckModule extends TckModule {
                     source.setPortNumber(Integer.parseInt(System.getProperty("postgresql.port")));
                     source.setDatabaseName("codenvy");
                     source.setUser("postgres");
-                    source.setPassword("postgres");
+                    source.setPassword(System.getProperty("postgresql.password"));
                     source.setMaxConnections(10);
                     ic.bind("java:/comp/env/jdbc/codenvy", source);
 
