@@ -23,7 +23,6 @@ import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 
 /**
  * @author Max Shaposhnik (mshaposhnik@codenvy.com)
- *
  */
 public class OnPremisesWorkspaceJpaModule extends AbstractModule {
     @Override
@@ -32,6 +31,5 @@ public class OnPremisesWorkspaceJpaModule extends AbstractModule {
         bind(WorkspaceDao.class).to(OnPremisesJpaWorkspaceDao.class);
         bind(JpaWorkspaceDao.RemoveWorkspaceBeforeUserRemovedEventSubscriber.class).asEagerSingleton();
         bind(JpaWorkspaceDao.RemoveSnapshotsBeforeWorkspaceRemovedEventSubscriber.class).asEagerSingleton();
-
     }
 }

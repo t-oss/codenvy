@@ -19,6 +19,7 @@ import com.google.inject.persist.Transactional;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.workspace.server.jpa.JpaWorkspaceDao;
 import org.eclipse.che.api.workspace.server.model.impl.WorkspaceImpl;
+import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -27,8 +28,9 @@ import javax.persistence.EntityManager;
 import java.util.List;
 
 /**
- * @author Max Shaposhnik
+ * JPA {@link WorkspaceDao} implementation that respects workers on get by user.
  *
+ * @author Max Shaposhnik
  */
 @Singleton
 public class OnPremisesJpaWorkspaceDao extends JpaWorkspaceDao {
