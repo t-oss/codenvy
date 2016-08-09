@@ -21,6 +21,7 @@ import com.google.inject.persist.jpa.JpaPersistModule;
 
 import org.eclipse.che.api.core.jdbc.jpa.eclipselink.EntityListenerInjectionManagerInitializer;
 import org.eclipse.che.api.core.jdbc.jpa.guice.JpaInitializer;
+import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.machine.server.jpa.JpaRecipeDao;
 import org.eclipse.che.api.machine.server.jpa.JpaSnapshotDao;
 import org.eclipse.che.api.machine.server.model.impl.SnapshotImpl;
@@ -41,6 +42,7 @@ import org.eclipse.che.api.user.server.spi.ProfileDao;
 import org.eclipse.che.api.user.server.spi.UserDao;
 import org.eclipse.che.api.workspace.server.jpa.JpaStackDao;
 import org.eclipse.che.api.workspace.server.jpa.JpaWorkspaceDao;
+import org.eclipse.che.api.workspace.server.model.impl.WorkspaceConfigImpl;
 import org.eclipse.che.api.workspace.server.model.impl.WorkspaceImpl;
 import org.eclipse.che.api.workspace.server.model.impl.stack.StackImpl;
 import org.eclipse.che.api.workspace.server.spi.StackDao;
@@ -62,6 +64,7 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -120,26 +123,16 @@ public class PostgreSqlTckModule extends TckModule {
         //repositories
         //api-user
         bind(new TypeLiteral<TckRepository<UserImpl>>() {}).to(UserJpaTckRepository.class);
-        bind(new TypeLiteral<TckRepository<ProfileImpl>>() {
-        }).toInstance(new JpaTckRepository<>(ProfileImpl.class));
-        bind(new TypeLiteral<TckRepository<Pair<String, Map<String, String>>>>() {
-        }).toInstance(new PreferenceJpaTckRepository());
-
-
-
+        bind(new TypeLiteral<TckRepository<ProfileImpl>>() {}).toInstance(new JpaTckRepository<>(ProfileImpl.class));
+        bind(new TypeLiteral<TckRepository<Pair<String, Map<String, String>>>>() {}).to(PreferenceJpaTckRepository.class);
         //api-workspace
-        bind(new TypeLiteral<TckRepository<WorkspaceImpl>>() {
-        }).toInstance(new JpaTckRepository<>(WorkspaceImpl.class));
-        bind(new TypeLiteral<TckRepository<StackImpl>>() {
-        }).toInstance(new JpaTckRepository<>(StackImpl.class));
+        bind(new TypeLiteral<TckRepository<WorkspaceImpl>>() {}).toInstance(new JpaTckRepository<>(WorkspaceImpl.class));
+        bind(new TypeLiteral<TckRepository<StackImpl>>() {}).toInstance(new JpaTckRepository<>(StackImpl.class));
         //api-machine
-        bind(new TypeLiteral<TckRepository<RecipeImpl>>() {
-        }).toInstance(new JpaTckRepository<>(RecipeImpl.class));
-        bind(new TypeLiteral<TckRepository<SnapshotImpl>>() {
-        }).toInstance(new JpaTckRepository<>(SnapshotImpl.class));
+        bind(new TypeLiteral<TckRepository<RecipeImpl>>() {}).toInstance(new JpaTckRepository<>(RecipeImpl.class));
+        bind(new TypeLiteral<TckRepository<SnapshotImpl>>() {}).to(SnapshotJpaTckRepository.class);
         //api ssh
-        bind(new TypeLiteral<TckRepository<SshPairImpl>>() {
-        }).toInstance(new JpaTckRepository<>(SshPairImpl.class));
+        bind(new TypeLiteral<TckRepository<SshPairImpl>>() {}).toInstance(new JpaTckRepository<>(SshPairImpl.class));
 
         //dao
         //api-user
@@ -171,7 +164,7 @@ public class PostgreSqlTckModule extends TckModule {
         public void createAll(Collection<? extends Pair<String, Map<String, String>>> entities) throws TckRepositoryException {
             final EntityManager manager = managerProvider.get();
             for (Pair<String, Map<String, String>> pair : entities) {
-                manager.persist(new UserImpl(pair.first, "email_" + pair.first, "name_" + pair.first));
+                manager.persist(new PreferenceEntity(pair.first, pair.second));
             }
         }
 
@@ -208,9 +201,45 @@ public class PostgreSqlTckModule extends TckModule {
 
         @Override
         public void removeAll() throws TckRepositoryException {
-            managerProvider.get()
-                           .createQuery("DELETE FROM \"User\"")
-                           .executeUpdate();
+            final EntityManager manager = managerProvider.get();
+            manager.createQuery("SELECT users FROM Usr users", UserImpl.class)
+                   .getResultList()
+                   .forEach(manager::remove);
+        }
+    }
+
+    @Transactional
+    public static class SnapshotJpaTckRepository implements TckRepository<SnapshotImpl> {
+
+        @Inject
+        private Provider<EntityManager> managerProvider;
+
+        @Override
+        public void createAll(Collection<? extends SnapshotImpl> snapshots) throws TckRepositoryException {
+            final EntityManager manager = managerProvider.get();
+            WorkspaceConfig config = new WorkspaceConfigImpl("name",
+                                    "description",
+                                    "defaultEnv",
+                                    Collections.emptyList(),
+                                    Collections.emptyList(),
+                                    Collections.emptyList());
+            manager.persist(new WorkspaceImpl("workspace-0", "test0", config));
+            manager.persist(new WorkspaceImpl("workspace-1", "test1", config));
+            manager.persist(new WorkspaceImpl("workspace-id", "test2", config));
+            for (SnapshotImpl snapshot : snapshots) {
+                manager.persist(snapshot);
+            }
+        }
+
+        @Override
+        public void removeAll() throws TckRepositoryException {
+            final EntityManager manager = managerProvider.get();
+            manager.createQuery("SELECT snapshots FROM Snapshot snapshots", SnapshotImpl.class)
+                   .getResultList()
+                   .forEach(manager::remove);
+            manager.createQuery("SELECT workspaces FROM Workspace workspaces", WorkspaceImpl.class)
+                   .getResultList()
+                   .forEach(manager::remove);
         }
     }
 }
