@@ -14,7 +14,7 @@
  */
 package com.codenvy.api.dao.mongo;
 
-import com.codenvy.api.workspace.server.model.WorkerImpl;
+import com.codenvy.api.workspace.server.model.impl.WorkerImpl;
 import com.github.fakemongo.Fongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
@@ -74,8 +74,8 @@ public class WorkerDaoImplTest {
 
         workerDao.store(worker);
 
-        final WorkerImpl result = collection.find(and(eq("user", worker.getUser()),
-                                                      eq("workspace", worker.getWorkspace())))
+        final WorkerImpl result = collection.find(and(eq("user", worker.getUserId()),
+                                                      eq("workspace", worker.getWorkspaceId())))
                                             .first();
         assertEquals(result, worker);
     }
@@ -85,11 +85,11 @@ public class WorkerDaoImplTest {
         WorkerImpl worker = createWorker();
         workerDao.store(worker);
 
-        WorkerImpl newWorker = new WorkerImpl(worker.getUser(), worker.getWorkspace(), singletonList("configure"));
+        WorkerImpl newWorker = new WorkerImpl(worker.getWorkspaceId(), worker.getUserId(), singletonList("configure"));
         workerDao.store(newWorker);
 
-        final WorkerImpl result = collection.find(and(eq("user", newWorker.getUser()),
-                                                      eq("workspace", newWorker.getWorkspace())))
+        final WorkerImpl result = collection.find(and(eq("user", newWorker.getUserId()),
+                                                      eq("workspace", newWorker.getWorkspaceId())))
                                             .first();
         assertEquals(result, newWorker);
     }
@@ -106,10 +106,10 @@ public class WorkerDaoImplTest {
         final WorkerImpl worker = createWorker();
         collection.insertOne(worker);
 
-        workerDao.removeWorker(worker.getWorkspace(), worker.getUser());
+        workerDao.removeWorker(worker.getWorkspaceId(), worker.getUserId());
 
-        assertEquals(collection.count(and(eq("user", worker.getUser()),
-                                          eq("worksapce", worker.getWorkspace()))),
+        assertEquals(collection.count(and(eq("user", worker.getUserId()),
+                                          eq("worksapce", worker.getWorkspaceId()))),
                      0);
     }
 
@@ -124,9 +124,9 @@ public class WorkerDaoImplTest {
     public void shouldBeAbleToGetWorkersByUser() throws Exception {
         final WorkerImpl worker = createWorker();
         collection.insertOne(worker);
-        collection.insertOne(new WorkerImpl("anotherUser", "workspace123", singletonList("read")));
+        collection.insertOne(new WorkerImpl("workspace123", "anotherUser", singletonList("read")));
 
-        List<WorkerImpl> workersByUser = workerDao.getWorkersByUser(worker.getUser());
+        List<WorkerImpl> workersByUser = workerDao.getWorkersByUser(worker.getUserId());
 
         assertEquals(workersByUser.size(), 1);
         assertEquals(workersByUser.get(0), worker);
@@ -143,9 +143,9 @@ public class WorkerDaoImplTest {
     public void shouldBeAbleToGetWorker() throws Exception {
         final WorkerImpl worker = createWorker();
         collection.insertOne(worker);
-        collection.insertOne(new WorkerImpl("anotherUser", "workspace123", singletonList("read")));
+        collection.insertOne(new WorkerImpl("workspace123", "anotherUser", singletonList("read")));
 
-        WorkerImpl workersByUser = workerDao.getWorker(worker.getWorkspace(), worker.getUser());
+        WorkerImpl workersByUser = workerDao.getWorker(worker.getWorkspaceId(), worker.getUserId());
 
         assertEquals(workersByUser, worker);
     }
@@ -168,10 +168,10 @@ public class WorkerDaoImplTest {
     public void shouldBeAbleToGetWorkersByWorkspace() throws Exception {
         final WorkerImpl worker = createWorker();
         collection.insertOne(worker);
-        WorkerImpl anotherWorker = new WorkerImpl("user", "workspace123", singletonList("read"));
+        WorkerImpl anotherWorker = new WorkerImpl("workspace123", "user", singletonList("read"));
         collection.insertOne(anotherWorker);
 
-        final List<WorkerImpl> result = workerDao.getWorkers(worker.getWorkspace());
+        final List<WorkerImpl> result = workerDao.getWorkers(worker.getWorkspaceId());
 
         assertEquals(result.size(), 2);
         assertTrue(result.contains(worker));
@@ -186,8 +186,7 @@ public class WorkerDaoImplTest {
     }
 
     private WorkerImpl createWorker() {
-        return new WorkerImpl("user123",
-                              "workspace123",
+        return new WorkerImpl("workspace123", "user123",
                               Arrays.asList("read", "use", "run"));
     }
 

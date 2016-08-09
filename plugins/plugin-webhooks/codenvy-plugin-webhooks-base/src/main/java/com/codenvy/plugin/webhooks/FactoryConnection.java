@@ -20,7 +20,7 @@ import org.eclipse.che.api.core.rest.HttpJsonRequest;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.HttpJsonResponse;
 import org.eclipse.che.api.factory.server.FactoryService;
-import org.eclipse.che.api.factory.shared.dto.Factory;
+import org.eclipse.che.api.factory.shared.dto.FactoryDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,15 +57,15 @@ public class FactoryConnection {
      * @return the expected factory or null if an error occurred during the call to 'getFactory'
      * @throws ServerException
      */
-    public Factory getFactory(final String factoryId) throws ServerException {
+    public FactoryDto getFactory(final String factoryId) throws ServerException {
         String url = fromUri(baseUrl).path(FactoryService.class).path(FactoryService.class, "getFactory")
                                      .build(factoryId).toString();
-        Factory factory;
+        FactoryDto factory;
         HttpJsonRequest httpJsonRequest = httpJsonRequestFactory.fromUrl(url)
                                                                 .useGetMethod();
         try {
             HttpJsonResponse response = httpJsonRequest.request();
-            factory = response.asDto(Factory.class);
+            factory = response.asDto(FactoryDto.class);
 
         } catch (IOException | ApiException e) {
             LOG.error(e.getLocalizedMessage(), e);
@@ -84,9 +84,9 @@ public class FactoryConnection {
      * @return the expected factory or null if an error occurred during the call to 'getFactory'
      * @throws ServerException
      */
-    public List<Factory> findFactory(final String factoryName, final String userId) throws ServerException {
+    public List<FactoryDto> findFactory(final String factoryName, final String userId) throws ServerException {
         String url = fromUri(baseUrl).path(FactoryService.class).path(FactoryService.class, "getFactoryByAttribute").build().toString();
-        List<Factory> factories;
+        List<FactoryDto> factories;
         HttpJsonRequest httpJsonRequest =
                 httpJsonRequestFactory.fromUrl(url)
                                       .useGetMethod()
@@ -94,7 +94,7 @@ public class FactoryConnection {
                                       .addQueryParam("creator.userId", userId);
         try {
             HttpJsonResponse response = httpJsonRequest.request();
-            factories = response.asList(Factory.class);
+            factories = response.asList(FactoryDto.class);
 
         } catch (IOException | ApiException e) {
             LOG.error(e.getLocalizedMessage(), e);
@@ -111,18 +111,18 @@ public class FactoryConnection {
      * @return the updated factory or null if an error occurred during the call to 'updateFactory'
      * @throws ServerException
      */
-    public Factory updateFactory(final Factory factory) throws ServerException {
+    public FactoryDto updateFactory(final FactoryDto factory) throws ServerException {
         final String factoryId = factory.getId();
         final String url = fromUri(baseUrl).path(FactoryService.class).path(FactoryService.class, "updateFactory")
                                            .build(factoryId).toString();
 
-        Factory newFactory;
+        FactoryDto newFactory;
         HttpJsonRequest httpJsonRequest = httpJsonRequestFactory.fromUrl(url)
                                                                 .usePutMethod()
                                                                 .setBody(factory);
         try {
             HttpJsonResponse response = httpJsonRequest.request();
-            newFactory = response.asDto(Factory.class);
+            newFactory = response.asDto(FactoryDto.class);
 
         } catch (IOException | ApiException e) {
             LOG.error(e.getLocalizedMessage(), e);
@@ -139,15 +139,15 @@ public class FactoryConnection {
      * @return the created factory or null if an error occurred during the call to 'saveFactory'
      * @throws ServerException
      */
-    public Factory saveFactory(final Factory factory) throws ServerException {
+    public FactoryDto saveFactory(final FactoryDto factory) throws ServerException {
         final String url = fromUri(baseUrl).path(FactoryService.class).build().toString();
-        Factory newFactory;
+        FactoryDto newFactory;
         HttpJsonRequest httpJsonRequest = httpJsonRequestFactory.fromUrl(url)
                                                                 .usePostMethod()
                                                                 .setBody(factory);
         try {
             HttpJsonResponse response = httpJsonRequest.request();
-            newFactory = response.asDto(Factory.class);
+            newFactory = response.asDto(FactoryDto.class);
 
         } catch (IOException | ApiException e) {
             LOG.error(e.getLocalizedMessage(), e);

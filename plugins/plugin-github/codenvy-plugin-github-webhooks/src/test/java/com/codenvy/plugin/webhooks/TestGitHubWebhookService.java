@@ -17,7 +17,7 @@ package com.codenvy.plugin.webhooks;
 import com.codenvy.plugin.webhooks.github.GitHubWebhookService;
 
 import org.eclipse.che.api.auth.shared.dto.Token;
-import org.eclipse.che.api.factory.shared.dto.Factory;
+import org.eclipse.che.api.factory.shared.dto.FactoryDto;
 import org.eclipse.che.api.user.shared.dto.UserDto;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.junit.Assert;
@@ -73,7 +73,7 @@ public class TestGitHubWebhookService {
 
         // Prepare factoryConnection
         FactoryConnection mockFactoryConnection = mock(FactoryConnection.class);
-        Factory gitHubfakeFactory = DtoFactory.getInstance().createDtoFromJson(resourceToString("factory-MKTG-341.json"), Factory.class);
+        FactoryDto gitHubfakeFactory = DtoFactory.getInstance().createDtoFromJson(resourceToString("factory-MKTG-341.json"), FactoryDto.class);
         when(mockFactoryConnection.getFactory("fakeFactoryId")).thenReturn(gitHubfakeFactory);
         when(mockFactoryConnection.updateFactory(gitHubfakeFactory)).thenReturn(gitHubfakeFactory);
 

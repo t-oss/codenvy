@@ -20,7 +20,7 @@ import com.codenvy.plugin.urlfactory.URLFactoryBuilder;
 
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.factory.server.FactoryParametersResolver;
-import org.eclipse.che.api.factory.shared.dto.Factory;
+import org.eclipse.che.api.factory.shared.dto.FactoryDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 
 import javax.inject.Inject;
@@ -86,13 +86,13 @@ public class GithubFactoryParametersResolver implements FactoryParametersResolve
      *         when data are invalid
      */
     @Override
-    public Factory createFactory(@NotNull final Map<String, String> factoryParameters) throws BadRequestException {
+    public FactoryDto createFactory(@NotNull final Map<String, String> factoryParameters) throws BadRequestException {
 
         // no need to check null value of url parameter as accept() method has performed the check
         final GithubUrl githubUrl = githubUrlParser.parse(factoryParameters.get("url"));
 
         // create factory from the following location if location exists, else create default factory
-        Factory factory = urlFactoryBuilder.createFactory(
+        FactoryDto factory = urlFactoryBuilder.createFactory(
                 CreateFactoryParams.create().codenvyJsonFileLocation(githubUrl.codenvyFactoryJsonFileLocation()));
 
         // add workspace configuration if not defined

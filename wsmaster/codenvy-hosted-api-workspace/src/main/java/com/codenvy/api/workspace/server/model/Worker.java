@@ -26,12 +26,12 @@ public interface Worker {
     /**
      * Returns user id
      */
-    String getUser();
+    String getUserId();
 
     /**
      * Returns workspace id
      */
-    String getWorkspace();
+    String getWorkspaceId();
 
     /**
      * Returns list of workspace actions which can be performed by current user

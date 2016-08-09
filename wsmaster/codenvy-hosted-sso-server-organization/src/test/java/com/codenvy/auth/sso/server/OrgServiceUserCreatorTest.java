@@ -20,6 +20,7 @@ import org.eclipse.che.api.core.model.user.User;
 import org.eclipse.che.api.user.server.PreferenceManager;
 import org.eclipse.che.api.user.server.ProfileManager;
 import org.eclipse.che.api.user.server.UserManager;
+import org.eclipse.che.api.user.server.model.impl.ProfileImpl;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;
@@ -27,11 +28,14 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+import static java.util.Collections.singletonMap;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -50,10 +54,10 @@ public class OrgServiceUserCreatorTest {
     UserManager manager;
 
     @Mock
-    ProfileManager profileDao;
+    ProfileManager profileManager;
 
     @Mock
-    PreferenceManager preferenceDao;
+    PreferenceManager preferenceManager;
 
     @Mock
     User createdUser;
@@ -62,9 +66,13 @@ public class OrgServiceUserCreatorTest {
 
     @BeforeMethod
     public void setUp() throws Exception {
-        creator = new OrgServiceUserCreator(manager, profileDao, preferenceDao, true);
-        when(createdUser.getId()).thenReturn("id123");
+        final String userId = "userId123";
+        creator = new OrgServiceUserCreator(manager, profileManager, preferenceManager, true);
+        when(profileManager.getById(userId)).thenReturn(new ProfileImpl(userId, singletonMap("phone", "123")));
+        doNothing().when(profileManager).update(any());
+        when(createdUser.getId()).thenReturn(userId);
         doReturn(createdUser).when(manager).getByName(anyString());
+
     }
 
     @Test
@@ -97,5 +105,4 @@ public class OrgServiceUserCreatorTest {
         assertTrue(user.getValue().getName().startsWith("reserved"));
         assertFalse(user.getValue().getName().equals("reserved"));
     }
-
 }

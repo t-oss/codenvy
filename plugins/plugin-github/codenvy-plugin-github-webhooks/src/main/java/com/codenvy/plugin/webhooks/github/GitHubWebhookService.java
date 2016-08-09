@@ -29,7 +29,7 @@ import com.codenvy.plugin.webhooks.github.shared.PushEvent;
 
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
-import org.eclipse.che.api.factory.shared.dto.Factory;
+import org.eclipse.che.api.factory.shared.dto.FactoryDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
@@ -138,12 +138,12 @@ public class GitHubWebhookService extends BaseWebhookService {
         final Set<String> factoriesIDs = getWebhookConfiguredFactoriesIDs(contribRepositoryHtmlUrl);
 
         // Get factories that contain a project for given repository and branch
-        final List<Factory> factories = getFactoriesForRepositoryAndBranch(factoriesIDs, contribRepositoryHtmlUrl, contribBranch);
+        final List<FactoryDto> factories = getFactoriesForRepositoryAndBranch(factoriesIDs, contribRepositoryHtmlUrl, contribBranch);
         if (factories.isEmpty()) {
             throw new ServerException("No factory found for repository " + contribRepositoryHtmlUrl + " and branch " + contribBranch);
         }
 
-        for (Factory f : factories) {
+        for (FactoryDto f : factories) {
             // Get 'open factory' URL
             final Link factoryLink = f.getLink(FACTORY_URL_REL);
             if (factoryLink == null) {
@@ -196,14 +196,14 @@ public class GitHubWebhookService extends BaseWebhookService {
         final Set<String> factoriesIDs = getWebhookConfiguredFactoriesIDs(prBaseRepositoryHtmlUrl);
 
         // Get factories that contain a project for given repository and branch
-        final List<Factory> factories = getFactoriesForRepositoryAndBranch(factoriesIDs, prHeadRepositoryHtmlUrl, prHeadBranch);
+        final List<FactoryDto> factories = getFactoriesForRepositoryAndBranch(factoriesIDs, prHeadRepositoryHtmlUrl, prHeadBranch);
         if (factories.isEmpty()) {
             throw new ServerException("No factory found for branch " + prHeadBranch);
         }
 
-        for (Factory f : factories) {
+        for (FactoryDto f : factories) {
             // Update project into the factory with given repository and branch
-            final Factory updatedfactory =
+            final FactoryDto updatedfactory =
                     updateProjectInFactory(f, prHeadRepositoryHtmlUrl, prHeadBranch, prBaseRepositoryHtmlUrl, prHeadCommitId);
 
             // Persist updated factory

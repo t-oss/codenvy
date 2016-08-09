@@ -17,9 +17,9 @@ package com.codenvy.onpremises.factory;
 import com.codenvy.onpremises.factory.filter.ReferrerCheckerFilter;
 
 import org.eclipse.che.api.factory.server.FactoryConstants;
-import org.eclipse.che.api.factory.shared.dto.Author;
-import org.eclipse.che.api.factory.shared.dto.Factory;
-import org.eclipse.che.api.factory.shared.dto.Policies;
+import org.eclipse.che.api.factory.shared.dto.AuthorDto;
+import org.eclipse.che.api.factory.shared.dto.FactoryDto;
+import org.eclipse.che.api.factory.shared.dto.PoliciesDto;
 import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;
 import org.testng.annotations.BeforeMethod;
@@ -55,7 +55,7 @@ public class ReferrerCheckerFilterTest {
     private FilterChain chain;
 
     @Mock
-    private Factory factory;
+    private FactoryDto factory;
 
     @Mock
     private RequestDispatcher requestDispatcher;
@@ -74,7 +74,7 @@ public class ReferrerCheckerFilterTest {
 
     @Test
     public void shouldGetReferrerFromPoliciesIfV2_x() throws Exception {
-        Policies policies = mock(Policies.class);
+        PoliciesDto policies = mock(PoliciesDto.class);
         when(factory.getPolicies()).thenReturn(policies);
 
         filter.doFilter(req, res, chain);
@@ -86,10 +86,10 @@ public class ReferrerCheckerFilterTest {
     @Test
     public void shouldThrowExceptionIfReferrerHostDiffersFromReferrerHeaderHost() throws Exception {
         when(req.getHeader("Referer")).thenReturn("http://facebook.com/index.php");
-        Policies policies = mock(Policies.class);
+        PoliciesDto policies = mock(PoliciesDto.class);
         when(factory.getPolicies()).thenReturn(policies);
         when(policies.getReferer()).thenReturn("stackoverflow.com");
-        Author creator = mock(Author.class);
+        AuthorDto creator = mock(AuthorDto.class);
         when(factory.getCreator()).thenReturn(creator);
         when(req.getRequestDispatcher(eq("/resources/error-invalid-factory-url.jsp"))).thenReturn(requestDispatcher);
 
@@ -102,10 +102,10 @@ public class ReferrerCheckerFilterTest {
     @Test
     public void shouldThrowExceptionIfReferrerHeaderIsNullAndParameterIsNot() throws Exception {
         when(req.getHeader("Referer")).thenReturn(null);
-        Policies policies = mock(Policies.class);
+        PoliciesDto policies = mock(PoliciesDto.class);
         when(factory.getPolicies()).thenReturn(policies);
         when(policies.getReferer()).thenReturn("stackoverflow.com");
-        Author creator = mock(Author.class);
+        AuthorDto creator = mock(AuthorDto.class);
         when(factory.getCreator()).thenReturn(creator);
         when(req.getRequestDispatcher(eq("/resources/error-invalid-factory-url.jsp"))).thenReturn(requestDispatcher);
 

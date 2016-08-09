@@ -232,11 +232,6 @@ public class StackDaoImpl implements StackDao {
         requireNonNull(update, "Stack for updating required");
         requireNonNull(update.getId(), "Stack id required");
         try {
-            if (update.getAcl() == null) {
-                StackImpl byId = getById(update.getId());
-                update.setAcl(byId.getAcl());
-            }
-
             StackImpl updatedStack = collection.findOneAndReplace(eq("_id", update.getId()), update);
             if (updatedStack == null) {
                 throw new NotFoundException(format("Stack with id '%s' was not found", update.getId()));

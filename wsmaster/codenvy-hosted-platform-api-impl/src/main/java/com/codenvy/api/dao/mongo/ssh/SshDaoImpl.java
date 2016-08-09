@@ -59,29 +59,28 @@ import static java.util.Objects.requireNonNull;
 @Singleton
 public class SshDaoImpl implements SshDao {
 
-    private final MongoCollection<UsersSshPair> collection;
+    private final MongoCollection<SshPairImpl> collection;
 
     @Inject
     public SshDaoImpl(@Named("mongo.db.organization") MongoDatabase database,
                       @Named("organization.storage.db.ssh.collection") String collectionName) {
-        collection = database.getCollection(collectionName, UsersSshPair.class);
+        collection = database.getCollection(collectionName, SshPairImpl.class);
         collection.createIndex(new Document("owner", 1).append("service", 1).append("name", 1), new IndexOptions().unique(true));
     }
 
     @Override
-    public void create(String owner, SshPairImpl sshPair) throws ServerException, ConflictException {
-        requireNonNull(owner, "Owner must not be null");
+    public void create(SshPairImpl sshPair) throws ServerException, ConflictException {
         requireNonNull(sshPair, "Ssh pair must not be null");
-
+        requireNonNull(sshPair.getOwner(), "Owner must not be null");
         try {
-            collection.insertOne(new UsersSshPair(owner, sshPair));
-        } catch (MongoWriteException e) {
-            if (e.getError().getCategory() == ErrorCategory.DUPLICATE_KEY) {
+            collection.insertOne(sshPair);
+        } catch (MongoWriteException ex) {
+            if (ex.getError().getCategory() == ErrorCategory.DUPLICATE_KEY) {
                 throw new ConflictException(format("Ssh pair with service '%s' and name '%s' already exists",
                                                    sshPair.getService(),
                                                    sshPair.getName()));
             }
-            throw new ServerException(e.getMessage(), e);
+            throw new ServerException(ex.getMessage(), ex);
         } catch (MongoException mongoEx) {
             throw new ServerException(mongoEx.getMessage(), mongoEx);
         }
@@ -102,7 +101,7 @@ public class SshDaoImpl implements SshDao {
         requireNonNull(service, "Service must not be null");
         requireNonNull(name, "Name must not be null");
 
-        final FindIterable<UsersSshPair> findIt = collection.find(and(eq("owner", owner), eq("service", service), eq("name", name)));
+        final FindIterable<SshPairImpl> findIt = collection.find(and(eq("owner", owner), eq("service", service), eq("name", name)));
         if (findIt.first() == null) {
             throw new NotFoundException(format("Ssh pair with service '%s' and name '%s' was not found.", service, name));
         }
@@ -118,5 +117,11 @@ public class SshDaoImpl implements SshDao {
         if (collection.findOneAndDelete(and(eq("owner", owner), eq("service", service), eq("name", name))) == null) {
             throw new NotFoundException(format("Ssh pair with service '%s' and name '%s' was not found.", service, name));
         }
+    }
+
+    @Override
+    public List<SshPairImpl> get(String owner) throws ServerException {
+        requireNonNull(owner, "Owner must not be null");
+        return collection.find(eq("owner", owner)).into(new ArrayList<>());
     }
 }

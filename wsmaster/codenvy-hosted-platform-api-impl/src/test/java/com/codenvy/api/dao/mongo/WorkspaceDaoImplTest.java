@@ -14,7 +14,7 @@
  */
 package com.codenvy.api.dao.mongo;
 
-import com.codenvy.api.workspace.server.dao.WorkerDao;
+import com.codenvy.api.workspace.server.spi.WorkerDao;
 import com.github.fakemongo.Fongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;

@@ -18,9 +18,9 @@ import com.codenvy.api.permission.server.AbstractPermissionsDomain;
 import com.codenvy.api.permission.server.PermissionsImpl;
 import com.codenvy.api.permission.server.dao.PermissionsStorage;
 import com.codenvy.api.permission.shared.Permissions;
-import com.codenvy.api.workspace.server.dao.WorkerDao;
+import com.codenvy.api.workspace.server.spi.WorkerDao;
 import com.codenvy.api.workspace.server.model.Worker;
-import com.codenvy.api.workspace.server.model.WorkerImpl;
+import com.codenvy.api.workspace.server.model.impl.WorkerImpl;
 import com.google.common.collect.ImmutableSet;
 
 import org.eclipse.che.api.core.NotFoundException;
@@ -58,8 +58,8 @@ public class WorkspacePermissionStorage implements PermissionsStorage {
 
     @Override
     public void store(PermissionsImpl permissions) throws ServerException {
-        workerDao.store(new WorkerImpl(permissions.getUser(),
-                                       permissions.getInstance(),
+        workerDao.store(new WorkerImpl(permissions.getInstance(),
+                                       permissions.getUser(),
                                        permissions.getActions()));
     }
 
@@ -90,9 +90,9 @@ public class WorkspacePermissionStorage implements PermissionsStorage {
     }
 
     private PermissionsImpl toPermission(WorkerImpl worker) {
-        return new PermissionsImpl(worker.getUser(),
+        return new PermissionsImpl(worker.getUserId(),
                                    WorkspaceDomain.DOMAIN_ID,
-                                   worker.getWorkspace(),
+                                   worker.getWorkspaceId(),
                                    worker.getActions());
     }
 

@@ -14,7 +14,6 @@
  */
 package com.codenvy.api.dao.mongo.stack;
 
-import com.codenvy.api.dao.mongo.AbstractDocumentCodec;
 import com.codenvy.api.dao.mongo.WorkspaceImplCodec;
 
 import org.bson.BsonReader;
@@ -26,7 +25,6 @@ import org.bson.codecs.EncoderContext;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.types.Binary;
 import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.machine.server.model.impl.AclEntryImpl;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.workspace.server.model.impl.WorkspaceConfigImpl;
 import org.eclipse.che.api.workspace.server.model.impl.stack.StackComponentImpl;
@@ -38,7 +36,6 @@ import org.eclipse.che.api.workspace.shared.stack.StackSource;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -50,12 +47,10 @@ import static java.util.stream.Collectors.toList;
 public class StackImplCodec implements Codec<StackImpl> {
 
     private final Codec<Document>                     codec;
-    private final AbstractDocumentCodec<AclEntryImpl> aclEntryCodec;
 
 
     public StackImplCodec(CodecRegistry registry) {
         this.codec = registry.get(Document.class);
-        this.aclEntryCodec = (AbstractDocumentCodec<AclEntryImpl>)registry.get(AclEntryImpl.class);
     }
 
     @Override
@@ -69,15 +64,6 @@ public class StackImplCodec implements Codec<StackImpl> {
         Document workspaceDocument = (Document)document.get("workspaceConfig");
         if (workspaceDocument != null) {
             workspaceConfig = WorkspaceImplCodec.asWorkspaceConfig(workspaceDocument);
-        }
-
-        @SuppressWarnings("unchecked")//acl is always list
-        final List<Document> aclDocument = (List<Document>)document.get("acl");
-        List<AclEntryImpl> acl = null;
-        if (aclDocument != null) {
-            acl = aclDocument.stream()
-                             .map(aclEntryCodec::decode)
-                             .collect(toList());
         }
 
         StackSource source = null;
@@ -96,7 +82,7 @@ public class StackImplCodec implements Codec<StackImpl> {
             }
         }
 
-        @SuppressWarnings("unchecked")//acl is always list
+        @SuppressWarnings("unchecked")
         final List<Document> componentDocument = (List<Document>)document.get("components");
 
         List<StackComponent> components = componentDocument.stream()
@@ -114,7 +100,6 @@ public class StackImplCodec implements Codec<StackImpl> {
                         .setSource(source)
                         .setComponents(components)
                         .setStackIcon(stackIcon)
-                        .setAcl(acl)
                         .build();
     }
 
@@ -146,13 +131,6 @@ public class StackImplCodec implements Codec<StackImpl> {
         StackIcon stackIcon = stack.getStackIcon();
         if (stackIcon != null) {
             document.append("stackIcon", asDocument(stackIcon));
-        }
-
-        final List<AclEntryImpl> acl = stack.getAcl();
-        if (acl != null) {
-            document.append("acl", stack.getAcl().stream()
-                                        .map(aclEntryCodec::encode)
-                                        .collect(Collectors.toList()));
         }
 
         codec.encode(writer, document, encoderContext);

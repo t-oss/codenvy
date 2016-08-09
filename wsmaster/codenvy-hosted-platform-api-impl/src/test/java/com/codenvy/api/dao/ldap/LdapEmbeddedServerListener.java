@@ -14,9 +14,11 @@
  */
 package com.codenvy.api.dao.ldap;
 
+import org.eclipse.che.api.user.server.spi.tck.PreferenceDaoTest;
 import org.eclipse.che.api.user.server.spi.tck.ProfileDaoTest;
 import org.eclipse.che.api.user.server.spi.tck.UserDaoTest;
 import org.eclipse.che.commons.lang.IoUtil;
+import org.eclipse.che.commons.test.tck.AbstractTestListener;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
@@ -30,7 +32,7 @@ import static org.testng.Assert.assertTrue;
 /**
  * @author Yevhenii Voevodin
  */
-public class LdapEmbeddedServerListener implements ITestListener {
+public class LdapEmbeddedServerListener extends AbstractTestListener {
 
     public static final String LDAP_SERVER_URL_ATTRIBUTE_NAME = "ldap_server_url";
 
@@ -40,7 +42,9 @@ public class LdapEmbeddedServerListener implements ITestListener {
     @Override
     public void onStart(ITestContext context) {
         final String suiteName = context.getSuite().getName();
-        if (UserDaoTest.SUITE_NAME.equals(suiteName) || ProfileDaoTest.SUITE_NAME.equals(suiteName)) {
+        if (UserDaoTest.SUITE_NAME.equals(suiteName)
+            || ProfileDaoTest.SUITE_NAME.equals(suiteName)
+            || PreferenceDaoTest.SUITE_NAME.equals(suiteName)) {
             final URL u = Thread.currentThread().getContextClassLoader().getResource(".");
             assertNotNull(u);
             try {
@@ -58,7 +62,9 @@ public class LdapEmbeddedServerListener implements ITestListener {
     @Override
     public void onFinish(ITestContext context) {
         final String suiteName = context.getSuite().getName();
-        if (UserDaoTest.SUITE_NAME.equals(suiteName) || ProfileDaoTest.SUITE_NAME.equals(suiteName)) {
+        if (UserDaoTest.SUITE_NAME.equals(suiteName)
+            || ProfileDaoTest.SUITE_NAME.equals(suiteName)
+            || PreferenceDaoTest.SUITE_NAME.equals(suiteName)) {
             try {
                 embeddedLdapServer.stop();
                 assertTrue(IoUtil.deleteRecursive(server), "Unable remove temporary data");
@@ -67,19 +73,4 @@ public class LdapEmbeddedServerListener implements ITestListener {
             }
         }
     }
-
-    @Override
-    public void onTestStart(ITestResult result) {}
-
-    @Override
-    public void onTestSuccess(ITestResult result) {}
-
-    @Override
-    public void onTestFailure(ITestResult result) {}
-
-    @Override
-    public void onTestSkipped(ITestResult result) {}
-
-    @Override
-    public void onTestFailedButWithinSuccessPercentage(ITestResult result) {}
 }

@@ -84,8 +84,9 @@ public class OrgServiceUserCreator implements UserCreator {
                     user = createNonReservedUser(NameGenerator.generate(userName, 4), email);
                 }
 
-                Profile profile = new ProfileImpl(user.getId(), attributes);
-                profileManager.create(profile);
+                ProfileImpl profile = new ProfileImpl(profileManager.getById(user.getId()));
+                profile.getAttributes().putAll(attributes);
+                profileManager.update(profile);
 
                 final Map<String, String> preferences = new HashMap<>();
                 preferences.put("codenvy:created", Long.toString(System.currentTimeMillis()));
@@ -93,8 +94,8 @@ public class OrgServiceUserCreator implements UserCreator {
                 preferenceManager.save(user.getId(), preferences);
 
                 return user;
-            } catch (ConflictException | ServerException e1) {
-                throw new IOException(e1.getLocalizedMessage(), e1);
+            } catch (NotFoundException | ServerException ex) {
+                throw new IOException(ex.getLocalizedMessage(), ex);
             }
         } catch (ServerException e) {
             throw new IOException(e.getLocalizedMessage(), e);
