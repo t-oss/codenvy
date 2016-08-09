@@ -24,8 +24,6 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import javax.persistence.EntityManager;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import java.util.List;
 
 /**
@@ -33,14 +31,6 @@ import java.util.List;
  *
  */
 @Singleton
-@NamedQueries(
-        {
-            @NamedQuery(name = "Workspace.getAllByWorkers",
-                        query = "SELECT workspace FROM Worker worker, Workspace workspace " +
-                                "                 WHERE worker.workspaceId = workspace.id " +
-                                "                 AND worker.userId = :userId ")
-        }
-)
 public class OnPremisesJpaWorkspaceDao extends JpaWorkspaceDao {
 
     @Inject
@@ -49,9 +39,12 @@ public class OnPremisesJpaWorkspaceDao extends JpaWorkspaceDao {
     @Override
     @Transactional
     public List<WorkspaceImpl> getWorkspaces(String userId) throws ServerException {
+        final String query = "SELECT ws FROM Worker worker, Workspace ws " +
+                             "          WHERE worker.workspaceId = ws.id " +
+                             "          AND worker.userId = :userId ";
         try {
             return manager.get()
-                          .createNamedQuery("Workspace.getAllByWorkers", WorkspaceImpl.class)
+                          .createQuery(query, WorkspaceImpl.class)
                           .setParameter("userId", userId)
                           .getResultList();
         } catch (RuntimeException x) {
