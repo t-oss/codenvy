@@ -14,64 +14,54 @@
  */
 package com.codenvy.api.dao.ldap;
 
-import com.codenvy.api.dao.ldap.LdapCloser.CloseableSupplier;
 
 import org.eclipse.che.api.user.server.model.impl.ProfileImpl;
-import org.eclipse.che.api.user.server.model.impl.UserImpl;
+import org.eclipse.che.commons.test.tck.repository.TckRepository;
 import org.eclipse.che.commons.test.tck.repository.TckRepositoryException;
 
 import javax.inject.Inject;
 import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
 import javax.naming.directory.ModificationItem;
 import javax.naming.ldap.InitialLdapContext;
 import java.util.Collection;
-import java.util.Collections;
 
 import static com.codenvy.api.dao.ldap.LdapCloser.wrapCloseable;
-import static java.util.Collections.singletonMap;
-import static java.util.stream.Collectors.toList;
 
 /**
- * @author Yevhenii Voevodin
+ * LDAP specific implementation of {@link TckRepository}.
+ * Since that user and profile is one entity in the context of LDAP
+ * create all operation wil proceed upda of profiles and remove all
+ *
+ * @author Anton Korneta.
  */
-public class ProfileTckRepository extends AbstractLdapTckRepository<ProfileImpl> {
-
-    private final ProfileAttributesMapper mapper;
-    private final UserTckRepository       userTckRepository;
+public class ProfileTckRepository implements TckRepository<ProfileImpl> {
 
     @Inject
-    protected ProfileTckRepository(InitialLdapContextFactory contextFactory,
-                                   ProfileAttributesMapper mapper,
-                                   UserAttributesMapper userAttributesMapper,
-                                   UserTckRepository userTckRepository) {
-        super(mapper.profileDn,
-              mapper.profileContainerDn,
-              userAttributesMapper.userObjectClasses,
-              contextFactory);
-        this.mapper = mapper;
-        this.userTckRepository = userTckRepository;
+    private ProfileAttributesMapper mapper;
+
+    @Inject
+    private InitialLdapContextFactory contextFactory;
+
+    @Override
+    public void createAll(Collection<? extends ProfileImpl> entities) throws TckRepositoryException {
+        try {
+            for (ProfileImpl entity : entities) {
+                try (LdapCloser.CloseableSupplier<InitialLdapContext> ctxSup = wrapCloseable(contextFactory.createContext())) {
+                    final InitialLdapContext ctx = ctxSup.get();
+                    final Attributes attributes = ctx.getAttributes(mapper.getProfileDn(entity.getUserId()));
+                    final ProfileImpl existingProfile = mapper.asProfile(attributes);
+                    final ModificationItem[] mods = mapper.createModifications(existingProfile.getAttributes(), entity.getAttributes());
+                    ctx.modifyAttributes(mapper.getProfileDn(entity.getUserId()), mods);
+                }
+            }
+        } catch (NamingException x) {
+            throw new TckRepositoryException(x.getLocalizedMessage(), x);
+        }
     }
 
     @Override
-    public void createAll(Collection<? extends ProfileImpl> profiles) throws TckRepositoryException {
-        // Profile dao modifies user records so it is needed to create users before creating profiles
-        userTckRepository.createAll(profiles.stream()
-                                            .map(profile -> new UserImpl(profile.getUserId(),
-                                                                         profile.getUserId() + "@codenvy.com",
-                                                                         profile.getUserId(),
-                                                                         "password",
-                                                                         Collections.emptyList()))
-                                            .collect(toList()));
-        for (ProfileImpl profile : profiles) {
-            try (CloseableSupplier<InitialLdapContext> contextSup = wrapCloseable(contextFactory.createContext())) {
-                final InitialLdapContext context = contextSup.get();
-                final ModificationItem[] modifications = mapper.createModifications(singletonMap("lastName", "<none>"),
-                                                                                    profile.getAttributes());
-                context.modifyAttributes(normalizeDn(profile.getUserId()), modifications);
-            } catch (NamingException x) {
-                throw new TckRepositoryException(x.getMessage(), x);
-            }
-        }
+    public void removeAll() throws TckRepositoryException {
+        // References to the users LDAP entity, UserTckRepository will remove it
     }
 }
-

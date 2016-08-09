@@ -84,7 +84,6 @@ public class OrgServiceUserCreator implements UserCreator {
                     user = createNonReservedUser(NameGenerator.generate(userName, 4), email);
                 }
 
-//                Profile profile = new ProfileImpl(user.getId(), attributes);
                 ProfileImpl profile = new ProfileImpl(profileManager.getById(user.getId()));
                 profile.getAttributes().putAll(attributes);
                 profileManager.update(profile);

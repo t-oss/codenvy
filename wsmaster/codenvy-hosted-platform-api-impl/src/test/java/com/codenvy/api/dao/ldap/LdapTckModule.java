@@ -59,6 +59,7 @@ public class LdapTckModule extends TckModule {
                                                                                    allowedAttributes));
 
         bind(new TypeLiteral<TckRepository<UserImpl>>() {}).to(UserTckRepository.class);
+
         bind(new TypeLiteral<TckRepository<ProfileImpl>>() {}).to(ProfileTckRepository.class);
 
         bindConstant().annotatedWith(Names.named("user.ldap.user_dn")).to("uid");
