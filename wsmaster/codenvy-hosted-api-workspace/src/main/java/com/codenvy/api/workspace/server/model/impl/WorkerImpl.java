@@ -17,12 +17,20 @@ package com.codenvy.api.workspace.server.model.impl;
 import com.codenvy.api.workspace.server.jpa.WorkerPrimaryKey;
 import com.codenvy.api.workspace.server.model.Worker;
 
+import org.eclipse.che.api.user.server.model.impl.UserImpl;
+import org.eclipse.che.api.workspace.server.model.impl.WorkspaceImpl;
+import org.eclipse.persistence.annotations.PrivateOwned;
+
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -46,9 +54,19 @@ import java.util.Objects;
 @IdClass(WorkerPrimaryKey.class)
 public class WorkerImpl implements Worker {
     @Id
-    private String       userId;
+    private String userId;
+
+    @ManyToOne
+    @JoinColumn(name = "user", insertable = false, updatable = false)
+    private UserImpl user;
+
     @Id
-    private String       workspaceId;
+    private String workspaceId;
+
+    @OneToOne
+    @JoinColumn(name = "workspace", insertable = false, updatable = false)
+    private WorkspaceImpl workspace;
+
     @ElementCollection
     private List<String> actions;
 
