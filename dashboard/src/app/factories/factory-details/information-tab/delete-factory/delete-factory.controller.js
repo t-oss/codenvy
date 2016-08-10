@@ -24,16 +24,20 @@ export class DeleteFactoryCtrl {
    * Default constructor that is using resource injection
    * @ngInject for Dependency injection
    */
-  constructor($mdDialog, $location, codenvyAPI, cheNotification) {
+  constructor($mdDialog, $location, codenvyAPI, cheNotification, $log) {
     this.$mdDialog = $mdDialog;
     this.$location = $location;
     this.codenvyAPI = codenvyAPI;
     this.cheNotification = cheNotification;
+    this.$log = $log;
 
   }
 
 //Perform factory deletion.
   deleteFactory(event) {
+    if (!this.factory || !this.factory.originFactory) {
+      return;
+    }
     let confirm = this.$mdDialog.confirm()
       .title('Would you like to delete the factory ' + (this.factory.originFactory.name ? '"' + this.factory.originFactory.name + '"' : this.factory.originFactory.id + '?'))
       .content('Please confirm for the factory removal.')
@@ -49,7 +53,7 @@ export class DeleteFactoryCtrl {
         this.$location.path('/factories');
       }, (error) => {
         this.cheNotification.showError(error.data.message ? error.data.message : 'Delete failed.');
-        console.log('error', error);
+        this.$log.error(error);
       });
     });
   }

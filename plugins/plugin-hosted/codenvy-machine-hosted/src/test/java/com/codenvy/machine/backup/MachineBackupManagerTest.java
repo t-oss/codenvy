@@ -506,7 +506,7 @@ public class MachineBackupManagerTest {
     }
 
     private void awaitFinalization() throws InterruptedException {
-        executor.shutdownNow();
+        executor.shutdown();
         if (!executor.awaitTermination(2 * FAKE_BACKUP_TIME_MS + 1000, TimeUnit.MILLISECONDS)) {
             fail("Operation is hanged up. Terminated.");
         }

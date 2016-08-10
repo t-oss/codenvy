@@ -111,7 +111,8 @@ public class CDECArtifact extends AbstractArtifact {
      * @throws IOException if API server is down
      */
     protected Optional<Version> getVersionFromApiService() throws IOException {
-        String response = transport.doOption(configManager.getApiEndpoint() + "/", null);
+        Command codenvyApiInfoCommand = getHelper().getCodenvyApiInfoCommand(configManager.getApiEndpoint());
+        String response = codenvyApiInfoCommand.execute();
         ApiInfo apiInfo = createDtoFromJson(response, ApiInfo.class);
         if (apiInfo != null) {
             String ideVersion = apiInfo.getIdeVersion();
@@ -315,10 +316,11 @@ public class CDECArtifact extends AbstractArtifact {
 
     boolean isApiServiceAlive() {
         try {
-            transport.doOption(configManager.getApiEndpoint() + "/", null);
+            getHelper().getCodenvyApiInfoCommand(configManager.getApiEndpoint())
+                       .execute();
             return true;
         } catch (IOException e) {
-            return false;  // API server is down
+            return false;  // API server is inaccessible
         }
     }
 }

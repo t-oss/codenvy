@@ -24,11 +24,12 @@ export class FactoryConfigurationCtrl {
    * Default constructor that is using resource injection
    * @ngInject for Dependency injection
    */
-  constructor($route, $scope, $timeout, $filter, codenvyAPI, cheNotification) {
+  constructor($route, $scope, $timeout, $filter, codenvyAPI, cheNotification, $log) {
     this.$timeout = $timeout;
     this.$filter = $filter;
     this.codenvyAPI = codenvyAPI;
     this.cheNotification = cheNotification;
+    this.$log = $log;
 
     this.factoryId = $route.current.params.id;
 
@@ -66,7 +67,7 @@ export class FactoryConfigurationCtrl {
       this.cheNotification.showInfo('Factory information successfully updated.');
     }, (error) => {
       this.cheNotification.showError(error.data.message ? error.data.message : 'Update factory failed.');
-      console.log('error', error);
+      this.$log.error(error);
     });
   }
 
@@ -80,7 +81,7 @@ export class FactoryConfigurationCtrl {
     }, (error) => {
       this.factoryContent = this.$filter('json')(this.originFactoryContent, 2);
       this.cheNotification.showError(error.data.message ? error.data.message : 'Update factory failed.');
-      console.log('error', error);
+      this.$log.error(error);
     });
   }
 

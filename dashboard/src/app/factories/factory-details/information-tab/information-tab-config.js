@@ -18,8 +18,6 @@ import {DeleteFactoryCtrl} from '../information-tab/delete-factory/delete-factor
 import {DeleteFactory} from '../information-tab/delete-factory/delete-factory.directive';
 import {FactoryInformationCtrl} from '../information-tab/factory-information/factory-information.controller';
 import {FactoryInformation} from '../information-tab/factory-information/factory-information.directive';
-import {FactoryRoutingCtrl} from '../information-tab/factory-routing/factory-routing.controller';
-import {FactoryRouting} from '../information-tab/factory-routing/factory-routing.directive';
 
 
 export class InformationTabConfig {
@@ -30,9 +28,5 @@ export class InformationTabConfig {
 
     register.controller('FactoryInformationCtrl', FactoryInformationCtrl);
     register.directive('cdvyFactoryInformation', FactoryInformation);
-
-    register.controller('FactoryRoutingCtrl', FactoryRoutingCtrl);
-    register.directive('cdvyFactoryRouting', FactoryRouting);
-
   }
 }

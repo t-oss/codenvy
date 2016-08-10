@@ -146,18 +146,13 @@ public class BaseTest {
         FileUtils.writeStringToFile(assemblyPropertiesFile, "assembly.version=" + TEST_VERSION_STR);
     }
 
-    protected void prepareSingleNodeEnv(ConfigManager configManager, HttpTransport transport) throws Exception {
-        prepareSingleNodeEnv(configManager);
-        when(transport.doOption("http://localhost/api/", null)).thenReturn("{\"ideVersion\":\"" + TEST_VERSION_STR + "\"}");
-    }
-
     protected void prepareSingleNodeEnv(ConfigManager configManager) throws Exception {
         Map<String, String> properties = getTestSingleNodeProperties();
 
         createSingleNodeConf();
         createAssemblyProperty();
         doReturn(InstallType.SINGLE_SERVER).when(configManager).detectInstallationType();
-        doReturn("http://localhost/api").when(configManager).getApiEndpoint();
+        doReturn(API_ENDPOINT).when(configManager).getApiEndpoint();
         doReturn(new Config(properties)).when(configManager).loadInstalledCodenvyConfig();
     }
 

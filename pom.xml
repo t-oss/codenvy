@@ -45,6 +45,7 @@
         <tag>HEAD</tag>
     </scm>
     <properties>
+        <aws.java.sdk.version>1.11.22</aws.java.sdk.version>
         <che.lib.version>4.7.0-SNAPSHOT</che.lib.version>
         <che.version>4.7.0-SNAPSHOT</che.version>
         <codenvy.analytics.version>3.13.4</codenvy.analytics.version>
@@ -81,6 +82,16 @@
     </properties>
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-core</artifactId>
+                <version>${aws.java.sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-ecr</artifactId>
+                <version>${aws.java.sdk.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.braintreepayments.gateway</groupId>
                 <artifactId>braintree-java</artifactId>

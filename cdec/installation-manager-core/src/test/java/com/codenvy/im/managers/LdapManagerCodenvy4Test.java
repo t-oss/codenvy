@@ -54,7 +54,7 @@ public class LdapManagerCodenvy4Test extends BaseLdapTest {
     public void setUp() throws Exception {
         initMocks(this);
 
-        prepareSingleNodeEnv(mockConfigManager, mockTransport);
+        prepareSingleNodeEnv(mockConfigManager);
 
         spyLdapManager = spy(new LdapManager(mockConfigManager, mockTransport));
         doReturn(EmbeddedADS.ADS_SECURITY_PRINCIPAL).when(spyLdapManager).getRootPrincipal();
