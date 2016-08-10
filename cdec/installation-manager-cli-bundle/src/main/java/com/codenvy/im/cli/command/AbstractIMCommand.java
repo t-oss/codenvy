@@ -91,7 +91,7 @@ public abstract class AbstractIMCommand extends AbsCommand {
     }
 
     protected void updateImCliClientIfNeeded() {
-        final String updateFailMessage = "WARNING: automatic update of IM CLI client has been failed. See logs for details.\n";
+        final String updateFailMessage = "WARNING: automatic update of IM CLI client failed. See logs for details.\n";
 
         try {
             // get latest update of IM CLI client

@@ -46,6 +46,8 @@ export class ShareWorkspaceController {
     this.emails = [];
     //Filtered entered emails - users that really are registered
     this.existingUsers = new Map();
+    //Filtered entered emails - users that are not registered
+    this.notExistingUsers = [];
 
     this.isLoading = false;
     //Temp solution with defined actions, better to provide list of available for user to choose:
@@ -130,12 +132,22 @@ export class ShareWorkspaceController {
       //Clear share input data:
       this.emails.length = 0;
       this.existingUsers.clear();
+      this.notExistingUsers.length = 0;
 
       this.refreshWorkspacePermissions();
     }, (error) => {
       this.isLoading = false;
       this.cheNotification.showError(error.data && error.data.message ? error.data.message : 'Failed to share workspace.');
     });
+  }
+
+  /**
+   * Returns the list of the not registered users emails as string.
+   *
+   * @returns {*} string with wrong emails coma separated
+   */
+  getNotExistingEmails() {
+    return this.notExistingUsers.join(', ');
   }
 
   /**
@@ -208,7 +220,7 @@ export class ShareWorkspaceController {
       let user = this.codenvyUser.getUserByAlias(email);
       this.existingUsers.set(email, user);
     }, (error) => {
-      //do nothing
+      this.notExistingUsers.push(email);
     });
 
     return email;
@@ -221,6 +233,10 @@ export class ShareWorkspaceController {
    */
   onRemoveEmail(email) {
     this.existingUsers.delete(email);
+
+    this.lodash.remove(this.notExistingUsers, (data) => {
+        return email === data;
+    });
   }
 
   /**

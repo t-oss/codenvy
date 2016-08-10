@@ -1046,8 +1046,7 @@ printPreInstallInfo_single() {
 
     configureProxySettings
 
-    println "Checking access to external dependencies..."
-    println
+    println "Checking installation repositories..."
 
     checkResourceAccess
 

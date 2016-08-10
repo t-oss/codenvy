@@ -70,7 +70,7 @@ export class CodenvyFactory {
    * @returns {*} the promise
    */
   fetchFactoryContentFromWorkspace(workspace) {
-    var deferred = this.$q.defer();
+    let deferred = this.$q.defer();
 
     let factoryContent = this.factoryContentsByWorkspaceId.get(workspace.id);
     if (factoryContent) {
@@ -114,7 +114,7 @@ export class CodenvyFactory {
    */
   createFactoryByContent(factoryContent) {
 
-    var formDataObject = new FormData();
+    let formDataObject = new FormData();
     formDataObject.append('factory', factoryContent);
 
     return this.remoteFactoryAPI.createFactoryByContent({}, formDataObject).$promise;
@@ -143,7 +143,7 @@ export class CodenvyFactory {
    * @returns {*} the promise
    */
   fetchFactory(factoryId) {
-    var deferred = this.$q.defer();
+    let deferred = this.$q.defer();
 
     let promise = this.remoteFactoryAPI.get({factoryId: factoryId}).$promise;
     promise.then((tmpFactory) => {
@@ -192,7 +192,7 @@ export class CodenvyFactory {
    * @returns {*} the promise
    */
   fetchParameterFactory(parameters) {
-    var deferred = this.$q.defer();
+    let deferred = this.$q.defer();
 
     let promise = this.remoteFactoryAPI.getParametersFactory({}, parameters).$promise;
     promise.then((tmpFactory) => {
@@ -230,7 +230,7 @@ export class CodenvyFactory {
    * @returns links acceptance links
    */
   detectLinks(factory) {
-    var links = [];
+    let links = [];
 
     this.lodash.find(factory.links, function (link) {
       if (link.rel === 'accept' || link.rel === 'accept-named') {
@@ -257,7 +257,12 @@ export class CodenvyFactory {
    * @returns {*} the promise
    */
   setFactory(originFactory) {
-    var deferred = this.$q.defer();
+    let deferred = this.$q.defer();
+    // check originFactory
+    if (!originFactory || !originFactory.id) {
+      deferred.reject({data: {message: 'Read factory error.'}});
+      return deferred.promise;
+    }
 
     let promise = this.remoteFactoryAPI.put({factoryId: originFactory.id}, originFactory).$promise;
     // check if was OK or not

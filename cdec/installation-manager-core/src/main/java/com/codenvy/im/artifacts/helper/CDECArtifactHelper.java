@@ -16,6 +16,7 @@ package com.codenvy.im.artifacts.helper;
 
 import com.codenvy.im.artifacts.CDECArtifact;
 import com.codenvy.im.commands.Command;
+import com.codenvy.im.commands.SimpleCommand;
 import com.codenvy.im.managers.BackupConfig;
 import com.codenvy.im.managers.Config;
 import com.codenvy.im.managers.ConfigManager;
@@ -105,4 +106,12 @@ public abstract class CDECArtifactHelper {
 
     /** @return list of commands to update puppet.conf files of puppet server and puppet agent */
     public abstract Command getUpdateHostnameCommand(Config config, String oldHostName, String newHostName);
+
+    public Command getCodenvyApiInfoCommand(String apiEndpoint) {
+        return SimpleCommand.createCommandWithoutLogging("http_code=$(curl -X OPTIONS --silent --write-out '%{http_code}'" + format(" --output /dev/null \"%1$s/\")\n"
+                                                  + "if [[ ! ${http_code} -eq 200 ]]; then\n"
+                                                  + "    exit 1\n"
+                                                  + "fi\n"
+                                                  + "curl -X OPTIONS --silent \"%1$s/\"\n", apiEndpoint));
+    }
 }

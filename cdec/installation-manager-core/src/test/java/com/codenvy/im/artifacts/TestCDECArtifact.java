@@ -36,6 +36,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.FileUtils;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -126,7 +127,9 @@ public class TestCDECArtifact extends BaseTest {
         createFile(Paths.get(ETC_PUPPET, Config.MULTI_SERVER_BASE_CONFIG_PP));
 
         doReturn(spyCDECSingleServerHelper).when(spyCdecArtifact).getHelper(InstallType.SINGLE_SERVER);
+        doReturn(spyCDECSingleServerHelper).when(spyCdecArtifact).getHelper();
         doReturn(spyCDECMultiServerHelper).when(spyCdecArtifact).getHelper(InstallType.MULTI_SERVER);
+
 
         doReturn(TMP_CODENVY).when(spyCDECSingleServerHelper).getTmpCodenvyDir();
         doReturn(TMP_CODENVY).when(spyCDECMultiServerHelper).getTmpCodenvyDir();
@@ -367,7 +370,7 @@ public class TestCDECArtifact extends BaseTest {
 
     @Test
     public void testGetUpdateSingleServerCommand() throws Exception {
-        prepareSingleNodeEnv(spyConfigManager, mockTransport);
+        prepareSingleNodeEnv(spyConfigManager);
 
         InstallOptions options = new InstallOptions();
         options.setConfigProperties(new HashMap() {{
@@ -511,7 +514,7 @@ public class TestCDECArtifact extends BaseTest {
 
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "Step number .* is out of update range")
     public void testGetUpdateCommandNonexistentStepError() throws Exception {
-        prepareSingleNodeEnv(spyConfigManager, mockTransport);
+        prepareSingleNodeEnv(spyConfigManager);
 
         InstallOptions options = new InstallOptions();
         options.setConfigProperties(Collections.<String, String>emptyMap());
@@ -524,7 +527,7 @@ public class TestCDECArtifact extends BaseTest {
     @Test(expectedExceptions = IllegalArgumentException.class,
             expectedExceptionsMessageRegExp = "Only update to the Codenvy of the same installation type is supported")
     public void testGetUpdateInfoFromSingleToMultiServerError() throws Exception {
-        prepareSingleNodeEnv(spyConfigManager, mockTransport);
+        prepareSingleNodeEnv(spyConfigManager);
 
         InstallOptions options = new InstallOptions();
         options.setConfigProperties(Collections.<String, String>emptyMap());
@@ -545,7 +548,7 @@ public class TestCDECArtifact extends BaseTest {
     @Test(expectedExceptions = IllegalArgumentException.class,
             expectedExceptionsMessageRegExp = "Only update to the Codenvy of the same installation type is supported")
     public void testGetUpdateCommandFromSingleToMultiServerError() throws Exception {
-        prepareSingleNodeEnv(spyConfigManager, mockTransport);
+        prepareSingleNodeEnv(spyConfigManager);
 
         InstallOptions options = new InstallOptions();
         options.setConfigProperties(Collections.<String, String>emptyMap());
@@ -570,7 +573,7 @@ public class TestCDECArtifact extends BaseTest {
 
     @Test
     public void testGetBackup3SingleServerCommand() throws Exception {
-        prepareSingleNodeEnv(spyConfigManager, mockTransport);
+        prepareSingleNodeEnv(spyConfigManager);
 
         BackupConfig backupConfig = new BackupConfig().setArtifactName(CDECArtifact.NAME)
                                                       .setBackupDirectory("some_dir");
@@ -606,7 +609,7 @@ public class TestCDECArtifact extends BaseTest {
 
     @Test
     public void testGetBackupCodenvy4SingleServerCommand() throws Exception {
-        prepareSingleNodeEnv(spyConfigManager, mockTransport);
+        prepareSingleNodeEnv(spyConfigManager);
         doReturn(new Config(ImmutableMap.of("host_url", "hostname",
                                             Config.VERSION, CODENVY_4_VERSION)))
             .when(spyConfigManager).loadInstalledCodenvyConfig();
@@ -624,7 +627,7 @@ public class TestCDECArtifact extends BaseTest {
 
     @Test
     public void testGetRestore3SingleServerCommand() throws Exception {
-        prepareSingleNodeEnv(spyConfigManager, mockTransport);
+        prepareSingleNodeEnv(spyConfigManager);
 
         Path testingBackup = Paths.get(getClass().getClassLoader().getResource("backups/full_backup.tar").getPath());
 
@@ -664,7 +667,7 @@ public class TestCDECArtifact extends BaseTest {
 
     @Test
     public void testGetRestore4SingleServerCommand() throws Exception {
-        prepareSingleNodeEnv(spyConfigManager, mockTransport);
+        prepareSingleNodeEnv(spyConfigManager);
         doReturn(new Config(ImmutableMap.of("host_url", "hostname",
                                             Config.VERSION, CODENVY_4_VERSION)))
             .when(spyConfigManager).loadInstalledCodenvyConfig();
@@ -1148,14 +1151,36 @@ public class TestCDECArtifact extends BaseTest {
     }
 
     @Test
-    public void shouldBeAlive() {
-        doReturn(true).when(spyCdecArtifact).isApiServiceAlive();
+    public void testGetCodenvyApiInfoCommand() {
+        final Command codenvyApiInfoCommand = spyCDECSingleServerHelper.getCodenvyApiInfoCommand(API_ENDPOINT);
+        assertEquals(codenvyApiInfoCommand.toString(),
+                     "{'command'='http_code=$(curl -X OPTIONS --silent --write-out '%{http_code}' --output /dev/null \"http://api.endpoint/\")\n"
+                     + "if [[ ! ${http_code} -eq 200 ]]; then\n"
+                     + "    exit 1\n"
+                     + "fi\n"
+                     + "curl -X OPTIONS --silent \"http://api.endpoint/\"\n"
+                     + "', 'agent'='LocalAgent'}");
+    }
+
+    @Test
+    public void shouldBeAlive() throws Exception {
+        prepareSingleNodeEnv(spyConfigManager);
+
+        Command mockCommand = Mockito.mock(Command.class);
+        doReturn(mockCommand).when(spyCDECSingleServerHelper).getCodenvyApiInfoCommand(API_ENDPOINT);
+        doReturn("{\"ideVersion\":\"" + TEST_VERSION_STR + "\"}").when(mockCommand).execute();
+
         assertTrue(spyCdecArtifact.isAlive());
     }
 
     @Test
-    public void shouldNotBeAlive() {
-        doReturn(false).when(spyCdecArtifact).isApiServiceAlive();
+    public void shouldNotBeAlive() throws Exception {
+        prepareSingleNodeEnv(spyConfigManager);
+
+        Command mockCommand = Mockito.mock(Command.class);
+        doReturn(mockCommand).when(spyCDECSingleServerHelper).getCodenvyApiInfoCommand(API_ENDPOINT);
+        doThrow(new CommandException("error")).when(mockCommand).execute();
+
         assertFalse(spyCdecArtifact.isAlive());
     }
 

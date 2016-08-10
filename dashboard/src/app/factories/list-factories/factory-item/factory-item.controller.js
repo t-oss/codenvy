@@ -30,6 +30,9 @@ export class FactoryItemCtrl {
 
   //Redirect to factory details.
   redirectToFactoryDetails() {
+    if (!this.factory || !this.factory.originFactory) {
+      return;
+    }
     this.$location.path('/factory/' + this.factory.originFactory.id);
   }
 

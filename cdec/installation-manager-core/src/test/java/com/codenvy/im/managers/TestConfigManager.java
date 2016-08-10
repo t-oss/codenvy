@@ -275,7 +275,7 @@ public class TestConfigManager extends BaseTest {
 
     @Test
     public void testGetSingleServerPropertiesFiles() throws Exception {
-        prepareSingleNodeEnv(spyConfigManager, transport);
+        prepareSingleNodeEnv(spyConfigManager);
 
         Iterator<Path> singleServerCssPropertiesFiles = spyConfigManager.getCodenvyPropertiesFiles(InstallType.SINGLE_SERVER);
         assertTrue(singleServerCssPropertiesFiles.next().toAbsolutePath().toString()
@@ -620,7 +620,7 @@ public class TestConfigManager extends BaseTest {
         doReturn(new Config(ImmutableMap.of("host_protocol", protocol, "host_url", hostUrl)))
             .when(spyConfigManager).loadInstalledCodenvyConfig(InstallType.SINGLE_SERVER);
 
-        assertEquals(spyConfigManager.getApiEndpoint(), protocol + "://localhost/api");
+        assertEquals(spyConfigManager.getApiEndpoint(), format("%s://%s/api", protocol, hostUrl));
     }
 
     @Test

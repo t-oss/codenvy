@@ -24,7 +24,7 @@
     <div class="create-factory-share-header-widget-icon"><i class="chefont cheico-rocket-chefont icon">&nbsp;</i></div>
     <div layout="row" layout-fill layout-align="center center">
       <div class="create-factory-share-header-widget-badge"><a target="_blank" href="{{createFactoryCtrl.factoryLink}}"><img
-        src="{{createFactoryCtrl.factoryBadgeUrl}}"></a></div>
+        ng-src="{{createFactoryCtrl.factoryBadgeUrl}}"></a></div>
       <div class="create-factory-share-header-widget-markdown">{{createFactoryCtrl.factoryLink}}</div>
       <a class="create-factory-share-header-small-button" tooltip="{{valueLinkCopy === createFactoryCtrl.factoryLink ? 'Copied' : 'Copy'}}"
          clip-copy="createFactoryCtrl.factoryLink" clip-click="valueLinkCopy=createFactoryCtrl.factoryLink">Copy URL</a>
