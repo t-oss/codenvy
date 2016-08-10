@@ -23,7 +23,7 @@ import com.codenvy.api.user.server.AdminUserService;
 import com.codenvy.api.user.server.dao.AdminUserDao;
 import com.codenvy.api.workspace.server.jpa.OnPremisesWorkspaceJpaModule;
 import com.codenvy.api.workspace.server.jpa.WorkerJpaModule;
-import com.codenvy.api.workspace.server.spi.WorkerDao;
+import com.codenvy.auth.aws.ecr.AwsEcrAuthResolver;
 import com.codenvy.auth.sso.client.ServerClient;
 import com.codenvy.auth.sso.client.TokenHandler;
 import com.codenvy.auth.sso.client.filter.ConjunctionRequestFilter;
@@ -301,6 +301,8 @@ public class OnPremisesIdeApiModule extends AbstractModule {
         install(new ScheduleModule());
 
         bind(org.eclipse.che.plugin.docker.client.DockerConnector.class).to(com.codenvy.swarm.client.SwarmDockerConnector.class);
+        bind(org.eclipse.che.plugin.docker.client.DockerRegistryDynamicAuthResolver.class)
+                .to(AwsEcrAuthResolver.class);
 
         bind(String.class).annotatedWith(Names.named("machine.docker.machine_env"))
                           .toProvider(com.codenvy.machine.MaintenanceConstraintProvider.class);

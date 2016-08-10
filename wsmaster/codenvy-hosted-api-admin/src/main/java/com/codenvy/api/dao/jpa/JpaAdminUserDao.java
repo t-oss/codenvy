@@ -38,7 +38,7 @@ public class JpaAdminUserDao extends JpaUserDao implements AdminUserDao {
         checkArgument(skipCount >= 0, "The number of items to skip can't be negative.");
         try {
             final List<UserImpl> users = managerProvider.get()
-                                                        .createQuery("SELECT user FROM \"User\" user", UserImpl.class)
+                                                        .createQuery("SELECT u FROM Usr u", UserImpl.class)
                                                         .setMaxResults(maxItems)
                                                         .setFirstResult(skipCount)
                                                         .getResultList();

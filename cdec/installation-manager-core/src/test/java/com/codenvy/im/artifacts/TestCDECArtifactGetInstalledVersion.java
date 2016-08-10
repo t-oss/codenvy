@@ -24,6 +24,7 @@ import com.codenvy.im.utils.HttpTransport;
 import com.codenvy.im.utils.IllegalVersionException;
 import com.codenvy.im.utils.Version;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -34,6 +35,7 @@ import java.util.Optional;
 import static java.lang.String.format;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.testng.Assert.assertEquals;
@@ -61,6 +63,7 @@ public class TestCDECArtifactGetInstalledVersion extends BaseTest {
         initMocks(this);
         spyCdecArtifact = spy(new CDECArtifact(UPDATE_API_ENDPOINT, DOWNLOAD_DIR, transport, configManager, nodeManager));
         doReturn(Paths.get(ASSEMBLY_PROPERTIES)).when(spyCdecArtifact).getPathToAssemblyProperties(Version.VERSION_4_4_0);
+        doReturn(mockHelper).when(spyCdecArtifact).getHelper();
     }
 
     @Test
@@ -72,7 +75,7 @@ public class TestCDECArtifactGetInstalledVersion extends BaseTest {
 
     @Test
     public void fetchCodenvy3AssemblyVersionFromSingleNode() throws Exception {
-        prepareSingleNodeEnv(configManager, transport);
+        prepareSingleNodeEnv(configManager);
 
         doReturn(Paths.get(ASSEMBLY_PROPERTIES)).when(spyCdecArtifact).getPathToAssemblyProperties(Version.VERSION_3);
         doReturn(Paths.get("target/non-exist")).when(spyCdecArtifact).getPathToAssemblyProperties(Version.VERSION_4_4_0);
@@ -81,7 +84,7 @@ public class TestCDECArtifactGetInstalledVersion extends BaseTest {
 
     @Test
     public void fetchCodenvy4AssemblyVersionFromSingleNode() throws Exception {
-        prepareSingleNodeEnv(configManager, transport);
+        prepareSingleNodeEnv(configManager);
 
         doReturn(Paths.get("target/non-exist")).when(spyCdecArtifact).getPathToAssemblyProperties(Version.VERSION_3);
         doReturn(Paths.get(ASSEMBLY_PROPERTIES)).when(spyCdecArtifact).getPathToAssemblyProperties(Version.VERSION_4_4_0);
@@ -104,14 +107,19 @@ public class TestCDECArtifactGetInstalledVersion extends BaseTest {
 
     @Test
     public void getVersionFromApiService() throws Exception {
-        prepareSingleNodeEnv(configManager, transport);
+        prepareSingleNodeEnv(configManager);
+
+        Command mockCommand = Mockito.mock(Command.class);
+        String apiEndpoint = configManager.getApiEndpoint();
+        doReturn(mockCommand).when(mockHelper).getCodenvyApiInfoCommand(apiEndpoint);
+        doReturn("{\"ideVersion\":\"" + TEST_VERSION_STR + "\"}").when(mockCommand).execute();
 
         assertEquals(spyCdecArtifact.getVersionFromApiService(), Optional.of(TEST_VERSION));
     }
 
     @Test
     public void fetchVersionFromPuppetConfig() throws Exception {
-        prepareSingleNodeEnv(configManager, transport);
+        prepareSingleNodeEnv(configManager);
 
         assertEquals(spyCdecArtifact.fetchVersionFromPuppetConfig(), Optional.of(TEST_VERSION));
     }

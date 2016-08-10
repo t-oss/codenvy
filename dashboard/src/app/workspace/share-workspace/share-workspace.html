@@ -34,6 +34,10 @@
             </div>
           </md-chip-template>
         </md-chips>
+        <div ng-show="shareWorkspaceController.notExistingUsers.length > 0" class="user-not-found">
+          User<span ng-if="shareWorkspaceController.notExistingUsers.length > 1">s</span> with email<span ng-if="shareWorkspaceController.notExistingUsers.length > 1">s</span>
+          <b>{{shareWorkspaceController.getNotExistingEmails()}}</b> not found. Workspaces can be shared with registered users only.
+        </div>
       </form>
       <div flex="none" flex-offset="5" layout="column" layout-align="end end">
         <che-button-primary

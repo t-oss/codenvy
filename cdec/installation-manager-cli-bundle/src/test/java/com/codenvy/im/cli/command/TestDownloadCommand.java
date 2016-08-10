@@ -216,7 +216,7 @@ public class TestDownloadCommand extends AbstractTestCommand {
         CommandInvoker.Result result = commandInvoker.invoke();
 
         String output = result.disableAnsi().getOutputStream();
-        assertEquals(output, "WARNING: automatic update of IM CLI client has been failed. See logs for details.\n"
+        assertEquals(output, "WARNING: automatic update of IM CLI client failed. See logs for details.\n"
                              + "\n"
                              + "{\n"
                              + "  \"artifacts\" : [ ],\n"
@@ -242,7 +242,7 @@ public class TestDownloadCommand extends AbstractTestCommand {
         CommandInvoker.Result result = commandInvoker.invoke();
 
         String output = result.disableAnsi().getOutputStream();
-        assertEquals(output, "WARNING: automatic update of IM CLI client has been failed. See logs for details.\n"
+        assertEquals(output, "WARNING: automatic update of IM CLI client failed. See logs for details.\n"
                              + "\n"
                              + "{\n"
                              + "  \"artifacts\" : [ ],\n"
@@ -284,7 +284,7 @@ public class TestDownloadCommand extends AbstractTestCommand {
         CommandInvoker.Result result = commandInvoker.invoke();
 
         String output = result.disableAnsi().getOutputStream();
-        assertEquals(output, "WARNING: automatic update of IM CLI client has been failed. See logs for details.\n"
+        assertEquals(output, "WARNING: automatic update of IM CLI client failed. See logs for details.\n"
                              + "\n"
                              + "{\n"
                              + "  \"artifacts\" : [ ],\n"
