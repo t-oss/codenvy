@@ -14,14 +14,23 @@
  */
 package com.codenvy.api.postgresql;
 
+import com.codenvy.api.workspace.server.jpa.JpaWorkerDao;
+import com.codenvy.api.workspace.server.model.impl.WorkerImpl;
+import com.codenvy.api.workspace.server.spi.WorkerDao;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.persist.Transactional;
 import com.google.inject.persist.jpa.JpaPersistModule;
 
+import org.eclipse.che.account.spi.AccountDao;
+import org.eclipse.che.account.spi.AccountImpl;
+import org.eclipse.che.account.spi.jpa.JpaAccountDao;
 import org.eclipse.che.api.core.jdbc.jpa.eclipselink.EntityListenerInjectionManagerInitializer;
 import org.eclipse.che.api.core.jdbc.jpa.guice.JpaInitializer;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
+import org.eclipse.che.api.factory.server.jpa.JpaFactoryDao;
+import org.eclipse.che.api.factory.server.model.impl.FactoryImpl;
+import org.eclipse.che.api.factory.server.spi.FactoryDao;
 import org.eclipse.che.api.machine.server.jpa.JpaRecipeDao;
 import org.eclipse.che.api.machine.server.jpa.JpaSnapshotDao;
 import org.eclipse.che.api.machine.server.model.impl.SnapshotImpl;
@@ -121,6 +130,10 @@ public class PostgreSqlTckModule extends TckModule {
         bind(EntityListenerInjectionManagerInitializer.class).asEagerSingleton();
 
         //repositories
+        //api-account
+        bind(new TypeLiteral<TckRepository<AccountImpl>>() {}).toInstance(new JpaTckRepository<>(AccountImpl.class));
+        //api-factory
+        bind(new TypeLiteral<TckRepository<FactoryImpl>>() {}).to(FactoryJpaTckRepository.class);
         //api-user
         bind(new TypeLiteral<TckRepository<UserImpl>>() {}).to(UserJpaTckRepository.class);
         bind(new TypeLiteral<TckRepository<ProfileImpl>>() {}).toInstance(new JpaTckRepository<>(ProfileImpl.class));
@@ -128,6 +141,8 @@ public class PostgreSqlTckModule extends TckModule {
         //api-workspace
         bind(new TypeLiteral<TckRepository<WorkspaceImpl>>() {}).toInstance(new JpaTckRepository<>(WorkspaceImpl.class));
         bind(new TypeLiteral<TckRepository<StackImpl>>() {}).toInstance(new JpaTckRepository<>(StackImpl.class));
+        bind(new TypeLiteral<TckRepository<WorkerImpl>>() {}).toInstance(new JpaTckRepository<>(WorkerImpl.class));
+
         //api-machine
         bind(new TypeLiteral<TckRepository<RecipeImpl>>() {}).toInstance(new JpaTckRepository<>(RecipeImpl.class));
         bind(new TypeLiteral<TckRepository<SnapshotImpl>>() {}).to(SnapshotJpaTckRepository.class);
@@ -135,6 +150,10 @@ public class PostgreSqlTckModule extends TckModule {
         bind(new TypeLiteral<TckRepository<SshPairImpl>>() {}).toInstance(new JpaTckRepository<>(SshPairImpl.class));
 
         //dao
+        //api-account
+        bind(AccountDao.class).to(JpaAccountDao.class);
+        //api-factory
+        bind(FactoryDao.class).to(JpaFactoryDao.class);
         //api-user
         bind(UserDao.class).to(JpaUserDao.class);
         bind(ProfileDao.class).to(JpaProfileDao.class);
@@ -142,6 +161,7 @@ public class PostgreSqlTckModule extends TckModule {
         //api-workspace
         bind(WorkspaceDao.class).to(JpaWorkspaceDao.class);
         bind(StackDao.class).to(JpaStackDao.class);
+        bind(WorkerDao.class).to(JpaWorkerDao.class);
         //api-machine
         bind(RecipeDao.class).to(JpaRecipeDao.class);
         bind(SnapshotDao.class).to(JpaSnapshotDao.class);
@@ -238,6 +258,35 @@ public class PostgreSqlTckModule extends TckModule {
                    .getResultList()
                    .forEach(manager::remove);
             manager.createQuery("SELECT workspaces FROM Workspace workspaces", WorkspaceImpl.class)
+                   .getResultList()
+                   .forEach(manager::remove);
+        }
+    }
+
+
+    @Transactional
+    public static class FactoryJpaTckRepository implements TckRepository<FactoryImpl> {
+
+        @Inject
+        private Provider<EntityManager> managerProvider;
+
+        @Override
+        public void createAll(Collection<? extends FactoryImpl> factories) throws TckRepositoryException {
+            final EntityManager manager = managerProvider.get();
+            for (FactoryImpl factory : factories) {
+                final String id = factory.getCreator().getUserId();
+                manager.persist(new UserImpl(id, "email_" + id, "name_" + id));
+                manager.persist(factory);
+            }
+        }
+
+        @Override
+        public void removeAll() throws TckRepositoryException {
+            final EntityManager manager = managerProvider.get();
+            manager.createQuery("SELECT factory FROM Factory factory", FactoryImpl.class)
+                   .getResultList()
+                   .forEach(manager::remove);
+            manager.createQuery("SELECT users FROM Usr users", UserImpl.class)
                    .getResultList()
                    .forEach(manager::remove);
         }
