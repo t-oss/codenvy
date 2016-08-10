@@ -43,6 +43,7 @@ public class OnPremisesJpaWorkspaceDao extends JpaWorkspaceDao {
     public List<WorkspaceImpl> getWorkspaces(String userId) throws ServerException {
         final String query = "SELECT ws FROM Worker worker, Workspace ws " +
                              "          WHERE worker.workspaceId = ws.id " +
+                             "          AND 'read' MEMBER OF worker.actions " +
                              "          AND worker.userId = :userId ";
         try {
             return manager.get()

@@ -16,10 +16,7 @@ package com.codenvy.api.workspace.server.jpa;
 
 import com.google.inject.AbstractModule;
 
-import org.eclipse.che.api.workspace.server.jpa.JpaStackDao;
 import org.eclipse.che.api.workspace.server.jpa.JpaWorkspaceDao;
-import org.eclipse.che.api.workspace.server.spi.StackDao;
-import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 
 /**
  * @author Max Shaposhnik (mshaposhnik@codenvy.com)
@@ -27,9 +24,6 @@ import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
 public class OnPremisesWorkspaceJpaModule extends AbstractModule {
     @Override
     protected void configure() {
-        bind(StackDao.class).to(JpaStackDao.class);
-        bind(WorkspaceDao.class).to(OnPremisesJpaWorkspaceDao.class);
-        bind(JpaWorkspaceDao.RemoveWorkspaceBeforeUserRemovedEventSubscriber.class).asEagerSingleton();
-        bind(JpaWorkspaceDao.RemoveSnapshotsBeforeWorkspaceRemovedEventSubscriber.class).asEagerSingleton();
+        bind(JpaWorkspaceDao.class).to(OnPremisesJpaWorkspaceDao.class);
     }
 }

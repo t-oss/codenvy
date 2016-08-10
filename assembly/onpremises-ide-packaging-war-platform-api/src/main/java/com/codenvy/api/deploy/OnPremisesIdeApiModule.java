@@ -185,6 +185,7 @@ public class OnPremisesIdeApiModule extends AbstractModule {
         bind(EntityListenerInjectionManagerInitializer.class).asEagerSingleton();
         install(new UserJpaModule());
         install(new SshJpaModule());
+        install(new WorkspaceJpaModule());
         install(new WorkerJpaModule());
         install(new OnPremisesWorkspaceJpaModule());
         install(new MachineJpaModule());
